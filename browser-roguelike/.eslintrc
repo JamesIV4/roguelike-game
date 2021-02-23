@@ -1,0 +1,29 @@
+{
+	"root": true,
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaVersion": 9,
+		"sourceType": "module"
+	},
+	"env": {
+		"browser": true,
+		"node": true,
+		"es6": true,
+		"amd": true,
+		"jquery": true
+	},
+	"globals": {
+		"webmd": false,
+		"wmdPageLink": false,
+		"wmdPageview": false,
+		"wmdTrack": false
+	},
+	"plugins": ["import"],
+	"rules": {
+		"comma-dangle": ["error", "never"],
+		"func-names": ["error", "always"],
+		"indent": ["error", "tab"],
+		"quote-props": ["error", "consistent-as-needed"],
+		"semi": ["error", "always"]
+	}
+}

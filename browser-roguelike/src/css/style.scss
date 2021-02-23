@@ -1,0 +1,119 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#display-wrapper {
+	align-items: center;
+	background-color: #0b0b0b;
+	color: #000 !important;
+	display: flex;
+	height: 100%;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 10000000;
+
+	#game-grid {
+		display: table;
+		font-family: 'Rajdhani', sans-serif;
+		font-weight: 700;
+
+		.row {
+			display: table-row;
+
+			.cell {
+				display: table-cell;
+				image-rendering: pixelated;
+				line-height: 1;
+				overflow: hidden;
+				text-align: center;
+				vertical-align: middle;
+
+				&:not(.empty) {
+					background-size: contain;
+				}
+
+				&.wall {
+					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-wall.png');
+				}
+
+				&.floor {
+					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-floor.png');
+
+					&.player {
+						&::after {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-knight.png');
+							background-size: cover;
+							content: '';
+							display: block;
+							height: 100%;
+							width: 100%;
+						}
+					}
+
+					&.enemy {
+						&::after {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-monster3.png');
+							background-size: cover;
+							content: '';
+							display: block;
+							height: 100%;
+							width: 100%;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	#message {
+		align-items: center;
+		background-color: #fff;
+		border: #ff6f6f solid 5px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		opacity: 0;
+		padding: 3%;
+		position: fixed;
+		text-align: center;
+		transition: opacity 0.35s;
+		width: 45%;
+
+		p {
+			font-family: 'Rajdhani', sans-serif;
+			font-size: 2vh;
+			font-weight: 700;
+			margin: 0;
+
+			&:not(:first-of-type) {
+				margin-top: 18px;
+			}
+		}
+
+		.btn {
+			background-color: #364c67;
+			border-radius: 5px;
+			border: 1.5px solid #000;
+			box-shadow: 0 0 3px 0 #908c8c;
+			color: #fff;
+			cursor: pointer;
+			display: flex;
+			flex-direction: column;
+			font-family: 'Rajdhani', sans-serif;
+			font-size: 2vh;
+			font-weight: 700;
+			justify-content: center;
+			margin-top: 30px;
+			padding: 0.5vh 2vh;
+		}
+
+		&.show {
+			opacity: 1;
+			transition: opacity 0.5s;
+		}
+	}
+}

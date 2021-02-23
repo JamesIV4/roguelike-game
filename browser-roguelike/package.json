@@ -1,0 +1,43 @@
+{
+  "name": "browser-roguelike",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "autoprefixer": "^8.6.5",
+    "eslint-plugin-compat": "^2.7.0",
+    "eslint-plugin-html": "^4.0.6",
+    "eslint-plugin-import": "^2.22.1",
+    "grunt": "^1.3.0",
+    "grunt-babel": "^8.0.0",
+    "grunt-banner": "^0.6.0",
+    "grunt-cleanempty": "^1.0.4",
+    "grunt-conspon-ingest": "git+ssh://git@gitlab.webmd.com:WebMD/Consumer/revenue/grunt-conspon-ingest.git",
+    "grunt-conspon-scorch": "git+ssh://git@gitlab.webmd.com:WebMD/Consumer/revenue/grunt-conspon-scorch.git",
+    "grunt-conspon-zip": "git+ssh://git@gitlab.webmd.com:WebMD/Consumer/revenue/grunt-conspon-zip.git",
+    "grunt-contrib-clean": "^1.1.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-cssmin": "^2.2.1",
+    "grunt-contrib-htmlmin": "^2.4.0",
+    "grunt-contrib-uglify": "^3.4.0",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-eslint": "^20.2.0",
+    "grunt-gitinfo": "^0.1.9",
+    "grunt-postcss": "^0.9.0",
+    "grunt-sass": "^2.1.0",
+    "grunt-stylelint": "^0.9.0",
+    "grunt-webmd-linkslist": "git+ssh://git@gitlab.webmd.com:WebMD/Consumer/revenue/grunt-webmd-linkslist.git",
+    "load-grunt-tasks": "^3.5.2",
+    "stylelint": "^9.10.1",
+    "stylelint-config-standard": "^18.3.0",
+    "stylelint-scss": "^3.18.0"
+  }
+}
