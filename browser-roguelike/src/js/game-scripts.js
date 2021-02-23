@@ -218,18 +218,6 @@
 		}
 	}
 
-	function findPlayer() {
-		var playerRow = document.querySelector('.player').parentNode.querySelectorAll('.cell');
-			
-		for (let i = 0; i < playerRow.length; i++) {
-			var element = playerRow[i];
-
-			if (element.classList.contains('player')) {
-				return i;
-			}
-		}
-	}
-
 	function movePlayer(direction) {
 		var newCell,
 			newPos;
