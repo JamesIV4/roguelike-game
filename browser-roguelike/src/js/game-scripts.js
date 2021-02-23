@@ -2,15 +2,15 @@
 /* eslint-disable no-unused-vars */
 
 var level1 = `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
-.,.,.,.,.,.,#,,,,,,,,,,#,.,.,.
+.,.,.,.,.,.,#,,,,F,,,,,,#,.,.,.
 .,.,.,.,.,.,#,,#,#,#,,#,,#,,#,.,.,.
 .,.,.,#,#,#,#,,#,#,#,,#,#,#,,#,.,.,.
 .,.,.,#,,,,,,#,#,,,,,,#,.,.,.
 .,.,.,#,,,,,,#,#,#,#,#,#,#,#,.,.,.
 .,.,.,#,,,,,,,,,,#,#,#,#,#,#,#
-.,.,.,#,,,E,,,#,#,#,,#,#,,,,,#
+.,.,.,#,,,F,,,#,#,#,,#,#,,,,,#
 .,.,.,#,,,,,,#,.,#,,#,#,,,C,,#
-.,.,.,#,,,,,,#,.,#,,#,#,,,,,#
+.,.,.,#,,F,,,,#,.,#,,#,#,,F,,,#
 .,.,.,#,#,#,,#,#,#,.,#,,#,#,,,,,#
 .,.,.,.,.,#,,#,.,.,.,#,,#,#,,,,,#
 .,.,#,#,#,#,,#,#,#,#,#,,#,#,,#,#,#,#
@@ -24,6 +24,9 @@ var level1 = `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 
 var turns = 0;
 var dead = false;
+var enemies = [];
+var enemyCounter = 0;
+var player;
 
 // Touch controls variables
 var xDown = null;          
@@ -32,6 +35,26 @@ var yDown = null;
 // Style overrides block
 var overrides = document.createElement('style');
 document.querySelector('head').appendChild(overrides);
+
+// UNITS
+
+function Enemy(elem, id, pos, type, health) {
+	this.elem = elem;
+	this.id = id;
+	this.type = type;
+	this.health = health;
+	this.pos = pos;
+}
+
+function Player(elem, id, pos, type, health) {
+	this.elem = elem;
+	this.id = id;
+	this.type = type;
+	this.health = health;
+	this.pos = pos;
+}
+
+// Game code functions
 
 function drawScreen() {
 	var background = document.querySelector('#display-wrapper'),
@@ -46,8 +69,8 @@ function drawScreen() {
 	levelRows = level1.split('\n');
 
 	// Row creation logic
-	for (let i = 0; i < levelRows.length; i++) {
-		var levelCells = levelRows[i].split(','),
+	for (let rowIndex = 0; rowIndex < levelRows.length; rowIndex++) {
+		var levelCells = levelRows[rowIndex].split(','),
 			elemRow = document.createElement('div');
 	
 		elemRow.classList.add('row');
@@ -57,14 +80,10 @@ function drawScreen() {
 		for (let cellIndex = 0; cellIndex < levelCells.length; cellIndex++) {
 			var cell = levelCells[cellIndex],
 				elemCell = document.createElement('div');
-				// elemCellImage = document.createElement('img');
 	
 			elemCell.classList.add('cell');
+			elemCell.id = rowIndex + '-' + cellIndex;
 			elemRow.appendChild(elemCell, elemRow);
-
-			// elemCellImage.classList.add('image');
-			// elemCellImage.src = '../src/img/tileset.png';
-			// elemCell.appendChild(elemCellImage, elemCell);
 	
 			switch (cell) {
 			case '.' :
@@ -77,18 +96,24 @@ function drawScreen() {
 				elemCell.classList.add('floor');
 				break;
 			case '@' :
+				player = new Player(elemCell, 1, [rowIndex, cellIndex], 'player', 100);
+
 				elemCell.classList.add('floor');
 				elemCell.classList.add('player');
 				break;
 			case 'D' :
 				// elemCell.style.backgroundColor = '#641903';
 				break;
-			case 'E' :
+			case 'F' :
+				enemyCounter++;
+				enemies.push(new Enemy(elemCell, enemyCounter, [rowIndex, cellIndex] , 'fire-vortex', 100));
+
 				elemCell.classList.add('floor');
 				elemCell.classList.add('enemy');
 				break;
 			case 'C' :
 				elemCell.style.backgroundColor = '#fff700';
+				elemCell.classList.add('floor');
 				elemCell.classList.add('gold');
 				break;
 			}
@@ -126,65 +151,54 @@ function refreshScreen() {
 }
 
 function enemyAITurn() {
-	var enemies = document.querySelectorAll('.enemy');
-
 	// Iterate on each enemy
-	for (let i = 0; i < enemies.length; i++) {
-		var enemy = enemies[i];
-		
-		moveEnemy(enemy, randomDirection());
+	for (let i = 0; i < enemies.length; i++) {		
+		moveEnemy(enemies[i], randomDirection());
 	}
 }
 
-function moveEnemy(unit, direction) {
+function moveEnemy(enemyObject, direction) {
 	if (dead) {
 		return;
 	}
 
-	var currentPos = findUnit(unit),
-		newRow,
-		newCell;
+	var newCell,
+		newPos;
 
 	switch (direction) {
 	case 'up':
-		newRow = unit.parentNode.previousSibling.querySelectorAll('.cell');
-		newCell = newRow[currentPos];
+		newPos = [enemyObject.pos[0] - 1, enemyObject.pos[1]];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'right':
-		newRow = unit.parentNode.querySelectorAll('.cell');
-		newCell = newRow[currentPos + 1];
+		newPos = [enemyObject.pos[0], enemyObject.pos[1] + 1];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'down':
-		newRow = unit.parentNode.nextSibling.querySelectorAll('.cell');
-		newCell = newRow[currentPos];
+		newPos = [enemyObject.pos[0] + 1, enemyObject.pos[1]];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'left':
-		newRow = unit.parentNode.querySelectorAll('.cell');
-		newCell = newRow[currentPos - 1];
+		newPos = [enemyObject.pos[0], enemyObject.pos[1] - 1];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	}
-
-	if (newCell.classList.contains('player')) {
-		death();
-	}
 	
-	if (!newCell.classList.contains('wall')) {
-		unit.classList.remove('enemy');
-		
+	if (!newCell.classList.contains('wall') && !newCell.classList.contains('enemy')) {
+		if (newCell.classList.contains('player')) {
+			death();
+		}
+
+		enemyObject.elem.classList.remove('enemy');
 		newCell.classList.add('enemy');
+
+		enemyObject.pos = newPos;
+		enemyObject.elem = document.getElementById(newPos[0] + '-' + newPos[1]);
+		enemyObject.moveTries = 0;
 	} else {
-		moveEnemy(unit, randomDirection());
-	}
-}
-
-function findUnit(unit) {
-	var unitRow = unit.parentNode.querySelectorAll('.cell');
-	
-	for (let i = 0; i < unitRow.length; i++) {
-		var element = unitRow[i];
-
-		if (element.classList.contains('enemy')) {
-			return i;
+		enemyObject.moveTries++;
+		if (enemyObject.moveTries < 3) {
+			moveEnemy(enemyObject, randomDirection());
 		}
 	}
 }
@@ -217,40 +231,41 @@ function findPlayer() {
 }
 
 function movePlayer(direction) {
-	var currentPos = findPlayer(),
-		oldCell = document.querySelector('.player'),
-		newRow,
-		newCell;
+	var newCell,
+		newPos;
 
 	switch (direction) {
 	case 'up':
-		newRow = oldCell.parentNode.previousSibling.querySelectorAll('.cell'),
-		newCell = newRow[currentPos];
+		newPos =  [player.pos[0] - 1, player.pos[1]];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'right':
-		newRow = oldCell.parentNode.querySelectorAll('.cell'),
-		newCell = newRow[currentPos + 1];
+		newPos =  [player.pos[0], player.pos[1] + 1];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'down':
-		newRow = oldCell.parentNode.nextSibling.querySelectorAll('.cell'),
-		newCell = newRow[currentPos];
+		newPos =  [player.pos[0] + 1, player.pos[1]];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	case 'left':
-		newRow = oldCell.parentNode.querySelectorAll('.cell'),
-		newCell = newRow[currentPos - 1];
+		newPos = [player.pos[0], player.pos[1] - 1];
+		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 		break;
 	}
 
 	if (newCell.classList.contains('enemy')) {
 		death();
-		oldCell.classList.remove('player');
+		player.elem.classList.remove('player');
 		return;
 	}
 
 	if (!newCell.classList.contains('wall')) {
-		oldCell.classList.remove('player');
+		player.elem.classList.remove('player');
 		
 		newCell.classList.add('player');
+
+		player.pos = newPos;
+		player.elem = document.getElementById(newPos[0] + '-' + newPos[1]);
 	}
 }
 
@@ -291,6 +306,8 @@ function displayVictoryMessage() {
 			button.removeEventListener('click', closeMessageWindow);
 			
 			// Reset gameboard
+			player = {};
+			enemies = [];
 			refreshScreen();
 			turns = 0;
 		}, 360);
@@ -340,6 +357,8 @@ function death() {
 			button.removeEventListener('click', closeMessageWindow);
 
 			// Reset gameboard
+			player = {};
+			enemies = [];
 			refreshScreen();
 			turns = 0;
 			dead = false;
