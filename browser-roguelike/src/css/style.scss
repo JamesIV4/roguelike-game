@@ -33,7 +33,7 @@ body {
 				vertical-align: middle;
 
 				&:not(.empty) {
-					background-size: contain;
+					background-size: cover;
 				}
 
 				&.wall {
