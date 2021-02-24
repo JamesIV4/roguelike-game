@@ -3,7 +3,7 @@
 
 (function runGame() {
 
-	var level1 = `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
+	var levelData = [`.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 	.,.,.,.,.,.,#,,,,F,,,,,,#,.,.,.
 	.,.,.,.,.,.,#,,#,#,#,,#,,#,F,#,.,.,.
 	.,.,.,#,#,#,#,,#,#,#,,#,#,#,,#,.,.,.
@@ -22,10 +22,37 @@
 	.,.,#,,,,,,,,,#,.,.,.,.,.,.,.,.
 	.,.,#,,,,,,,,,#,.,.,.,.,.,.,.,.
 	.,.,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.
-	.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`;
+	.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`
+		,
+	`.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.
+	.,.,#,#,#,#,#,#,#,#,.,#,,,,,#,.,.,.,.,.,.,.,.,.,.,.
+	.,.,#,,,,,,,#,#,#,,#,#,,#,.,.,.,.,.,.,.,.,.,.,.
+	.,.,#,,@,,,,,#,#,,,,#,,#,.,.,.,.,.,.,.,.,.,.,.
+	.,.,#,,,,,,,#,#,,,,#,,#,.,.,.,.,.,.,.,.,.,.,.
+	.,.,#,#,#,,#,#,#,#,#,,,,#,,#,#,#,#,#,#,#,#,#,#,.,.
+	.,.,.,.,#,,#,.,.,.,#,,,,#,,#,#,,,,,,,,#,.,.
+	.,.,.,.,#,,#,#,#,#,#,,,,#,,#,#,,,,,,,,#,.,.
+	.,.,.,.,#,,,,,,,,,,#,,#,#,,,,,,,,#,.,.
+	.,.,.,.,#,,#,#,#,#,#,,,,#,,,,,,,,,,,#,.,.
+	.,.,.,.,#,,#,.,.,.,#,,,,#,#,#,#,,,,,,,,#,.,.
+	.,.,.,.,#,,#,.,.,.,#,,,,#,.,.,#,,,,,,,,#,.,.
+	.,#,#,#,#,,#,#,#,.,#,,,,#,.,.,#,#,#,#,#,#,#,#,#,.,.
+	.,#,,,,,,,#,.,#,#,,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.
+	.,#,,,,,F,,#,.,.,#,,#,.,.,.,#,#,#,#,#,#,#,#,.,.,.
+	.,#,,,,,,,#,.,.,#,,#,.,.,.,#,,,,,C,,#,.,.,.
+	.,#,,,,,,,#,.,.,#,,#,.,.,.,#,#,#,,#,#,#,#,.,.,.
+	.,#,#,#,#,#,#,#,#,.,.,#,,#,.,.,.,.,.,#,,#,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,#,,#,#,#,#,#,#,#,,#,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,#,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
+	.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`];
 
 	var turns = 0;
+	var currentLevel = 0;
 	var dead = false;
+	var levelStore = [];
 	var enemies = [];
 	var enemyCounter = 0;
 	var player;
@@ -38,7 +65,7 @@
 	var overrides = document.createElement('style');
 	document.querySelector('head').appendChild(overrides);
 
-	// UNITS
+	// UNIT prototypes
 
 	function Enemy(elem, id, pos, type, health) {
 		this.elem = elem;
@@ -56,9 +83,18 @@
 		this.pos = pos;
 	}
 
+	// Map prototypes
+
+	function Cell(elem, id, type, inside = []) {
+		this.elem = elem;
+		this.id = id;
+		this.type = type;
+		this.inside = inside;
+	}
+
 	// Game code functions
 
-	function drawScreen() {
+	function drawScreen(selectedLevel = '') {
 		var background = document.querySelector('#display-wrapper'),
 			grid = document.createElement('div'),
 			messageWindow = document.createElement('div'),
@@ -67,8 +103,13 @@
 		messageWindow.id = 'message';
 		grid.id = 'game-grid';
 
+		// Initialize level storage
+		if (levelStore.length === currentLevel) {
+			levelStore.splice(currentLevel, 0, new Array);
+		}
+
 		// Read level data
-		levelRows = level1.split('\n');
+		levelRows = selectedLevel.split('\n');
 
 		// Row creation logic
 		for (let rowIndex = 0; rowIndex < levelRows.length; rowIndex++) {
@@ -77,6 +118,9 @@
 		
 			elemRow.classList.add('row');
 			grid.appendChild(elemRow, grid);
+
+			// Level store row creation
+			levelStore[currentLevel].push(new Array);
 		
 			// Cell creation logic
 			for (let cellIndex = 0; cellIndex < levelCells.length; cellIndex++) {
@@ -86,22 +130,30 @@
 				elemCell.classList.add('cell');
 				elemCell.id = rowIndex + '-' + cellIndex;
 				elemRow.appendChild(elemCell, elemRow);
+
+				// Add to level store tracking
+				levelStore[currentLevel][rowIndex].push(new Cell(elemCell, rowIndex + '-' + cellIndex));
 		
 				switch (cell) {
 				case '.' :
 					elemCell.classList.add('empty');
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'empty';
 					break;
 				case '#' :
 					elemCell.classList.add('wall');
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'wall';
 					break;
 				case '' :
 					elemCell.classList.add('floor');
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
 					break;
 				case '@' :
 					player = new Player(elemCell, 1, [rowIndex, cellIndex], 'player', 100);
 
 					elemCell.classList.add('floor');
 					elemCell.classList.add('player');
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
+					levelStore[currentLevel][rowIndex][cellIndex].inside.push('player');
 					break;
 				case 'D' :
 					// elemCell.style.backgroundColor = '#641903';
@@ -112,11 +164,16 @@
 
 					elemCell.classList.add('floor');
 					elemCell.classList.add('enemy');
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
+					levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
 					break;
 				case 'C' :
 					elemCell.style.backgroundColor = '#fff700';
 					elemCell.classList.add('floor');
 					elemCell.classList.add('gold');
+
+					levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
+					levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
 					break;
 				}
 				
@@ -149,7 +206,7 @@
 		background.removeChild(grid);
 		background.removeChild(messageBox);
 
-		drawScreen();
+		drawScreen(levelData[currentLevel]);
 	}
 
 	function enemyAITurn() {
@@ -183,15 +240,21 @@
 		}
 
 		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
-		
-		if (!newCell.classList.contains('wall') && !newCell.classList.contains('enemy')) {
-			if (newCell.classList.contains('player')) {
+
+		// Do not allow movement onto a wall or another enemy
+		if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' && levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') === -1) {
+			if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('player') > -1) {
 				death();
 			}
-
+			
+			// Update the visuals
 			enemyObject.elem.classList.remove('enemy');
 			newCell.classList.add('enemy');
 
+			// Update the level database
+			levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
+			levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
+			
 			enemyObject.pos = newPos;
 			enemyObject.elem = document.getElementById(newPos[0] + '-' + newPos[1]);
 			enemyObject.moveTries = 0;
@@ -239,19 +302,23 @@
 
 		newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
 
-		if (newCell.classList.contains('enemy')) {
+		if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
 			death();
-			player.elem.classList.remove('player');
+			player.elem.classList.remove('player'); // Visually remove player because you died
 			return;
 		}
 
-		if (!newCell.classList.contains('wall')) {
-			player.elem.classList.remove('player');
-			
-			newCell.classList.add('player');
+		if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
+			player.elem.classList.remove('player'); // Visually remove the old position of the player
+			newCell.classList.add('player'); // Visually display the new position of the player
 
-			player.pos = newPos;
-			player.elem = document.getElementById(newPos[0] + '-' + newPos[1]);
+			// Remove the player from the old levelStore cell
+			levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
+			// Add the player to the new levelStore cell
+			levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('player');
+			
+			player.pos = newPos; // Update the player object's position
+			player.elem = document.getElementById(newPos[0] + '-' + newPos[1]); // Update the player elem's reference
 		}
 	}
 
@@ -263,39 +330,74 @@
 		}
 	}
 
+	function retryLevel() {
+		player = {};
+		enemies = [];
+		levelStore.splice(currentLevel,1);
+		refreshScreen();
+		turns = 0;
+	}
+
+	function goToNewLevel(newLevel) {
+		var background = document.querySelector('#display-wrapper'),
+			grid = document.querySelector('#game-grid'),
+			messageBox = document.querySelector('#message');
+		
+		background.removeChild(grid);
+		background.removeChild(messageBox);
+
+		currentLevel = newLevel;
+		drawScreen(levelData[newLevel]);
+	}
+
 	function displayVictoryMessage() {
 		var messageBox = document.querySelector('#message');
 		var message = document.createElement('p');
 		var button = document.createElement('a');
+		var button2 = document.createElement('a');
 
 		message.innerHTML = 'You win!<br /><br />You completed the game in ' + turns + ' turns. Good job!';
 
 		button.classList.add('btn');
 		button.textContent = 'Play again';
 
-		button.addEventListener('click', closeMessageWindow);
+		button2.classList.add('btn');
+		button2.textContent = 'Go to level ' + (currentLevel + 2); // Plus 2 because it's the next level and we're dealing with a 0-based value
+
+		button.addEventListener('click', function handle(e){
+			e.preventDefault();
+
+			closeMessageWindow();
+
+			// Reset gameboard
+			setTimeout(function retry(){ 
+				retryLevel();
+			}, 360);
+		});
+		button2.addEventListener('click', function handle(e){
+			e.preventDefault();
+
+			closeMessageWindow();
+
+			// Reset gameboard
+			setTimeout(function load(){ 
+				goToNewLevel(currentLevel + 1);
+			}, 360);
+		});
 
 		messageBox.appendChild(message, messageBox);
 		messageBox.appendChild(button, messageBox);
+		messageBox.appendChild(button2, messageBox);
 
 		messageBox.classList.add('show');
 
-		function closeMessageWindow(e) {
-			e.preventDefault();
-
+		function closeMessageWindow() {
 			messageBox.classList.remove('show');
 
-			
 			setTimeout(function destroyMessage(){ 
 				messageBox.removeChild(message);
 				messageBox.removeChild(button);
 				button.removeEventListener('click', closeMessageWindow);
-				
-				// Reset gameboard
-				player = {};
-				enemies = [];
-				refreshScreen();
-				turns = 0;
 			}, 360);
 		}
 	}
@@ -345,6 +447,7 @@
 				// Reset gameboard
 				player = {};
 				enemies = [];
+				levelStore.splice(currentLevel,1);
 				refreshScreen();
 				turns = 0;
 				dead = false;
@@ -377,33 +480,36 @@
 		var yDiff = yDown - yUp;
 
 		/* Determine touch direction */
-		if (Math.abs(xDiff) > Math.abs(yDiff)) {
-			if (xDiff > 0) {
-				/* left swipe */
-				movePlayer('left');
+		if (!dead && !document.getElementById('message').classList.contains('show')) {
+			if (Math.abs(xDiff) > Math.abs(yDiff)) {
+				if (xDiff > 0) {
+					/* left swipe */
+					movePlayer('left');
+				} else {
+					/* right swipe */
+					movePlayer('right');
+				}                       
 			} else {
-				/* right swipe */
-				movePlayer('right');
-			}                       
-		} else {
-			if (yDiff > 0) {
-				/* up swipe */
-				movePlayer('up');
-			} else { 
-				/* down swipe */
-				movePlayer('down');
-			}                   
-		}
-		/* reset values */
-		xDown = null;
-		yDown = null;
+				if (yDiff > 0) {
+					/* up swipe */
+					movePlayer('up');
+				} else { 
+					/* down swipe */
+					movePlayer('down');
+				}                   
+			}
 
-		newTurn();
+			/* reset values */
+			xDown = null;
+			yDown = null;
+
+			newTurn();
+		}
 	}
 	// End touch controls
 
 	document.addEventListener('keydown', function input(e) {
-		if (!dead) {
+		if (!dead && !document.getElementById('message').classList.contains('show')) {
 			if (e.code === 'ArrowUp' || e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'Space') {
 				switch (e.code) {
 				case 'ArrowUp' :
@@ -428,6 +534,6 @@
 	window.addEventListener('resize', setGridSize);
 
 	// Draw the screen for the first time
-	drawScreen();
+	drawScreen(levelData[currentLevel]);
 
 }());
