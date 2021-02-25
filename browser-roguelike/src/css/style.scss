@@ -4,33 +4,39 @@ body {
 }
 
 #display-wrapper {
-	align-items: center;
+	//display: flex;
+	//justify-content: center;
+	//align-items: center;
 	background-color: #0b0b0b;
+	border: 10px solid white;
 	color: #000 !important;
-	display: flex;
-	height: 100%;
-	justify-content: center;
+	height: calc(100% - 20px);
 	left: 0;
+	overflow: hidden;
 	position: fixed;
 	top: 0;
-	width: 100%;
+	width: calc(100% - 20px);
 	z-index: 10000000;
 
 	#game-grid {
 		display: table;
 		font-family: 'Rajdhani', sans-serif;
 		font-weight: 700;
+		position: relative;
+		transition: top 0.5s, left 0.5s;
 
 		.row {
 			display: table-row;
 
 			.cell {
 				display: table-cell;
+				height: 32px;
 				image-rendering: pixelated;
 				line-height: 1;
 				overflow: hidden;
 				text-align: center;
 				vertical-align: middle;
+				width: 32px;
 
 				&:not(.empty) {
 					background-size: cover;
@@ -80,10 +86,13 @@ body {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		left: 50%;
 		opacity: 0;
 		padding: 3%;
 		position: fixed;
 		text-align: center;
+		top: 50%;
+		transform: translate(-50%, -50%);
 		transition: opacity 0.35s;
 		width: 45%;
 

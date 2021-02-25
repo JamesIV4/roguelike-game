@@ -105,7 +105,8 @@ function drawScreen(selectedLevel = '') {
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) {
-		levelStore.splice(currentLevel, 0, new Array);
+		levelStore.splice(currentLevel, 0, new Array); // Create new array in the appropriate place.. may not work right, have to revisit
+		enemies.splice(currentLevel, 0, new Array);
 	}
 
 	// Read level data
@@ -160,7 +161,7 @@ function drawScreen(selectedLevel = '') {
 				break;
 			case 'F' :
 				enemyCounter++;
-				enemies.push(new Enemy(elemCell, enemyCounter, [rowIndex, cellIndex] , 'fire-vortex', 100));
+				enemies[currentLevel].push(new Enemy(elemCell, enemyCounter, [rowIndex, cellIndex] , 'fire-vortex', 100));
 
 				elemCell.classList.add('floor');
 				elemCell.classList.add('enemy');
@@ -182,20 +183,26 @@ function drawScreen(selectedLevel = '') {
 	
 	background.appendChild(grid, background);
 	background.appendChild(messageWindow, background);
-	setGridSize();
+	centerPlayerInScreen();
 }
 
-function setGridSize() {
-	var w = window.innerWidth,
-		h = window.innerHeight;
+// function setGridSize() {
+// 	var w = window.innerWidth,
+// 		h = window.innerHeight;
 
-	if (w > h) {
-		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vh; width: 5vh;}
-		#display-wrapper #game-grid{font-size: 3.9vh;}`;
-	} else {
-		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vw; width: 5vw;}
-		#display-wrapper #game-grid{font-size: 3.9vw;}`;
-	}
+// 	if (w > h) {
+// 		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vh; width: 5vh;}
+// 		#display-wrapper #game-grid{font-size: 3.9vh;}`;
+// 	} else {
+// 		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vw; width: 5vw;}
+// 		#display-wrapper #game-grid{font-size: 3.9vw;}`;
+// 	}
+// }
+
+function centerPlayerInScreen() {
+	var top = ((player.elem.offsetTop - (window.innerHeight / 2)) * -1) - 23;
+	var left = ((player.elem.offsetLeft - (window.innerWidth / 2)) * -1) - 23;
+	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 }
 
 function refreshScreen() {
@@ -211,8 +218,8 @@ function refreshScreen() {
 
 function enemyAITurn() {
 	// Iterate on each enemy
-	for (let i = 0; i < enemies.length; i++) {		
-		moveEnemy(enemies[i], randomDirection());
+	for (let i = 0; i < enemies[currentLevel].length; i++) {		
+		moveEnemy(enemies[currentLevel][i], randomDirection());
 	}
 }
 
@@ -319,6 +326,7 @@ function movePlayer(direction) {
 		
 		player.pos = newPos; // Update the player object's position
 		player.elem = document.getElementById(newPos[0] + '-' + newPos[1]); // Update the player elem's reference
+		centerPlayerInScreen();
 	}
 }
 
@@ -347,6 +355,7 @@ function goToNewLevel(newLevel) {
 	background.removeChild(messageBox);
 
 	currentLevel = newLevel;
+	enemies[newLevel] = [];
 	drawScreen(levelData[newLevel]);
 }
 
@@ -446,7 +455,7 @@ function death() {
 
 			// Reset gameboard
 			player = {};
-			enemies = [];
+			enemies[currentLevel] = [];
 			levelStore.splice(currentLevel,1);
 			refreshScreen();
 			turns = 0;
@@ -531,7 +540,7 @@ document.addEventListener('keydown', function input(e) {
 	}
 });
 
-window.addEventListener('resize', setGridSize);
+window.addEventListener('resize', centerPlayerInScreen);
 
 // Draw the screen for the first time
 drawScreen(levelData[currentLevel]);
