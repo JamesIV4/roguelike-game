@@ -220,8 +220,21 @@ function drawScreen(selectedLevel = '') {
 }
 
 function centerPlayerInScreen() {
-	var top = ((player.elem.offsetTop - (window.innerHeight / 2)) * -1) - 23;
-	var left = ((player.elem.offsetLeft - (window.innerWidth / 2)) * -1) - 23;
+	var topLevelOffset;
+	var leftLevelOffset;
+	var top;
+	var left;
+
+	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * zoomLevel * 8;
+	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * zoomLevel * 8;
+
+	top = ((player.elem.offsetTop * -1) - 23) + (window.innerHeight / 2) - (topLevelOffset * 0.75);	
+	left = ((player.elem.offsetLeft * -1) - 23) + (window.innerWidth / 2) - (leftLevelOffset * 0.75);
+
+	// Follow centered only
+	// top = ((player.elem.offsetTop - (window.innerHeight / 2)) * -1) - 23;
+	// left = ((player.elem.offsetLeft - (window.innerWidth / 2)) * -1) - 23;
+
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 }
 
@@ -374,6 +387,7 @@ function eraseScreen() {
 
 function goToNewLevel(newLevel) {
 	currentLevel = newLevel;
+	turns = 0;
 	eraseScreen();
 	drawScreen(levelData[newLevel]);
 }
@@ -407,7 +421,7 @@ function displayVictoryMessage() {
 
 		closeMessageWindow();
 
-		// Reset gameboard
+		// Go to new level
 		setTimeout(function load(){ 
 			goToNewLevel(currentLevel + 1);
 		}, 360);
