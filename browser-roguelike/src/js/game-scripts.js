@@ -229,19 +229,6 @@ function centerPlayerInScreen() {
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 }
 
-function refreshScreen() {
-	var background = document.querySelector('#display-wrapper'),
-		grid = document.querySelector('#game-grid'),
-		messageBox = document.querySelector('#message'),
-		ui = document.querySelector('#ui-display');
-	
-	background.removeChild(ui);
-	background.removeChild(grid);
-	background.removeChild(messageBox);
-
-	drawScreen(levelData[currentLevel]);
-}
-
 function enemyAITurn() {
 	// Iterate on each enemy
 	for (let i = 0; i < enemies[currentLevel].length; i++) {		
@@ -373,15 +360,25 @@ function retryLevel() {
 	dead = false;
 }
 
-function goToNewLevel(newLevel) {
+function refreshScreen() {
+	eraseScreen();
+	drawScreen(levelData[currentLevel]);
+}
+
+function eraseScreen() { 
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.querySelector('#game-grid'),
-		messageBox = document.querySelector('#message');
+		messageBox = document.querySelector('#message'),
+		ui = document.querySelector('#ui-display');
 	
+	background.removeChild(ui);
 	background.removeChild(grid);
 	background.removeChild(messageBox);
+}
 
+function goToNewLevel(newLevel) {
 	currentLevel = newLevel;
+	eraseScreen();
 	drawScreen(levelData[newLevel]);
 }
 
