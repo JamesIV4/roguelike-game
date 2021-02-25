@@ -104,9 +104,13 @@ function drawScreen(selectedLevel = '') {
 	grid.id = 'game-grid';
 
 	// Initialize level storage
-	if (levelStore.length === currentLevel) {
+	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
+		console.log("Level store length is: " + levelStore.length);
+		console.log("Current level value is: " + currentLevel);
+		console.log(enemies);
 		levelStore.splice(currentLevel, 0, new Array); // Create new array in the appropriate place.. may not work right, have to revisit
 		enemies.splice(currentLevel, 0, new Array);
+		console.log(enemies);
 	}
 
 	// Read level data
@@ -185,19 +189,6 @@ function drawScreen(selectedLevel = '') {
 	background.appendChild(messageWindow, background);
 	centerPlayerInScreen();
 }
-
-// function setGridSize() {
-// 	var w = window.innerWidth,
-// 		h = window.innerHeight;
-
-// 	if (w > h) {
-// 		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vh; width: 5vh;}
-// 		#display-wrapper #game-grid{font-size: 3.9vh;}`;
-// 	} else {
-// 		overrides.innerHTML = `#display-wrapper #game-grid .row .cell{height: 5vw; width: 5vw;}
-// 		#display-wrapper #game-grid{font-size: 3.9vw;}`;
-// 	}
-// }
 
 function centerPlayerInScreen() {
 	var top = ((player.elem.offsetTop - (window.innerHeight / 2)) * -1) - 23;
@@ -331,7 +322,7 @@ function movePlayer(direction) {
 }
 
 function checkVictory() {
-	if (!dead && document.querySelector('.player').classList.contains('gold')) {
+	if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
 		return true;
 	} else {
 		return false;
@@ -340,10 +331,11 @@ function checkVictory() {
 
 function retryLevel() {
 	player = {};
-	enemies = [];
+	enemies.splice(currentLevel,1);
 	levelStore.splice(currentLevel,1);
 	refreshScreen();
 	turns = 0;
+	dead = false;
 }
 
 function goToNewLevel(newLevel) {
@@ -355,7 +347,6 @@ function goToNewLevel(newLevel) {
 	background.removeChild(messageBox);
 
 	currentLevel = newLevel;
-	enemies[newLevel] = [];
 	drawScreen(levelData[newLevel]);
 }
 
@@ -454,12 +445,7 @@ function death() {
 			button.removeEventListener('click', closeMessageWindow);
 
 			// Reset gameboard
-			player = {};
-			enemies[currentLevel] = [];
-			levelStore.splice(currentLevel,1);
-			refreshScreen();
-			turns = 0;
-			dead = false;
+			retryLevel();
 		}, 360);
 	}
 }
