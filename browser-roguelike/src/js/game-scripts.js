@@ -422,7 +422,10 @@ function displayVictoryMessage() {
 
 	messageBox.appendChild(message, messageBox);
 	messageBox.appendChild(button, messageBox);
-	messageBox.appendChild(button2, messageBox);
+
+	if (levelData.length > (currentLevel + 1)) {
+		messageBox.appendChild(button2, messageBox);
+	}
 
 	messageBox.classList.add('show');
 

@@ -33,13 +33,13 @@ body {
 				cursor: pointer;
 				display: flex;
 				font-family: 'Rajdhani', sans-serif;
-				font-size: 30px;
+				font-size: 2em;
 				font-weight: 500;
-				height: 21px;
+				height: 1em;
 				justify-content: center;
 				margin: 5px;
 				padding-top: 1px;
-				width: 22px;
+				width: 1em;
 			}
 		}
 	}
@@ -124,7 +124,7 @@ body {
 
 		p {
 			font-family: 'Rajdhani', sans-serif;
-			font-size: 2vh;
+			font-size: 1.3rem;
 			font-weight: 700;
 			margin: 0;
 
@@ -143,16 +143,21 @@ body {
 			display: flex;
 			flex-direction: column;
 			font-family: 'Rajdhani', sans-serif;
-			font-size: 2vh;
+			font-size: 1.3rem;
 			font-weight: 700;
 			justify-content: center;
-			margin-top: 30px;
-			padding: 0.5vh 2vh;
+			margin-bottom: 0.6rem;
+			margin-top: 1.5rem;
+			padding: 0.3rem 1rem;
 		}
 
 		&.show {
 			opacity: 1;
 			transition: opacity 0.5s;
+		}
+
+		@media all and (max-width: 767px) {
+			width: 75%;
 		}
 	}
 }
