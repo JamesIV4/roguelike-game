@@ -6,18 +6,14 @@ body {
 }
 
 #display-wrapper {
-	//display: flex;
-	//justify-content: center;
-	//align-items: center;
 	background-color: #0b0b0b;
-	//border: 10px solid white;
 	color: #000 !important;
-	height: 100%;
+	height: 2000%;
 	left: 0;
 	overflow: hidden;
 	position: fixed;
 	top: 0;
-	width: 100%;
+	width: 2000%;
 	z-index: 10000000;
 
 	#game-grid {
