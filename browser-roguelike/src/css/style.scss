@@ -1,5 +1,7 @@
 body {
+	height: 100%;
 	margin: 0;
+	overflow: hidden;
 	padding: 0;
 }
 
@@ -8,14 +10,14 @@ body {
 	//justify-content: center;
 	//align-items: center;
 	background-color: #0b0b0b;
-	border: 10px solid white;
+	//border: 10px solid white;
 	color: #000 !important;
-	height: calc(100% - 20px);
+	height: 100%;
 	left: 0;
 	overflow: hidden;
 	position: fixed;
 	top: 0;
-	width: calc(100% - 20px);
+	width: 100%;
 	z-index: 10000000;
 
 	#game-grid {
