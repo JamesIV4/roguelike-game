@@ -17,6 +17,9 @@ body {
 	z-index: 10000000;
 
 	#ui-display {
+		position: absolute;
+		z-index: 1000;
+
 		#zoom-container {
 			display: block;
 			position: fixed;
