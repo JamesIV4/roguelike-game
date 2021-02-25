@@ -56,6 +56,7 @@ var levelStore = [];
 var enemies = [];
 var enemyCounter = 0;
 var player;
+var zoomLevel = 4;
 
 // Touch controls variables
 var xDown = null;          
@@ -63,7 +64,9 @@ var yDown = null;
 
 // Style overrides block
 var overrides = document.createElement('style');
+var zoomLevelStyle = document.createElement('style');
 document.querySelector('head').appendChild(overrides);
+document.querySelector('head').appendChild(zoomLevelStyle);
 
 // UNIT prototypes
 
@@ -98,10 +101,23 @@ function drawScreen(selectedLevel = '') {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.createElement('div'),
 		messageWindow = document.createElement('div'),
+		uiElem = document.createElement('div'),
+		zoomButtons = document.createElement('div'),
+		zoomUp = document.createElement('div'),
+		zoomDown = document.createElement('div'),
 		levelRows;
 
 	messageWindow.id = 'message';
 	grid.id = 'game-grid';
+
+	uiElem.id = 'ui-display';
+
+	zoomButtons.id = 'zoom-container';
+	zoomUp.id = 'zoom-up';
+	zoomUp.textContent = '+';
+	
+	zoomDown.id = 'zoom-down';
+	zoomDown.textContent = '-';
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
@@ -185,9 +201,26 @@ function drawScreen(selectedLevel = '') {
 		}
 	}
 	
+	background.appendChild(uiElem, background);
+	uiElem.appendChild(zoomButtons, uiElem);
+	zoomButtons.appendChild(zoomUp, zoomButtons);
+	zoomButtons.appendChild(zoomDown, zoomButtons);
 	background.appendChild(grid, background);
 	background.appendChild(messageWindow, background);
 	centerPlayerInScreen();
+
+	zoomUp.addEventListener('click', function handle() {
+		zoomLevel++;
+		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+		centerPlayerInScreen();
+	});
+	zoomDown.addEventListener('click', function handle() {
+		if (zoomLevel > 1) {
+			zoomLevel--;
+			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+			centerPlayerInScreen();
+		}
+	});
 }
 
 function centerPlayerInScreen() {
@@ -199,8 +232,10 @@ function centerPlayerInScreen() {
 function refreshScreen() {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.querySelector('#game-grid'),
-		messageBox = document.querySelector('#message');
+		messageBox = document.querySelector('#message'),
+		ui = document.querySelector('#ui-display');
 	
+	background.removeChild(ui);
 	background.removeChild(grid);
 	background.removeChild(messageBox);
 
