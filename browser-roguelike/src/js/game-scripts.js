@@ -121,12 +121,8 @@ function drawScreen(selectedLevel = '') {
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
-		console.log("Level store length is: " + levelStore.length);
-		console.log("Current level value is: " + currentLevel);
-		console.log(enemies);
 		levelStore.splice(currentLevel, 0, new Array); // Create new array in the appropriate place.. may not work right, have to revisit
 		enemies.splice(currentLevel, 0, new Array);
-		console.log(enemies);
 	}
 
 	// Read level data
