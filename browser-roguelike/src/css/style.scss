@@ -61,10 +61,6 @@ body {
 				display: table-cell;
 				height: 32px;
 				image-rendering: pixelated;
-				line-height: 1;
-				overflow: hidden;
-				text-align: center;
-				vertical-align: middle;
 				width: 32px;
 
 				&:not(.empty) {
@@ -148,8 +144,11 @@ body {
 							background-size: cover;
 							content: '';
 							display: block;
-							height: 100%;
-							width: 100%;
+							position: absolute;
+							z-index: 100;
+							width: 32px;
+							height: 32px;
+							transition: top 0.2s, left 0.2s;
 						}
 					}
 
@@ -188,6 +187,7 @@ body {
 		transform: translate(-50%, -50%);
 		transition: opacity 0.35s;
 		width: 45%;
+		z-index: 2000;
 
 		p {
 			font-family: 'Rajdhani', sans-serif;

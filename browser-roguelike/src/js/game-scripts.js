@@ -116,8 +116,10 @@ var yDown = null;
 // Style overrides block
 var overrides = document.createElement('style');
 var zoomLevelStyle = document.createElement('style');
+var stylePlayer = document.createElement('style');
 document.querySelector('head').appendChild(overrides);
 document.querySelector('head').appendChild(zoomLevelStyle);
+document.querySelector('head').appendChild(stylePlayer);
 
 // UNIT prototypes
 
@@ -254,19 +256,21 @@ function drawScreen(selectedLevel = '') {
 	background.appendChild(grid, background);
 	background.appendChild(messageWindow, background);
 
+	renderPlayer(player.pos);
 	drawDecorations();
-
 	centerPlayerInScreen();
 
 	zoomUp.addEventListener('click', function handle() {
 		zoomLevel++;
 		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+		renderPlayer(player.pos);
 		centerPlayerInScreen();
 	});
 	zoomDown.addEventListener('click', function handle() {
 		if (zoomLevel > 1) {
 			zoomLevel--;
 			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+			renderPlayer(player.pos);
 			centerPlayerInScreen();
 		}
 	});
@@ -440,24 +444,24 @@ function moveEnemy(enemyObject, direction) {
 		break;
 	}
 
-	newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
+	newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 
 	// Do not allow movement onto a wall or another enemy
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' && levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') === -1) {
 		if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('player') > -1) {
 			death();
 		}
-		
-		// Update the visuals
-		enemyObject.elem.classList.remove('enemy');
-		newCell.classList.add('enemy');
 
 		// Update the level database
 		levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
 		levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
+
+		// Update the visuals
+		enemyObject.elem.classList.remove('enemy');
+		newCell.classList.add('enemy');
 		
 		enemyObject.pos = newPos;
-		enemyObject.elem = document.getElementById(newPos[0] + '-' + newPos[1]);
+		enemyObject.elem = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 		enemyObject.moveTries = 0;
 	} else {
 		enemyObject.moveTries++;
@@ -501,7 +505,7 @@ function movePlayer(direction) {
 		break;
 	}
 
-	newCell = document.getElementById(newPos[0] + '-' + newPos[1]);
+	newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
 		death();
@@ -510,18 +514,23 @@ function movePlayer(direction) {
 	}
 
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
-		player.elem.classList.remove('player'); // Visually remove the old position of the player
-		newCell.classList.add('player'); // Visually display the new position of the player
+		// Update the visuals
+		renderPlayer(newPos);
+		// player.elem.classList.remove('player');
+		// newCell.classList.add('player');
 
-		// Remove the player from the old levelStore cell
+		// Update the levelStore
 		levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
-		// Add the player to the new levelStore cell
 		levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('player');
 		
 		player.pos = newPos; // Update the player object's position
-		player.elem = document.getElementById(newPos[0] + '-' + newPos[1]); // Update the player elem's reference
+		player.elem = levelStore[currentLevel][newPos[0]][newPos[1]].elem; // Update the player elem's reference
 		centerPlayerInScreen();
 	}
+}
+
+function renderPlayer(pos) {
+	stylePlayer.innerHTML = "#display-wrapper #game-grid .row .cell.floor.player::after {top: " + (pos[0] * zoomLevel * 8) + "px; left: " + (pos[1] * zoomLevel * 8) + "px; height: " + (zoomLevel * 8) +"px;width: " + (zoomLevel * 8) +"px;}";
 }
 
 function checkVictory() {
