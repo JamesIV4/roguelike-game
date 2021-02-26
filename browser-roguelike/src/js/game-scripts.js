@@ -586,7 +586,7 @@ function displayVictoryMessage() {
 
 	if (levelData.length === (currentLevel + 1)) { // Only happens if you're on the last level
 		message.innerHTML = 'You win! You beat the game.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + turnsLevel + ' turns, and beat the game in ' + turnsTotal + ' turns. Good job!';
-		button2.textContent = 'New game on Level 1';
+		button.textContent = 'Start a new game';
 	}
 
 	button.addEventListener('click', function handle(e){
