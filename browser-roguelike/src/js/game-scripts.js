@@ -567,6 +567,7 @@ function goToNewLevel(newLevel) {
 function newGame() {
 	levelStore.length = 0; // Wipe out the levelStore
 	enemies.length = 0; // Erase all the enemies
+	turnsTotal = 0; // Reset total turns
 	goToNewLevel(0); // Go to level 1
 }
 
