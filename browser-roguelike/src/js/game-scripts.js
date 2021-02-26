@@ -97,6 +97,67 @@ function Cell(elem, id, type, inside = []) {
 
 // Game code functions
 
+function generateRandomLevel() {
+	var levelDatabase = [];
+	var roomNum = Math.floor((Math.random() * (currentLevel + 3)) + 2);
+	var rooms = [];
+	var levelHeight = 0;
+	var levelWidth = 0;
+
+	function Room(id) {
+		this.id = id;
+		this.height = Math.floor((Math.random() * (10)) + 4);
+		this.width = Math.floor((Math.random() * (10)) + 4);
+	}
+
+	// Create the rooms
+	for (var i = 0; i < roomNum; i++) {
+		rooms.push(new Room(i));
+	}
+
+	// Find the right positions for the rooms
+	for (var ii = 0; ii < rooms.length; ii++) {
+		var room = rooms[ii];
+		var determineNewRow = Math.floor((Math.random() * 2) + 1);
+
+		if (ii === 0) { // First room only
+			room.pos = [1, 1];
+
+			levelHeight = room.height + 2; // One extra row above and below
+			levelWidth = room.width + 2; // One extra col on both sides
+		} else {
+			if (determineNewRow === 1) { // We want this room on a new row below the last room
+				room.pos = [(levelHeight + 1), 1];
+				console.log('Room ' + (ii+1) + ' is on a new row');
+				
+				// Increase level width and height
+				levelHeight += room.height + 2;	
+				
+				if (room.width > levelWidth) { // If the room is wider than the level, expand it by the difference plus 2
+					levelWidth += (room.width - rooms[ii - 1].width) + 2;
+				}
+				
+			} else { // We want this room to the right of the last room
+				room.pos = [rooms[ii - 1].pos[0], (rooms[ii - 1].pos[1] + rooms[ii - 1].width + 2)]; // top is same as the last room, left is last room position + width + 2
+				console.log('Room ' + (ii+1) + ' stacking to the right');
+				
+				// Increase level width and height
+				levelWidth += room.width + 2;
+				
+				if (room.height > levelHeight) { // If the room is taller than the level, expand it by the difference plus 2
+					levelHeight += (room.height - rooms[ii - 1].height) + 2;
+				}
+			}
+		}
+	}
+	
+	console.log('levelWidth: ' + levelWidth);
+	console.log('levelHeight: ' + levelHeight);
+	console.log(rooms);
+}
+
+generateRandomLevel();
+
 function drawScreen(selectedLevel = '') {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.createElement('div'),
@@ -193,7 +254,6 @@ function drawScreen(selectedLevel = '') {
 				levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
 				break;
 			}
-			
 		}
 	}
 	
@@ -203,6 +263,9 @@ function drawScreen(selectedLevel = '') {
 	zoomButtons.appendChild(zoomDown, zoomButtons);
 	background.appendChild(grid, background);
 	background.appendChild(messageWindow, background);
+
+	drawDecorations();
+
 	centerPlayerInScreen();
 
 	zoomUp.addEventListener('click', function handle() {
@@ -217,6 +280,120 @@ function drawScreen(selectedLevel = '') {
 			centerPlayerInScreen();
 		}
 	});
+}
+
+function drawDecorations() {
+	// After the levelStore is initialized, go over it again and add the floor and wall decorations
+	for (var rowStore = 0; rowStore < levelStore[currentLevel].length; rowStore++) {
+		for (var cellStore = 0; cellStore < levelStore[currentLevel][rowStore].length; cellStore++) {
+			var cell = levelStore[currentLevel][rowStore][cellStore];
+
+			if (cell.type === 'floor') {
+				var wallTop = levelStore[currentLevel][rowStore - 1][cellStore].type === 'wall';
+				var wallRight = levelStore[currentLevel][rowStore][cellStore + 1].type === 'wall';
+				var wallBottom = levelStore[currentLevel][rowStore + 1][cellStore].type === 'wall';
+				var wallLeft = levelStore[currentLevel][rowStore][cellStore - 1].type === 'wall';
+				
+				// Sidewall top
+				if (wallTop && !wallRight && !wallBottom && !wallLeft) {
+					cell.elem.classList.add('sidewall');
+					cell.elem.classList.add('top');
+					continue;
+				}
+				
+				// Sidewall right
+				if (!wallTop && wallRight && !wallBottom && !wallLeft) {
+					cell.elem.classList.add('sidewall');
+					cell.elem.classList.add('right');
+					continue;
+				}
+				
+				// Sidewall bottom
+				if (!wallTop && !wallRight && wallBottom && !wallLeft) {
+					cell.elem.classList.add('sidewall');
+					cell.elem.classList.add('bottom');
+					continue;
+				}
+				
+				// Sidewall left
+				if (!wallTop && !wallRight && !wallBottom && wallLeft) {
+					cell.elem.classList.add('sidewall');
+					cell.elem.classList.add('left');
+					continue;
+				}
+
+				// Corner hall sideways
+				if (wallTop && !wallRight && wallBottom && !wallLeft) {
+					cell.elem.classList.add('hall');
+					cell.elem.classList.add('side');
+					continue;
+				}
+				
+				// Corner hall vertical
+				if (!wallTop && wallRight && !wallBottom && wallLeft) {
+					cell.elem.classList.add('hall');
+					cell.elem.classList.add('up');
+					continue;
+				}
+				
+				// Corner top left
+				if (wallTop && !wallRight && !wallBottom && wallLeft) {
+					cell.elem.classList.add('corner');
+					cell.elem.classList.add('top-left');
+					continue;
+				}
+				
+				// Corner top right
+				if (wallTop && wallRight && !wallBottom && !wallLeft) {
+					cell.elem.classList.add('corner');
+					cell.elem.classList.add('top-right');
+					continue;
+				}
+				
+				// Corner bottom left
+				if (!wallTop && !wallRight && wallBottom && wallLeft) {
+					cell.elem.classList.add('corner');
+					cell.elem.classList.add('bottom-left');
+					continue;
+				}
+				
+				// Corner bottom right
+				if (!wallTop && wallRight && wallBottom && !wallLeft) {
+					cell.elem.classList.add('corner');
+					cell.elem.classList.add('bottom-right');
+					continue;
+				}
+				
+				// Corner cap top
+				if (!wallTop && wallRight && wallBottom && wallLeft) {
+					cell.elem.classList.add('cap');
+					cell.elem.classList.add('top');
+					continue;
+				}
+				
+				// Corner cap right
+				if (wallTop && !wallRight && wallBottom && wallLeft) {
+					cell.elem.classList.add('cap');
+					cell.elem.classList.add('right');
+					continue;
+				}
+				
+				// Corner cap bottom
+				if (wallTop && wallRight && !wallBottom && wallLeft) {
+					cell.elem.classList.add('cap');
+					cell.elem.classList.add('bottom');
+					continue;
+				}
+				
+				// Corner cap left
+				if (wallTop && wallRight && wallBottom && !wallLeft) {
+					cell.elem.classList.add('cap');
+					cell.elem.classList.add('left');
+					continue;
+				}				
+			}
+		}
+	}
 }
 
 function centerPlayerInScreen() {

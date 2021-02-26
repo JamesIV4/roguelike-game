@@ -78,6 +78,70 @@ body {
 				&.floor {
 					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-floor.png');
 
+					&.sidewall {
+						&.top {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-top.png');
+						}
+
+						&.left {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-left.png');
+						}
+
+						&.right {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-right.png');
+						}
+
+						&.bottom {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-bottom.png');
+						}
+					}
+
+					&.corner {
+						&.top-left {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-top-left.png');
+						}
+
+						&.top-right {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-top-right.png');
+						}
+
+						&.bottom-left {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-bottom-left.png');
+						}
+
+						&.bottom-right {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-bottom-right.png');
+						}
+					}
+
+					&.hall {
+						&.up {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-hall-up.png');
+						}
+
+						&.side {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-hall-side.png');
+						}
+					}
+
+					&.cap {
+						&.top {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-top.png');
+						}
+
+						&.left {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-left.png');
+						}
+
+						&.right {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-right.png');
+						}
+
+						&.bottom {
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-bottom.png');
+						}
+					}
+
 					&.player {
 						&::after {
 							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-knight.png');
@@ -101,7 +165,7 @@ body {
 					}
 
 					&.gold {
-						background-image: none;
+						background-image: none !important;
 					}
 				}
 			}
