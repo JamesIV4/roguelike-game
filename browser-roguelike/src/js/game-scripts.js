@@ -99,7 +99,8 @@ var levelData = [`.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 .,#,#,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
 .,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`];
 
-var turns = 0;
+var turnsLevel = 0;
+var turnsTotal = 0;
 var currentLevel = 0;
 var dead = false;
 var levelStore = [];
@@ -536,7 +537,7 @@ function retryLevel() {
 	enemies.splice(currentLevel,1);
 	levelStore.splice(currentLevel,1);
 	refreshScreen();
-	turns = 0;
+	turnsLevel = 0;
 	dead = false;
 }
 
@@ -558,9 +559,15 @@ function eraseScreen() {
 
 function goToNewLevel(newLevel) {
 	currentLevel = newLevel;
-	turns = 0;
+	turnsLevel = 0;
 	eraseScreen();
 	drawScreen(levelData[newLevel]);
+}
+
+function newGame() {
+	levelStore.length = 0; // Wipe out the levelStore
+	enemies.length = 0; // Erase all the enemies
+	goToNewLevel(0); // Go to level 1
 }
 
 function displayVictoryMessage() {
@@ -569,7 +576,7 @@ function displayVictoryMessage() {
 	var button = document.createElement('a');
 	var button2 = document.createElement('a');
 
-	message.innerHTML = 'You win!<br /><br />You completed the game in ' + turns + ' turns. Good job!';
+	message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + turnsLevel + ' turns. Good job!';
 
 	button.classList.add('btn');
 	button.textContent = 'Play again';
@@ -577,15 +584,27 @@ function displayVictoryMessage() {
 	button2.classList.add('btn');
 	button2.textContent = 'Go to level ' + (currentLevel + 2); // Plus 2 because it's the next level and we're dealing with a 0-based value
 
+	if (levelData.length === (currentLevel + 1)) { // Only happens if you're on the last level
+		message.innerHTML = 'You win! You beat the game.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + turnsLevel + ' turns, and beat the game in ' + turnsTotal + ' turns. Good job!';
+		button2.textContent = 'New game on Level 1';
+	}
+
 	button.addEventListener('click', function handle(e){
 		e.preventDefault();
 
 		closeMessageWindow();
 
-		// Reset gameboard
-		setTimeout(function retry(){ 
-			retryLevel();
-		}, 360);
+		if (levelData.length === (currentLevel + 1)) { // Only happens if you're on the last level
+			// Start a new game from level 1
+			setTimeout(function retry(){ 
+				newGame();
+			}, 360);
+		} else {
+			// Reset gameboard and retry current level
+			setTimeout(function retry(){ 
+				retryLevel();
+			}, 360);
+		}
 	});
 	button2.addEventListener('click', function handle(e){
 		e.preventDefault();
@@ -601,7 +620,7 @@ function displayVictoryMessage() {
 	messageBox.appendChild(message, messageBox);
 	messageBox.appendChild(button, messageBox);
 
-	if (levelData.length > (currentLevel + 1)) {
+	if (levelData.length > (currentLevel + 1)) { // Only happens in you aren't on the last level
 		messageBox.appendChild(button2, messageBox);
 	}
 
@@ -619,7 +638,8 @@ function displayVictoryMessage() {
 }
 
 function newTurn() {
-	turns++;
+	turnsLevel++;
+	turnsTotal++;
 
 	if (!checkVictory()) {
 		enemyAITurn();
@@ -636,7 +656,7 @@ function death() {
 
 	dead = true;
 
-	message.innerHTML = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + turns + ' turns.';
+	message.innerHTML = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + turnsLevel + ' turns.';
 
 	button.classList.add('btn');
 	button.textContent = 'Try again';
