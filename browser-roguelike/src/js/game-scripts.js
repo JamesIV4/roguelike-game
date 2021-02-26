@@ -225,15 +225,20 @@ function centerPlayerInScreen() {
 	var top;
 	var left;
 
-	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * zoomLevel * 8;
-	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * zoomLevel * 8;
+	// Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
+	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * zoomLevel * 4;
+	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * zoomLevel * 4;
 
-	top = ((player.elem.offsetTop * -1) - 23) + (window.innerHeight / 2) - (topLevelOffset * 0.75);	
-	left = ((player.elem.offsetLeft * -1) - 23) + (window.innerWidth / 2) - (leftLevelOffset * 0.75);
+	// Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimenstions min/max
+	top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2) - 
+	Math.min(Math.max(parseInt((topLevelOffset * 0.75)), (window.innerHeight / 3) * -1), window.innerHeight / 3);
+
+	left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2) - 
+	Math.min(Math.max(parseInt((leftLevelOffset * 0.75)), (window.innerWidth / 3) * -1), window.innerWidth / 3);
 
 	// Follow centered only
-	// top = ((player.elem.offsetTop - (window.innerHeight / 2)) * -1) - 23;
-	// left = ((player.elem.offsetLeft - (window.innerWidth / 2)) * -1) - 23;
+	// top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
+	// left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
 
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 }
