@@ -129,6 +129,9 @@ function Enemy(elem, id, pos, type, health) {
 	this.type = type;
 	this.health = health;
 	this.pos = pos;
+
+	this.stylePos = document.createElement('style');
+	document.querySelector('head').appendChild(this.stylePos, this);
 }
 
 function Player(elem, id, pos, type, health) {
@@ -150,7 +153,7 @@ function Cell(elem, id, type, inside = []) {
 
 // Game code functions
 
-function drawScreen(selectedLevel = '') {
+function drawScreen(selectedLevel) {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.createElement('div'),
 		messageWindow = document.createElement('div'),
@@ -160,10 +163,10 @@ function drawScreen(selectedLevel = '') {
 		zoomDown = document.createElement('div'),
 		levelRows;
 
-	messageWindow.id = 'message';
 	grid.id = 'game-grid';
-
+	
 	uiElem.id = 'ui-display';
+	messageWindow.id = 'message';
 
 	zoomButtons.id = 'zoom-container';
 	zoomUp.id = 'zoom-up';
@@ -171,88 +174,6 @@ function drawScreen(selectedLevel = '') {
 	
 	zoomDown.id = 'zoom-down';
 	zoomDown.textContent = '-';
-
-	function generateRandomLevel(currentLevel) {
-		var randLevelDatabase = [];
-		var roomNum = Math.floor((Math.random() * (currentLevel + 4)) + 3);
-		var rooms = [];
-		var levelHeight = 0;
-		var levelWidth = 0;
-	
-		function Room(id, roomSize, extraSize) {
-			this.id = id;
-			this.extraSize = extraSize;
-			this.height = Math.floor((Math.random() * (10)) + 4) + extraSize;
-			this.width = Math.floor((Math.random() * (10)) + 4) + extraSize;
-			this.centerPos = [(Math.floor((Math.random() * roomSize) + 1)), (Math.floor((Math.random() * roomSize) + 1))];
-			this.corners = {};
-			this.corners.topLeft = [(Math.round(this.centerPos[0] + (this.centerPos[0] / 2))), (Math.round(this.centerPos[1] - (this.centerPos[1] / 2)))];
-			this.corners.topRight = [this.corners.topLeft[0], this.corners.topLeft[1] + this.width];
-			this.corners.bottomLeft = [this.corners.topLeft[0] + this.height, this.corners.topLeft[1]];
-			this.corners.bottomRight = [this.corners.topLeft[0] + this.height, this.corners.topLeft[1] + this.width];
-		}
-	
-		// Create the rooms
-		for (var creationIndex = 0; creationIndex < roomNum; creationIndex++) {
-			var bigger = Math.random() < 0.15;
-			var howMuch = Math.floor((Math.random() * 6) + 2);
-
-			// if (bigger) {
-			// 	console.log('Making room ' + (creationIndex + 1) + ' ' + howMuch + ' tiles bigger');
-			// 	rooms.push(new Room(creationIndex, 30, howMuch));
-			// } else {
-			// 	rooms.push(new Room(creationIndex, 30, 0));
-			// }
-
-			rooms.push(new Room(creationIndex, 30, 0));
-		}
-	
-		// Find the right positions for the rooms
-		for (var checkingIndex = 0; checkingIndex < rooms.length; checkingIndex++) {
-			var roomChecking = rooms[checkingIndex];
-
-			// Compare each room to the others
-			for (let comparingIndex = 0; comparingIndex < rooms.length; comparingIndex++) {
-				var roomComparingTo = rooms[comparingIndex];
-				
-				if (roomChecking.id != roomComparingTo.id) { // Do not compare a room to itself
-					
-					// Check the top left
-					if (between(roomComparingTo.corners.topLeft[0], roomChecking.corners.topLeft[0], roomChecking.corners.bottomRight[0]) &&
-						between(roomComparingTo.corners.topLeft[1], roomChecking.corners.topLeft[1], roomChecking.corners.bottomRight[1])) {
-						console.log('Top left of room ' + comparingIndex + ' is in range of room ' + checkingIndex);
-					}
-					
-					// Check the top right
-					if (between(roomComparingTo.corners.topRight[0], roomChecking.corners.topLeft[0], roomChecking.corners.bottomRight[0]) &&
-						between(roomComparingTo.corners.topRight[1], roomChecking.corners.topLeft[1], roomChecking.corners.bottomRight[1])) {
-						console.log('Top right of room ' + comparingIndex + ' is in range of room ' + checkingIndex);
-					}
-					
-					// Check the bottom left
-					if (between(roomComparingTo.corners.bottomLeft[0], roomChecking.corners.topLeft[0], roomChecking.corners.bottomRight[0]) &&
-						between(roomComparingTo.corners.bottomLeft[1], roomChecking.corners.topLeft[1], roomChecking.corners.bottomRight[1])) {
-						console.log('Top right of room ' + comparingIndex + ' is in range of room ' + checkingIndex);
-					}
-					
-					// Check the bottom right
-					if (between(roomComparingTo.corners.bottomRight[0], roomChecking.corners.topLeft[0], roomChecking.corners.bottomRight[0]) &&
-						between(roomComparingTo.corners.bottomRight[1], roomChecking.corners.topLeft[1], roomChecking.corners.bottomRight[1])) {
-						console.log('Top right of room ' + comparingIndex + ' is in range of room ' + checkingIndex);
-					}
-				}				
-			}
-		}
-		
-		console.log(roomNum);
-		console.log(rooms);
-
-		function between(x, min, max) {
-			return x >= min && x <= max;
-		}
-	}
-	
-	generateRandomLevel(0);
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
@@ -316,6 +237,9 @@ function drawScreen(selectedLevel = '') {
 
 				elemCell.classList.add('floor');
 				elemCell.classList.add('enemy');
+				elemCell.classList.add('enemy-' + enemyCounter);
+				renderEnemy(enemies[currentLevel][enemyCounter - 1], enemies[currentLevel][enemyCounter - 1].pos);
+
 				levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
 				levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
 				break;
@@ -333,10 +257,10 @@ function drawScreen(selectedLevel = '') {
 	
 	background.appendChild(uiElem, background);
 	uiElem.appendChild(zoomButtons, uiElem);
+	uiElem.appendChild(messageWindow, uiElem);
 	zoomButtons.appendChild(zoomUp, zoomButtons);
 	zoomButtons.appendChild(zoomDown, zoomButtons);
 	background.appendChild(grid, background);
-	background.appendChild(messageWindow, background);
 
 	renderPlayer(player.pos);
 	drawDecorations();
@@ -346,6 +270,7 @@ function drawScreen(selectedLevel = '') {
 		zoomLevel++;
 		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
 		renderPlayer(player.pos);
+		renderEnemies();
 		centerPlayerInScreen();
 	});
 	zoomDown.addEventListener('click', function handle() {
@@ -353,6 +278,7 @@ function drawScreen(selectedLevel = '') {
 			zoomLevel--;
 			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
 			renderPlayer(player.pos);
+			renderEnemies();
 			centerPlayerInScreen();
 		}
 	});
@@ -539,11 +465,15 @@ function moveEnemy(enemyObject, direction) {
 		levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
 
 		// Update the visuals
-		enemyObject.elem.classList.remove('enemy');
-		newCell.classList.add('enemy');
+		renderEnemy(enemyObject, newPos);
+		//enemyObject.elem.classList.remove('enemy');
+		//enemyObject.elem.classList.remove('enemy-' + enemyObject.id);
+		//newCell.classList.add('enemy');
+		//newCell.classList.add('enemy-' + enemyObject.id);
 		
+		// Update enemy object
 		enemyObject.pos = newPos;
-		enemyObject.elem = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
+		enemyObject.elem = newCell;
 		enemyObject.moveTries = 0;
 	} else {
 		enemyObject.moveTries++;
@@ -589,6 +519,7 @@ function movePlayer(direction) {
 
 	newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 
+	// Ran into an enemy
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
 		death();
 		player.elem.classList.remove('player'); // Visually remove player because you died
@@ -598,21 +529,35 @@ function movePlayer(direction) {
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
 		// Update the visuals
 		renderPlayer(newPos);
-		// player.elem.classList.remove('player');
-		// newCell.classList.add('player');
+		//player.elem.classList.remove('player');
+		//newCell.classList.add('player');
 
 		// Update the levelStore
 		levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
 		levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('player');
 		
-		player.pos = newPos; // Update the player object's position
-		player.elem = levelStore[currentLevel][newPos[0]][newPos[1]].elem; // Update the player elem's reference
+		// Update player object
+		player.pos = newPos;
+		player.elem = newCell;
+
 		centerPlayerInScreen();
 	}
 }
 
 function renderPlayer(pos) {
 	stylePlayer.innerHTML = "#display-wrapper #game-grid .row .cell.floor.player::after {top: " + (pos[0] * zoomLevel * 8) + "px; left: " + (pos[1] * zoomLevel * 8) + "px; height: " + (zoomLevel * 8) +"px;width: " + (zoomLevel * 8) +"px;}";
+}
+
+function renderEnemy(enemyObj, pos) {
+	enemyObj.stylePos.innerHTML = '#display-wrapper #game-grid .row .cell.floor.enemy-' + enemyObj.id + '::after {top: ' + (pos[0] * zoomLevel * 8) + 'px; left: ' + (pos[1] * zoomLevel * 8) + 'px; height: ' + (zoomLevel * 8) +'px;width: ' + (zoomLevel * 8) +'px;}';
+}
+
+function renderEnemies() {
+	for (var enemyIndex = 0; enemyIndex < enemies[currentLevel].length; enemyIndex++) {
+		var enemyObj = enemies[currentLevel][enemyIndex];
+		
+		renderEnemy(enemyObj, enemyObj.pos);
+	}
 }
 
 function checkVictory() {
@@ -626,6 +571,7 @@ function checkVictory() {
 function retryLevel() {
 	player = {};
 	enemies.splice(currentLevel,1);
+	enemyCounter = 0;
 	levelStore.splice(currentLevel,1);
 	refreshScreen();
 	turnsLevel = 0;
@@ -640,17 +586,16 @@ function refreshScreen() {
 function eraseScreen() { 
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.querySelector('#game-grid'),
-		messageBox = document.querySelector('#message'),
 		ui = document.querySelector('#ui-display');
 	
 	background.removeChild(ui);
 	background.removeChild(grid);
-	background.removeChild(messageBox);
 }
 
 function goToNewLevel(newLevel) {
 	currentLevel = newLevel;
 	turnsLevel = 0;
+	enemyCounter = 0;
 	eraseScreen();
 	drawScreen(levelData[newLevel]);
 }
