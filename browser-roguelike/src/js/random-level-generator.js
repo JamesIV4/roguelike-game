@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
-function generateRandomLevel(currentLevel) {
+function generateRandomLevel(currentLevel, height, width) {
 	var randLevelDatabase = [];
 	var roomNum = Math.floor((Math.random() * (currentLevel + 4)) + 3);
 	var rooms = [];
-	var levelHeight = 0;
-	var levelWidth = 0;
+	var levelHeight = height;
+	var levelWidth = width;
 
 	function Room(id, roomSize, extraSize) {
 		this.id = id;
@@ -107,4 +107,4 @@ function generateRandomLevel(currentLevel) {
 	}
 }
 
-generateRandomLevel(0);
+generateRandomLevel(0, 40, 40);
