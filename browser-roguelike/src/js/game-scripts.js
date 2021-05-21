@@ -122,7 +122,6 @@ document.querySelector('head').appendChild(zoomLevelStyle);
 document.querySelector('head').appendChild(stylePlayer);
 
 // UNIT prototypes
-
 function Enemy(elem, id, pos, type, health) {
 	this.elem = elem;
 	this.id = id;
@@ -143,7 +142,6 @@ function Player(elem, id, pos, type, health) {
 }
 
 // Map prototypes
-
 function Cell(elem, id, type, inside = []) {
 	this.elem = elem;
 	this.id = id;
@@ -152,7 +150,6 @@ function Cell(elem, id, type, inside = []) {
 }
 
 // Game code functions
-
 function drawScreen(selectedLevel) {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.createElement('div'),
