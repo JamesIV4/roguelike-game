@@ -19,6 +19,59 @@ body {
 	#ui-display {
 		position: absolute;
 
+		.titlescreen-container {
+			align-items: center;
+			background: rgba(22, 21, 21, 0.88);
+			border-radius: 10px;
+			border: #d5d5d5 solid 5px;
+			display: flex;
+			flex-direction: column;
+			font-family: 'Rajdhani', sans-serif;
+			justify-content: center;
+			left: 50%;
+			max-width: 25rem;
+			min-width: 15rem;
+			opacity: 0;
+			padding: 3%;
+			position: fixed;
+			text-align: center;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			transition: opacity 1s ease-out;
+			z-index: 1000;
+
+			&.show {
+				opacity: 1;
+				transition: opacity 1s ease-out;
+			}
+
+			.title-header {
+				color: #fff;
+				font-size: 4.5rem;
+				font-weight: 900;
+				line-height: 1.1;
+				margin: 0 0 1rem 0;
+			}
+
+			.btn {
+				background-color: #365067;
+				border-radius: 5px;
+				border: 1.5px solid #000;
+				box-shadow: 0 0 3px 0 #908c8c;
+				color: #fff;
+				cursor: pointer;
+				display: flex;
+				flex-direction: column;
+				font-family: 'Rajdhani', sans-serif;
+				font-size: 1.3rem;
+				font-weight: 700;
+				justify-content: center;
+				margin-bottom: 0.6rem;
+				margin-top: 1.5rem;
+				padding: 0.3rem 1rem;
+			}
+		}
+
 		#message {
 			align-items: center;
 			background-color: #fff;
@@ -35,7 +88,7 @@ body {
 			transform: translate(-50%, -50%);
 			transition: opacity 0.35s;
 			width: 45%;
-			z-index: 2000;
+			z-index: 0;
 
 			p {
 				font-family: 'Rajdhani', sans-serif;
@@ -71,6 +124,10 @@ body {
 				transition: opacity 0.5s;
 			}
 
+			&.top {
+				z-index: 2000;
+			}
+
 			@media all and (max-width: 767px) {
 				width: 75%;
 			}
@@ -104,12 +161,40 @@ body {
 		}
 	}
 
+	&.titlescreen {
+		background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/fire-swirl-2.jpg');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: cover;
+		height: 100%;
+		width: 100%;
+
+		#ui-display {
+			#message {
+				background-color: #111;
+				border: #7e7e7e solid 5px;
+				color: #fff;
+				width: inherit;
+
+				.btn {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
 	#game-grid {
 		display: table;
+		opacity: 0;
 		font-family: 'Rajdhani', sans-serif;
 		font-weight: 700;
 		position: relative;
-		transition: top 0.75s, left 0.75s;
+		transition: top 0.75s, left 0.75s, opacity 1s ease-out;
+
+		&.show {
+			opacity: 1;
+			transition: top 0.75s, left 0.75s, opacity 1s ease-out;
+		}
 
 		.row {
 			display: table-row;
@@ -201,11 +286,9 @@ body {
 							background-size: cover;
 							content: '';
 							display: block;
-							// height: 32px;
 							position: absolute;
 							transition: top 0.2s, left 0.2s;
 							transition-timing-function: ease-out;
-							// width: 32px;
 							z-index: 100;
 						}
 					}
@@ -216,17 +299,26 @@ body {
 							background-size: cover;
 							content: '';
 							display: block;
-							// height: 32px;
 							position: absolute;
 							transition: top 0.2s, left 0.2s;
 							transition-timing-function: ease-out;
-							// width: 32px;
 							z-index: 100;
 						}
 					}
 
 					&.gold {
 						background-image: none !important;
+					}
+				}
+			}
+		}
+
+		&.no-anim {
+			.row {
+				.cell {
+					&.enemy::after,
+					&.player::after {
+						transition: none !important;
 					}
 				}
 			}

@@ -150,6 +150,65 @@ function Cell(elem, id, type, inside = []) {
 }
 
 // Game code functions
+function drawTitleScreen() {
+	var background = document.querySelector('#display-wrapper'),
+		uiElem = document.createElement('div'),
+		titleContainer = document.createElement('div'),
+		titleHeader = document.createElement('h1'),
+		messageWindow = document.createElement('div'),
+		buttonContainer = document.createElement('div'),
+		btnStartNormal = document.createElement('div'),
+		btnStartProcudural = document.createElement('div');
+
+	uiElem.id = 'ui-display';
+	titleContainer.classList.add('titlescreen-container');
+	titleHeader.classList.add('title-header');
+	messageWindow.id = 'message';
+	buttonContainer.classList.add('button-container');
+	btnStartNormal.classList.add('btn');
+	btnStartProcudural.classList.add('btn');
+
+	background.classList.add('titlescreen');
+
+	titleHeader.textContent = "Fire Gauntlet";
+	btnStartNormal.textContent = 'Start Normal Game';
+	btnStartProcudural.textContent = 'Start Procedural Game';
+
+	background.appendChild(uiElem);
+	titleContainer.appendChild(titleHeader);
+	titleContainer.appendChild(buttonContainer);
+	buttonContainer.appendChild(btnStartNormal);
+	buttonContainer.appendChild(btnStartProcudural);
+	uiElem.appendChild(messageWindow, uiElem);
+	uiElem.appendChild(titleContainer, uiElem);
+
+	setTimeout(function showTitlescreen(){ 
+		titleContainer.classList.add('show');
+	}, 150);
+
+	function closeTitlescreen() {
+		background.classList.remove('titlescreen');
+		titleContainer.classList.remove('show');
+
+		setTimeout(function destroyTitlescreen(){ 
+			btnStartNormal.removeEventListener('click', destroyTitlescreen);
+			btnStartProcudural.removeEventListener('click', destroyTitlescreen);
+			uiElem.removeChild(titleContainer);
+			background.removeChild(uiElem);
+		}, 1000);
+	}
+	
+
+	btnStartNormal.addEventListener('click', function handle() {
+		closeTitlescreen();
+		drawScreen(levelData[0]);
+	});
+
+	btnStartProcudural.addEventListener('click', function handle() {
+		displayMessageBox('This mode is in development and is not yet available.', 'Dismiss', 'dismiss');
+	});
+}
+
 function drawScreen(selectedLevel) {
 	var background = document.querySelector('#display-wrapper'),
 		grid = document.createElement('div'),
@@ -263,20 +322,32 @@ function drawScreen(selectedLevel) {
 	drawDecorations();
 	centerPlayerInScreen();
 
+	setTimeout(function showGameGrid(){ 
+		grid.classList.add('show');
+	}, 300);
+
 	zoomUp.addEventListener('click', function handle() {
+		grid.classList.add('no-anim'); // Move characters instantly during zoom
+
 		zoomLevel++;
 		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
 		renderPlayer(player.pos);
 		renderEnemies();
 		centerPlayerInScreen();
+
+		grid.classList.remove('no-anim');
 	});
 	zoomDown.addEventListener('click', function handle() {
 		if (zoomLevel > 1) {
+			grid.classList.add('no-anim'); // Move characters instantly during zoom
+
 			zoomLevel--;
 			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
 			renderPlayer(player.pos);
 			renderEnemies();
 			centerPlayerInScreen();
+
+			grid.classList.remove('no-anim');
 		}
 	});
 }
@@ -604,6 +675,48 @@ function newGame() {
 	goToNewLevel(0); // Go to level 1
 }
 
+function displayMessageBox(messageText, btnText, action) {
+	var messageBox = document.querySelector('#message');
+	var message = document.createElement('p');
+	var button = document.createElement('a');
+
+	message.textContent = messageText;
+
+	button.classList.add('btn');
+	button.textContent = btnText;
+
+	button.addEventListener('click', function handle(e){
+		e.preventDefault();
+
+		switch (action) {
+		case 'dismiss':
+			closeMessageWindow();
+			break;
+	
+		default:
+			closeMessageWindow();
+			break;
+		}
+	});
+
+	messageBox.appendChild(message, messageBox);
+	messageBox.appendChild(button, messageBox);
+
+	messageBox.classList.add('top');
+	messageBox.classList.add('show');
+
+	function closeMessageWindow() {
+		messageBox.classList.remove('show');
+
+		setTimeout(function destroyMessage(){
+			messageBox.classList.remove('top');
+			messageBox.removeChild(message);
+			messageBox.removeChild(button);
+			button.removeEventListener('click', closeMessageWindow);
+		}, 360);
+	}
+}
+
 function displayVictoryMessage() {
 	var messageBox = document.querySelector('#message');
 	var message = document.createElement('p');
@@ -658,12 +771,14 @@ function displayVictoryMessage() {
 		messageBox.appendChild(button2, messageBox);
 	}
 
+	messageBox.classList.add('top');
 	messageBox.classList.add('show');
 
 	function closeMessageWindow() {
 		messageBox.classList.remove('show');
 
-		setTimeout(function destroyMessage(){ 
+		setTimeout(function destroyMessage(){
+			messageBox.classList.remove('top');
 			messageBox.removeChild(message);
 			messageBox.removeChild(button);
 			button.removeEventListener('click', closeMessageWindow);
@@ -700,6 +815,7 @@ function death() {
 	messageBox.appendChild(message, messageBox);
 	messageBox.appendChild(button, messageBox);
 
+	messageBox.classList.add('top');
 	messageBox.classList.add('show');
 
 	function closeMessageWindow(e) {
@@ -707,9 +823,8 @@ function death() {
 
 		messageBox.classList.remove('show');
 
-		
-
-		setTimeout(function destroyMessage(){ 
+		setTimeout(function destroyMessage(){
+			messageBox.classList.remove('top');
 			messageBox.removeChild(message);
 			messageBox.removeChild(button);
 			button.removeEventListener('click', closeMessageWindow);
@@ -799,6 +914,6 @@ document.addEventListener('keydown', function input(e) {
 window.addEventListener('resize', centerPlayerInScreen);
 
 // Draw the screen for the first time
-drawScreen(levelData[currentLevel]);
+drawTitleScreen();
 
 // }());
