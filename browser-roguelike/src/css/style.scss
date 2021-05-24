@@ -139,6 +139,12 @@ body {
 			bottom: 0;
 			left: 0;
 			z-index: 1000;
+			-webkit-touch-callout: none; /* iOS Safari */
+			-webkit-user-select: none; /* Safari */
+			-khtml-user-select: none; /* Konqueror HTML */
+			-moz-user-select: none; /* Old versions of Firefox */
+			-ms-user-select: none; /* Internet Explorer/Edge */
+			user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 
 			#zoom-up,
 			#zoom-down {
@@ -214,7 +220,7 @@ body {
 				}
 
 				&.floor {
-					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-floor.png');
+					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-empty-1px.gif');
 
 					&.sidewall {
 						&.top {
@@ -230,7 +236,7 @@ body {
 						}
 
 						&.bottom {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-bottom.png');
+							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-empty-1px.gif');
 						}
 					}
 
