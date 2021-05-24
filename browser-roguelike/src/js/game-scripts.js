@@ -130,7 +130,7 @@ function Enemy(elem, id, pos, type, health) {
 	this.pos = pos;
 
 	this.stylePos = document.createElement('style');
-	document.querySelector('head').appendChild(this.stylePos, this);
+	document.querySelector('head').appendChild(this.stylePos);
 }
 
 function Player(elem, id, pos, type, health) {
@@ -179,8 +179,8 @@ function drawTitleScreen() {
 	titleContainer.appendChild(buttonContainer);
 	buttonContainer.appendChild(btnStartNormal);
 	buttonContainer.appendChild(btnStartProcudural);
-	uiElem.appendChild(messageWindow, uiElem);
-	uiElem.appendChild(titleContainer, uiElem);
+	uiElem.appendChild(messageWindow);
+	uiElem.appendChild(titleContainer);
 
 	setTimeout(function showTitlescreen(){ 
 		titleContainer.classList.add('show');
@@ -246,7 +246,7 @@ function drawScreen(selectedLevel) {
 			elemRow = document.createElement('div');
 	
 		elemRow.classList.add('row');
-		grid.appendChild(elemRow, grid);
+		grid.appendChild(elemRow);
 
 		// Level store row creation
 		levelStore[currentLevel].push(new Array);
@@ -258,7 +258,7 @@ function drawScreen(selectedLevel) {
 	
 			elemCell.classList.add('cell');
 			elemCell.id = rowIndex + '-' + cellIndex;
-			elemRow.appendChild(elemCell, elemRow);
+			elemRow.appendChild(elemCell);
 
 			// Add to level store tracking
 			levelStore[currentLevel][rowIndex].push(new Cell(elemCell, rowIndex + '-' + cellIndex));
@@ -311,12 +311,12 @@ function drawScreen(selectedLevel) {
 		}
 	}
 	
-	background.appendChild(uiElem, background);
-	uiElem.appendChild(zoomButtons, uiElem);
-	uiElem.appendChild(messageWindow, uiElem);
-	zoomButtons.appendChild(zoomUp, zoomButtons);
-	zoomButtons.appendChild(zoomDown, zoomButtons);
-	background.appendChild(grid, background);
+	background.appendChild(uiElem);
+	uiElem.appendChild(zoomButtons);
+	uiElem.appendChild(messageWindow);
+	zoomButtons.appendChild(zoomUp);
+	zoomButtons.appendChild(zoomDown);
+	background.appendChild(grid);
 
 	renderPlayer(player.pos);
 	drawDecorations();
@@ -506,16 +506,16 @@ function moveEnemy(enemyObject, direction) {
 		newPos;
 
 	switch (direction) {
-	case 'up':
+	case 1: // Up
 		newPos = [enemyObject.pos[0] - 1, enemyObject.pos[1]];
 		break;
-	case 'right':
+	case 2: // Right
 		newPos = [enemyObject.pos[0], enemyObject.pos[1] + 1];
 		break;
-	case 'down':
+	case 3: // Down
 		newPos = [enemyObject.pos[0] + 1, enemyObject.pos[1]];
 		break;
-	case 'left':
+	case 4: // Left
 		newPos = [enemyObject.pos[0], enemyObject.pos[1] - 1];
 		break;
 	}
@@ -534,10 +534,6 @@ function moveEnemy(enemyObject, direction) {
 
 		// Update the visuals
 		renderEnemy(enemyObject, newPos);
-		//enemyObject.elem.classList.remove('enemy');
-		//enemyObject.elem.classList.remove('enemy-' + enemyObject.id);
-		//newCell.classList.add('enemy');
-		//newCell.classList.add('enemy-' + enemyObject.id);
 		
 		// Update enemy object
 		enemyObject.pos = newPos;
@@ -552,18 +548,8 @@ function moveEnemy(enemyObject, direction) {
 }
 
 function randomDirection() {
-	var direction = Math.floor((Math.random() * 4) + 1);
-
-	switch (direction) {
-	case 1:
-		return 'up';
-	case 2:
-		return 'right';
-	case 3:
-		return 'down';
-	case 4:
-		return 'left';
-	}
+	// Returns 1 - 4, where 1 = Up, 2 = Right, 3 = Down, and 4 = Left
+	return Math.floor((Math.random() * 4) + 1);
 }
 
 function movePlayer(direction) {
@@ -571,16 +557,16 @@ function movePlayer(direction) {
 		newPos;
 
 	switch (direction) {
-	case 'up':
+	case 1: // Up
 		newPos =  [player.pos[0] - 1, player.pos[1]];
 		break;
-	case 'right':
+	case 2: // Right
 		newPos =  [player.pos[0], player.pos[1] + 1];
 		break;
-	case 'down':
+	case 3: // Down
 		newPos =  [player.pos[0] + 1, player.pos[1]];
 		break;
-	case 'left':
+	case 4: // Left
 		newPos = [player.pos[0], player.pos[1] - 1];
 		break;
 	}
@@ -628,6 +614,14 @@ function renderEnemies() {
 	}
 }
 
+function cleanupEnemyStyles(level) {
+	for (var enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
+		var enemyObj = enemies[level][enemyIndex];
+		
+		enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
+	}
+}
+
 function checkVictory() {
 	if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
 		return true;
@@ -637,10 +631,18 @@ function checkVictory() {
 }
 
 function retryLevel() {
+	// Reset player
 	player = {};
+
+	// Clean up enemies
+	cleanupEnemyStyles(currentLevel);
 	enemies.splice(currentLevel,1);
 	enemyCounter = 0;
+
+	// Reset level store
 	levelStore.splice(currentLevel,1);
+
+	// Redraw and fix up level values
 	refreshScreen();
 	turnsLevel = 0;
 	dead = false;
@@ -661,16 +663,30 @@ function eraseScreen() {
 }
 
 function goToNewLevel(newLevel) {
-	currentLevel = newLevel;
 	turnsLevel = 0;
 	enemyCounter = 0;
+
+	// Erase screen
 	eraseScreen();
+
+	// Clean up enemy stlye elements in head
+	try {
+		cleanupEnemyStyles(currentLevel);
+		
+	} catch (error) {
+		// Error happens when using newGame since the enemy array is already deleted. Revist.
+	}
+
+	currentLevel = newLevel;
 	drawScreen(levelData[newLevel]);
 }
 
 function newGame() {
 	levelStore.length = 0; // Wipe out the levelStore
+
+	cleanupEnemyStyles(currentLevel);
 	enemies.length = 0; // Erase all the enemies
+
 	turnsTotal = 0; // Reset total turns
 	goToNewLevel(0); // Go to level 1
 }
@@ -699,8 +715,8 @@ function displayMessageBox(messageText, btnText, action) {
 		}
 	});
 
-	messageBox.appendChild(message, messageBox);
-	messageBox.appendChild(button, messageBox);
+	messageBox.appendChild(message);
+	messageBox.appendChild(button);
 
 	messageBox.classList.add('top');
 	messageBox.classList.add('show');
@@ -764,11 +780,11 @@ function displayVictoryMessage() {
 		}, 360);
 	});
 
-	messageBox.appendChild(message, messageBox);
-	messageBox.appendChild(button, messageBox);
+	messageBox.appendChild(message);
+	messageBox.appendChild(button);
 
 	if (levelData.length > (currentLevel + 1)) { // Only happens in you aren't on the last level
-		messageBox.appendChild(button2, messageBox);
+		messageBox.appendChild(button2);
 	}
 
 	messageBox.classList.add('top');
@@ -812,8 +828,8 @@ function death() {
 
 	button.addEventListener('click', closeMessageWindow);
 
-	messageBox.appendChild(message, messageBox);
-	messageBox.appendChild(button, messageBox);
+	messageBox.appendChild(message);
+	messageBox.appendChild(button);
 
 	messageBox.classList.add('top');
 	messageBox.classList.add('show');
@@ -864,18 +880,18 @@ function handleTouchMove(evt) {
 		if (Math.abs(xDiff) > Math.abs(yDiff)) {
 			if (xDiff > 0) {
 				/* left swipe */
-				movePlayer('left');
+				movePlayer(4); // Left
 			} else {
 				/* right swipe */
-				movePlayer('right');
+				movePlayer(2); // Right
 			}                       
 		} else {
 			if (yDiff > 0) {
 				/* up swipe */
-				movePlayer('up');
+				movePlayer(1); // Up
 			} else { 
 				/* down swipe */
-				movePlayer('down');
+				movePlayer(3); // Down
 			}                   
 		}
 
@@ -893,16 +909,16 @@ document.addEventListener('keydown', function input(e) {
 		if (e.code === 'ArrowUp' || e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'Space') {
 			switch (e.code) {
 			case 'ArrowUp' :
-				movePlayer('up');
+				movePlayer(1); // Up
 				break;
 			case 'ArrowRight' :
-				movePlayer('right');
+				movePlayer(2); // Right
 				break;
 			case 'ArrowDown' :
-				movePlayer('down');
+				movePlayer(3); // Down
 				break;
 			case 'ArrowLeft' :
-				movePlayer('left');
+				movePlayer(4); // Left
 				break;
 			}
 	
