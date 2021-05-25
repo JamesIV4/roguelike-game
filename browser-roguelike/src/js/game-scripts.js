@@ -811,7 +811,6 @@ function newTurn() {
 	} else {
 		displayVictoryMessage();
 	}
-
 }
 
 function death() {
@@ -905,19 +904,27 @@ function handleTouchMove(evt) {
 // End touch controls
 
 document.addEventListener('keydown', function input(e) {
-	if (!dead && !document.getElementById('message').classList.contains('show')) {
-		if (e.code === 'ArrowUp' || e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'Space') {
-			switch (e.code) {
+	var keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+
+	console.log(e);
+
+	if (!dead && !document.getElementById('message').classList.contains('show')) { // The message window isn't displayed, and you're not dead
+		if (keyList.indexOf(e.key) > -1) { // Key matches one of the permitted keys
+			switch (e.key) {
 			case 'ArrowUp' :
+			case 'Up' :
 				movePlayer(1); // Up
 				break;
 			case 'ArrowRight' :
+			case 'Right' :
 				movePlayer(2); // Right
 				break;
 			case 'ArrowDown' :
+			case 'Down' :
 				movePlayer(3); // Down
 				break;
 			case 'ArrowLeft' :
+			case 'Left' :
 				movePlayer(4); // Left
 				break;
 			}
