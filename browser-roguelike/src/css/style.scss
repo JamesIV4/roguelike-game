@@ -145,7 +145,8 @@ body {
 			user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 
 			#zoom-up,
-			#zoom-down {
+			#zoom-down,
+			#show-goal {
 				align-items: center;
 				background-color: #fff;
 				border-radius: 2px;
@@ -161,6 +162,10 @@ body {
 				margin: 5px;
 				padding-top: 1px;
 				width: 1em;
+			}
+
+			#show-goal {
+				margin-bottom: 15px;
 			}
 		}
 	}
@@ -312,7 +317,7 @@ body {
 						}
 					}
 
-					&.gold {
+					&.goal {
 						background-image: none !important;
 					}
 				}

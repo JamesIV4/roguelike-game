@@ -108,6 +108,7 @@ var enemies = [];
 var enemyCounter = 0;
 var player;
 var zoomLevel = 4;
+var viewingGoal = false;
 
 // Touch controls variables
 var xDown = null;          
@@ -217,6 +218,7 @@ function drawScreen(selectedLevel) {
 		zoomButtons = document.createElement('div'),
 		zoomUp = document.createElement('div'),
 		zoomDown = document.createElement('div'),
+		showGoalBtn = document.createElement('div'),
 		levelRows;
 
 	grid.id = 'game-grid';
@@ -230,6 +232,9 @@ function drawScreen(selectedLevel) {
 	
 	zoomDown.id = 'zoom-down';
 	zoomDown.textContent = '-';
+
+	showGoalBtn.id = 'show-goal';
+	showGoalBtn.innerHTML = '&#11216;';
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
@@ -302,7 +307,7 @@ function drawScreen(selectedLevel) {
 			case 'C' :
 				elemCell.style.backgroundColor = '#fff700';
 				elemCell.classList.add('floor');
-				elemCell.classList.add('gold');
+				elemCell.classList.add('goal');
 
 				levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
 				levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
@@ -314,6 +319,7 @@ function drawScreen(selectedLevel) {
 	background.appendChild(uiElem);
 	uiElem.appendChild(zoomButtons);
 	uiElem.appendChild(messageWindow);
+	zoomButtons.appendChild(showGoalBtn);
 	zoomButtons.appendChild(zoomUp);
 	zoomButtons.appendChild(zoomDown);
 	background.appendChild(grid);
@@ -326,6 +332,9 @@ function drawScreen(selectedLevel) {
 		grid.classList.add('show');
 	}, 300);
 
+	showGoalBtn.addEventListener('click', function handle() {
+		showGoal();
+	});
 	zoomUp.addEventListener('click', function handle() {
 		grid.classList.add('no-anim'); // Move characters instantly during zoom
 
@@ -488,6 +497,23 @@ function centerPlayerInScreen() {
 	// left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
 
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+}
+
+function showGoal() {
+	var top,
+		left,
+		goal = document.querySelector('.goal');
+
+	if (viewingGoal) {
+		centerPlayerInScreen();
+		viewingGoal = false;
+	} else {
+		top = ((goal.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
+		left = ((goal.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
+
+		overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+		viewingGoal = true;
+	}
 }
 
 function enemyAITurn() {
