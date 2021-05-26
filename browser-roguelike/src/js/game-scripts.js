@@ -109,6 +109,9 @@ var enemyCounter = 0;
 var player;
 var zoomLevel = 4;
 var viewingGoal = false;
+var options = {
+	centerMode: false
+};
 
 // Touch controls variables
 var xDown = null;          
@@ -219,6 +222,7 @@ function drawScreen(selectedLevel) {
 		zoomUp = document.createElement('div'),
 		zoomDown = document.createElement('div'),
 		showGoalBtn = document.createElement('div'),
+		switchCameraBtn = document.createElement('div'),
 		levelRows;
 
 	grid.id = 'game-grid';
@@ -234,7 +238,8 @@ function drawScreen(selectedLevel) {
 	zoomDown.textContent = '-';
 
 	showGoalBtn.id = 'show-goal';
-	showGoalBtn.innerHTML = '&#11216;';
+
+	switchCameraBtn.id = 'switch-camera';
 
 	// Initialize level storage
 	if (levelStore.length === currentLevel) { // If we're in a NEW level, add new arrays
@@ -319,6 +324,7 @@ function drawScreen(selectedLevel) {
 	background.appendChild(uiElem);
 	uiElem.appendChild(zoomButtons);
 	uiElem.appendChild(messageWindow);
+	zoomButtons.appendChild(switchCameraBtn);
 	zoomButtons.appendChild(showGoalBtn);
 	zoomButtons.appendChild(zoomUp);
 	zoomButtons.appendChild(zoomDown);
@@ -331,7 +337,11 @@ function drawScreen(selectedLevel) {
 	setTimeout(function showGameGrid(){ 
 		grid.classList.add('show');
 	}, 300);
-
+	
+	// Button events
+	switchCameraBtn.addEventListener('click', function handle() {
+		toggleCenterMode();
+	});
 	showGoalBtn.addEventListener('click', function handle() {
 		showGoal();
 	});
@@ -475,6 +485,21 @@ function drawDecorations() {
 	}
 }
 
+function toggleCenterMode() {
+	if (options.centerMode === false) {
+		options.centerMode = true;
+		centerPlayerInScreen();
+	} else {
+		options.centerMode = false;
+		centerPlayerInScreen();
+	}
+
+	// Center mode will return the camera to the player. This can dysync the viewing goal state, so reset it here
+	if (viewingGoal) {
+		viewingGoal = false;
+	}
+}
+
 function centerPlayerInScreen() {
 	var topLevelOffset;
 	var leftLevelOffset;
@@ -485,16 +510,20 @@ function centerPlayerInScreen() {
 	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * zoomLevel * 4;
 	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * zoomLevel * 4;
 
-	// Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimenstions min/max
-	top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2) - 
-	Math.min(Math.max(parseInt((topLevelOffset * 0.75)), (window.innerHeight / 3) * -1), window.innerHeight / 3);
+	if (options.centerMode === false) {
+		// Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimenstions min/max
+		top = ((player.elem.offsetTop * -1) - (zoomLevel * 4)) + (window.innerHeight / 2) - 
+		Math.min(Math.max(parseInt((topLevelOffset * 0.75)), (window.innerHeight / 3) * -1), window.innerHeight / 3);
 
-	left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2) - 
-	Math.min(Math.max(parseInt((leftLevelOffset * 0.75)), (window.innerWidth / 3) * -1), window.innerWidth / 3);
+		left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2) - 
+		Math.min(Math.max(parseInt((leftLevelOffset * 0.75)), (window.innerWidth / 3) * -1), window.innerWidth / 3);
 
-	// Follow centered only
-	// top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
-	// left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
+		console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
+	} else {
+		// Follow centered only
+		top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
+		left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
+	}
 
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 }
@@ -602,7 +631,6 @@ function movePlayer(direction) {
 	// Ran into an enemy
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
 		death();
-		player.elem.classList.remove('player'); // Visually remove player because you died
 		return;
 	}
 
@@ -843,7 +871,10 @@ function death() {
 	var messageBox = document.querySelector('#message');
 	var message = document.createElement('p');
 	var button = document.createElement('a');
+	var playerGraphic = document.querySelector('.player');
 
+	playerGraphic.classList.add('ashes');
+	
 	dead = true;
 
 	message.innerHTML = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + turnsLevel + ' turns.';
@@ -931,8 +962,6 @@ function handleTouchMove(evt) {
 
 document.addEventListener('keydown', function input(e) {
 	var keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
-
-	console.log(e);
 
 	if (!dead && !document.getElementById('message').classList.contains('show')) { // The message window isn't displayed, and you're not dead
 		if (keyList.indexOf(e.key) > -1) { // Key matches one of the permitted keys

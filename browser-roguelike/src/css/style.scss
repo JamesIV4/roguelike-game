@@ -146,7 +146,8 @@ body {
 
 			#zoom-up,
 			#zoom-down,
-			#show-goal {
+			#show-goal,
+			#switch-camera {
 				align-items: center;
 				background-color: #fff;
 				border-radius: 2px;
@@ -165,8 +166,19 @@ body {
 			}
 
 			#show-goal {
+				background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/target.svg');
+				background-position: center;
+				background-repeat: no-repeat;
+				background-size: 70%;
 				margin-bottom: 15px;
-				font-family: sans-serif;
+			}
+
+			#switch-camera {
+				background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/camera.svg');
+				background-position: center;
+				background-repeat: no-repeat;
+				background-size: 70%;
+				margin-bottom: 15px;
 			}
 		}
 	}
@@ -302,6 +314,13 @@ body {
 							transition: top 0.2s, left 0.2s;
 							transition-timing-function: ease-out;
 							z-index: 100;
+						}
+
+						&.ashes {
+							&::after {
+								background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/ashes-2e.gif');
+								z-index: 101;
+							}
 						}
 					}
 
