@@ -30,7 +30,7 @@ body {
 			justify-content: center;
 			left: 50%;
 			opacity: 0;
-			padding: 3%;
+			padding: calc(2rem + 1%);
 			position: fixed;
 			text-align: center;
 			top: 50%;
@@ -80,7 +80,7 @@ body {
 			left: 50%;
 			max-width: 450px;
 			opacity: 0;
-			padding: 1%;
+			padding: 20px;
 			position: fixed;
 			text-align: center;
 			top: 50%;
