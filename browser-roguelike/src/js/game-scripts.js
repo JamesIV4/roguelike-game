@@ -99,18 +99,21 @@ var levelData = [`.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 .,#,#,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
 .,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`];
 
-var turnsLevel = 0;
-var turnsTotal = 0;
 var currentLevel = 0;
-var dead = false;
 var levelStore = [];
 var enemies = [];
 var enemyCounter = 0;
 var player;
-var zoomLevel = 4;
 var viewingGoal = false;
 var options = {
 	centerMode: false
+};
+var sessionStats = {
+	turnsTotal: 0,
+	turnsLevel: 0,
+	retries: 0,
+	zoomLevel: 4,
+	dead: false
 };
 
 // Touch controls variables
@@ -201,7 +204,6 @@ function drawTitleScreen() {
 			background.removeChild(uiElem);
 		}, 1000);
 	}
-	
 
 	btnStartNormal.addEventListener('click', function handle() {
 		closeTitlescreen();
@@ -348,8 +350,8 @@ function drawScreen(selectedLevel) {
 	zoomUp.addEventListener('click', function handle() {
 		grid.classList.add('no-anim'); // Move characters instantly during zoom
 
-		zoomLevel++;
-		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+		sessionStats.zoomLevel++;
+		zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
 		renderPlayer(player.pos);
 		renderEnemies();
 		centerPlayerInScreen();
@@ -357,11 +359,11 @@ function drawScreen(selectedLevel) {
 		grid.classList.remove('no-anim');
 	});
 	zoomDown.addEventListener('click', function handle() {
-		if (zoomLevel > 1) {
+		if (sessionStats.zoomLevel > 1) {
 			grid.classList.add('no-anim'); // Move characters instantly during zoom
 
-			zoomLevel--;
-			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + zoomLevel * 8 + 'px !important; width: ' + zoomLevel * 8 + 'px !important;}';
+			sessionStats.zoomLevel--;
+			zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
 			renderPlayer(player.pos);
 			renderEnemies();
 			centerPlayerInScreen();
@@ -502,22 +504,22 @@ function centerPlayerInScreen() {
 	var left;
 
 	// Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
-	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * zoomLevel * 4;
-	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * zoomLevel * 4;
+	topLevelOffset = ((levelStore[currentLevel].length / 2) - player.pos[0]) * sessionStats.zoomLevel * 4;
+	leftLevelOffset = ((levelStore[currentLevel][0].length / 2) - player.pos[1]) * sessionStats.zoomLevel * 4;
 
 	if (options.centerMode === false) {
 		// Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimenstions min/max
-		top = ((player.elem.offsetTop * -1) - (zoomLevel * 4)) + (window.innerHeight / 2) - 
+		top = ((player.elem.offsetTop * -1) - (sessionStats.zoomLevel * 4)) + (window.innerHeight / 2) - 
 		Math.min(Math.max(parseInt((topLevelOffset * 0.75)), (window.innerHeight / 3) * -1), window.innerHeight / 3);
 
-		left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2) - 
+		left = ((player.elem.offsetLeft * -1) - (sessionStats.zoomLevel * 4)) + (window.innerWidth / 2) - 
 		Math.min(Math.max(parseInt((leftLevelOffset * 0.75)), (window.innerWidth / 3) * -1), window.innerWidth / 3);
 
-		console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
+		//console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
 	} else {
 		// Follow centered only
-		top = ((player.elem.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
-		left = ((player.elem.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
+		top = ((player.elem.offsetTop * -1) - (sessionStats.zoomLevel *4)) + (window.innerHeight / 2);
+		left = ((player.elem.offsetLeft * -1) - (sessionStats.zoomLevel * 4)) + (window.innerWidth / 2);
 	}
 
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
@@ -537,8 +539,8 @@ function showGoal() {
 		centerPlayerInScreen();
 		viewingGoal = false;
 	} else {
-		top = ((goal.offsetTop * -1) - (zoomLevel *4)) + (window.innerHeight / 2);
-		left = ((goal.offsetLeft * -1) - (zoomLevel * 4)) + (window.innerWidth / 2);
+		top = ((goal.offsetTop * -1) - (sessionStats.zoomLevel *4)) + (window.innerHeight / 2);
+		left = ((goal.offsetLeft * -1) - (sessionStats.zoomLevel * 4)) + (window.innerWidth / 2);
 
 		overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 		viewingGoal = true;
@@ -553,7 +555,7 @@ function enemyAITurn() {
 }
 
 function moveEnemy(enemyObject, direction) {
-	if (dead) {
+	if (sessionStats.dead) {
 		return;
 	}
 
@@ -651,11 +653,11 @@ function movePlayer(direction) {
 }
 
 function renderPlayer(pos) {
-	stylePlayer.innerHTML = "#display-wrapper #game-grid .row .cell.floor.player::after {top: " + (pos[0] * zoomLevel * 8) + "px; left: " + (pos[1] * zoomLevel * 8) + "px; height: " + (zoomLevel * 8) +"px;width: " + (zoomLevel * 8) +"px;}";
+	stylePlayer.innerHTML = "#display-wrapper #game-grid .row .cell.floor.player::after {top: " + (pos[0] * sessionStats.zoomLevel * 8) + "px; left: " + (pos[1] * sessionStats.zoomLevel * 8) + "px; height: " + (sessionStats.zoomLevel * 8) +"px;width: " + (sessionStats.zoomLevel * 8) +"px;}";
 }
 
 function renderEnemy(enemyObj, pos) {
-	enemyObj.stylePos.innerHTML = '#display-wrapper #game-grid .row .cell.floor.enemy-' + enemyObj.id + '::after {top: ' + (pos[0] * zoomLevel * 8) + 'px; left: ' + (pos[1] * zoomLevel * 8) + 'px; height: ' + (zoomLevel * 8) +'px;width: ' + (zoomLevel * 8) +'px;}';
+	enemyObj.stylePos.innerHTML = '#display-wrapper #game-grid .row .cell.floor.enemy-' + enemyObj.id + '::after {top: ' + (pos[0] * sessionStats.zoomLevel * 8) + 'px; left: ' + (pos[1] * sessionStats.zoomLevel * 8) + 'px; height: ' + (sessionStats.zoomLevel * 8) +'px;width: ' + (sessionStats.zoomLevel * 8) +'px;}';
 }
 
 function renderEnemies() {
@@ -696,8 +698,9 @@ function retryLevel() {
 
 	// Redraw and fix up level values
 	refreshScreen();
-	turnsLevel = 0;
-	dead = false;
+	sessionStats.turnsLevel = 0;
+	sessionStats.dead = false;
+	sessionStats.retries += 1;
 }
 
 function refreshScreen() {
@@ -715,7 +718,7 @@ function eraseScreen() {
 }
 
 function goToNewLevel(newLevel) {
-	turnsLevel = 0;
+	sessionStats.turnsLevel = 0;
 	enemyCounter = 0;
 
 	// Erase screen
@@ -739,7 +742,7 @@ function newGame() {
 	cleanupEnemyStyles(currentLevel);
 	enemies.length = 0; // Erase all the enemies
 
-	turnsTotal = 0; // Reset total turns
+	sessionStats.turnsTotal = 0; // Reset total turns
 	goToNewLevel(0); // Go to level 1
 }
 
@@ -785,13 +788,71 @@ function displayMessageBox(messageText, btnText, action) {
 	}
 }
 
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	var expires = "expires="+ d.toUTCString();
+	
+	var oldCookie = getCookie('highscores');
+	
+	if (oldCookie !== '') {
+		cvalue = oldCookie + '|' + cvalue;
+	}
+	
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(';');
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return '';
+}
+
+function submitHighscore() {
+	setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
+}
+
+function getHighscoreList() {
+	var list = [];
+	var cookieOutput = getCookie('highscores');
+
+	list = cookieOutput.split('|');
+
+	list.forEach(function handle(item, index) {
+		var list2;
+		list2 = item.split('-');
+
+		list[index] = list2;
+	});
+	
+	// First sort by number of retries, then sort by number of turns
+	list.sort(function handle(a, b){
+		if (a[1] === b[1]) {
+			return a[0] - b[0];
+		}
+		return a[1] - b[1];
+	});
+
+	return list;
+}
+
 function displayVictoryMessage() {
 	var messageBox = document.querySelector('#message');
 	var message = document.createElement('p');
 	var button = document.createElement('a');
 	var button2 = document.createElement('a');
 
-	message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + turnsLevel + ' turns. Good job!';
+	message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
 
 	button.classList.add('btn');
 	button.textContent = 'Play again';
@@ -800,8 +861,16 @@ function displayVictoryMessage() {
 	button2.textContent = 'Go to level ' + (currentLevel + 2); // Plus 2 because it's the next level and we're dealing with a 0-based value
 
 	if (levelData.length === (currentLevel + 1)) { // Only happens if you're on the last level
-		message.innerHTML = 'You win! You beat the game.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + turnsLevel + ' turns, and beat the game in ' + turnsTotal + ' turns. Good job!';
+
+		if (sessionStats.retries === 0) {
+			message.innerHTML = 'Perfect run! You beat the game with no reties.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + sessionStats.turnsLevel + ' turns, and beat the game in ' + sessionStats.turnsTotal + ' turns. Good job!';
+		} else {
+			message.innerHTML = 'You win! You beat the game.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + sessionStats.turnsLevel + ' turns, and beat the game in ' + sessionStats.turnsTotal + ' turns, with ' + sessionStats.retries + ' retries. Good job!';
+		}
+
 		button.textContent = 'Start a new game';
+
+		setCookie('highscores', '50-0', 1);
 	}
 
 	button.addEventListener('click', function handle(e){
@@ -855,8 +924,8 @@ function displayVictoryMessage() {
 }
 
 function newTurn() {
-	turnsLevel++;
-	turnsTotal++;
+	sessionStats.turnsLevel++;
+	sessionStats.turnsTotal++;
 
 	if (!checkVictory()) {
 		enemyAITurn();
@@ -873,9 +942,9 @@ function death() {
 
 	playerGraphic.classList.add('ashes');
 	
-	dead = true;
+	sessionStats.dead = true;
 
-	message.innerHTML = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + turnsLevel + ' turns.';
+	message.innerHTML = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
 
 	button.classList.add('btn');
 	button.textContent = 'Try again';
@@ -919,7 +988,7 @@ function handleTouchMove(evt) {
 		return;
 	}
 
-	if (dead) {
+	if (sessionStats.dead) {
 		return;
 	}
 
@@ -930,7 +999,7 @@ function handleTouchMove(evt) {
 	var yDiff = yDown - yUp;
 
 	/* Determine touch direction */
-	if (!dead && !document.getElementById('message').classList.contains('show')) {
+	if (!sessionStats.dead && !document.getElementById('message').classList.contains('show')) {
 		if (Math.abs(xDiff) > Math.abs(yDiff)) {
 			if (xDiff > 0) {
 				/* left swipe */
@@ -961,7 +1030,7 @@ function handleTouchMove(evt) {
 document.addEventListener('keydown', function input(e) {
 	var keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
 
-	if (!dead && !document.getElementById('message').classList.contains('show')) { // The message window isn't displayed, and you're not dead
+	if (!sessionStats.dead && !document.getElementById('message').classList.contains('show')) { // The message window isn't displayed, and you're not dead
 		if (keyList.indexOf(e.key) > -1) { // Key matches one of the permitted keys
 			switch (e.key) {
 			case 'ArrowUp' :

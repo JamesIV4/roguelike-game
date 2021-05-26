@@ -1,5 +1,7 @@
 body {
 	height: 100%;
+	letter-spacing: normal;
+	line-height: normal;
 	margin: 0;
 	overflow: hidden;
 	padding: 0;
@@ -45,8 +47,10 @@ body {
 
 			.title-header {
 				color: #fff;
+				font-family: 'Rajdhani', sans-serif;
 				font-size: 4.5rem;
 				font-weight: 900;
+				letter-spacing: normal;
 				line-height: 1.1;
 				margin: 0 0 1rem 0;
 			}
@@ -64,6 +68,7 @@ body {
 				font-size: 1.3rem;
 				font-weight: 700;
 				justify-content: center;
+				letter-spacing: normal;
 				margin-bottom: 0.6rem;
 				margin-top: 1.5rem;
 				padding: 0.3rem 1rem;
@@ -93,6 +98,7 @@ body {
 				font-family: 'Rajdhani', sans-serif;
 				font-size: 1.3rem;
 				font-weight: 700;
+				letter-spacing: normal;
 				margin: 0;
 
 				&:not(:first-of-type) {
@@ -113,6 +119,7 @@ body {
 				font-size: 1.3rem;
 				font-weight: 700;
 				justify-content: center;
+				letter-spacing: normal;
 				margin-bottom: 0.6rem;
 				margin-top: 1.5rem;
 				padding: 0.3rem 1rem;
