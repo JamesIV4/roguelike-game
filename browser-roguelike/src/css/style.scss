@@ -72,23 +72,24 @@ body {
 
 		#message {
 			align-items: center;
-			background-color: #fff;
+			background-color: rgba(11, 10, 10, 0.85);
 			border: #ff6f6f solid 5px;
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 			left: 50%;
+			max-width: 450px;
 			opacity: 0;
-			padding: 3%;
+			padding: 1%;
 			position: fixed;
 			text-align: center;
 			top: 50%;
 			transform: translate(-50%, -50%);
 			transition: opacity 0.35s;
-			width: 45%;
 			z-index: 0;
 
 			p {
+				color: #fff;
 				font-family: 'Rajdhani', sans-serif;
 				font-size: 1.3rem;
 				font-weight: 700;
