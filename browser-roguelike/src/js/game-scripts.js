@@ -493,11 +493,6 @@ function toggleCenterMode() {
 		options.centerMode = false;
 		centerPlayerInScreen();
 	}
-
-	// Center mode will return the camera to the player. This can dysync the viewing goal state, so reset it here
-	if (viewingGoal) {
-		viewingGoal = false;
-	}
 }
 
 function centerPlayerInScreen() {
@@ -526,6 +521,11 @@ function centerPlayerInScreen() {
 	}
 
 	overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+
+	// Center mode will return the camera to the player. This can dysync the viewing goal state, so reset it here
+	if (viewingGoal) {
+		viewingGoal = false;
+	}
 }
 
 function showGoal() {
@@ -637,8 +637,6 @@ function movePlayer(direction) {
 	if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
 		// Update the visuals
 		renderPlayer(newPos);
-		//player.elem.classList.remove('player');
-		//newCell.classList.add('player');
 
 		// Update the levelStore
 		levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
