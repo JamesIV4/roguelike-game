@@ -828,12 +828,10 @@ function getHighscoreList() {
 
 	list = cookieOutput.split('|');
 
-	list.forEach(function handle(item, index) {
-		var list2;
-		list2 = item.split('-');
-
-		list[index] = list2;
-	});
+	// Split the turns and retires into another array, since the first
+	for (let i = 0; i < list.length; i++) {
+		list[i] = list[i].split('-');
+	}
 	
 	// First sort by number of retries, then sort by number of turns
 	list.sort(function handle(a, b){
