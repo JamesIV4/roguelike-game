@@ -1,6 +1,5 @@
 _etc
 build/
-dist/
 ingest/
 node_modules/
 tmp/
