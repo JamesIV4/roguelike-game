@@ -8,7 +8,7 @@ const {
 	sfnum
 } = sponsor;
 
-const sponsorPath = `consumer_assets/site_images/sponsored_programs/${client}/${brand}/${furl}`;
+const sponsorPath = `img/`;
 
 module.exports = (grunt) => {
 	require('load-grunt-tasks')(grunt);
@@ -60,7 +60,7 @@ module.exports = (grunt) => {
 				options: {
 					process: content => content
 						.replace(/url\((?:(?:(["'])?img\/(.+?\.(?:jpe?g|gif|png|svg))\1?))\)/g, `url({IMAGE_SERVER_URL}/${site}/${sponsorPath}/$2)`)
-						.replace(/src="img\/(.+?\.(?:jpe?g|gif|pdf|png|svg|js|json|html?))"/g, `src="{IMAGE_SERVER_URL}/${site}/${sponsorPath}/$1"`)
+						.replace(/src="img\/(.+?\.(?:jpe?g|gif|pdf|png|svg|js|json|html?))"/g, `src="{IMAGE_SERVER_URL}/${sponsorPath}/$1"`)
 				},
 				files: [{
 					expand: true,
@@ -73,7 +73,7 @@ module.exports = (grunt) => {
 				options: {
 					process: content => content
 						.replace(/url\((?:(?:(["'])?img\/(.+?\.(?:jpe?g|gif|png|svg))\1?))\)/g, `url({IMAGE_SERVER_URL}/${site}/${sponsorPath}/$2)`)
-						.replace(/src="img\/(.+?\.(?:jpe?g|gif|pdf|png|svg|js|json|html?))"/g, `src="{IMAGE_SERVER_URL}/${site}/${sponsorPath}/$1"`)
+						.replace(/src="img\/(.+?\.(?:jpe?g|gif|pdf|png|svg|js|json|html?))"/g, `src="{IMAGE_SERVER_URL}/${sponsorPath}/$1"`)
 						.replace(/img\.webmd\.com\/conspon/g,'img.staging.webmd.com/conspon')
 				},
 				files: [
@@ -81,7 +81,7 @@ module.exports = (grunt) => {
 						expand: true,
 						cwd: 'docs/',
 						src: '**/*.js',
-						dest: `docs/${site}/${sponsorPath}/`
+						dest: `docs/imgs`
 					}
 				]
 			},
@@ -90,7 +90,7 @@ module.exports = (grunt) => {
 					expand: true,
 					cwd: 'src/img/',
 					src: '**/*',
-					dest: `docs/${site}/${sponsorPath}/`
+					dest: `docs/imgs`
 				}]
 			}
 		},
