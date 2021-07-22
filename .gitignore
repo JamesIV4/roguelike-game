@@ -5,7 +5,6 @@ node_modules/
 tmp/
 **/*.css.map
 .sass-cache/
-docs/
 **/*.php
 **/*.zip
 **/*.css
