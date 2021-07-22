@@ -7,7 +7,6 @@ tmp/
 .sass-cache/
 **/*.php
 **/*.zip
-**/*.css
 **/*.zip
 **/i
 **/img
