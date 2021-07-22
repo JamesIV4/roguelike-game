@@ -25,23 +25,23 @@ module.exports = (grunt) => {
 			options: {
 				sourceMap: false
 			},
-			dist: {
+			docs: {
 				files: [{
 					expand: true,
 					cwd: 'src/',
 					src: '**/*.js',
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			}
 		},
 		'clean': {
-			all: ['dist/', '*.xlsx']
+			all: ['docs/', '*.xlsx']
 		},
 		'cleanempty': {
 			options: {
 				noJunk: true
 			},
-			all: ['dist/**']
+			all: ['docs/**']
 		},
 		'copy': {
 			css: {
@@ -51,9 +51,9 @@ module.exports = (grunt) => {
 				},
 				files: [{
 					expand: true,
-					cwd: 'dist/',
+					cwd: 'docs/',
 					src: '**/*.css',
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			},
 			html: {
@@ -66,7 +66,7 @@ module.exports = (grunt) => {
 					expand: true,
 					cwd: 'src/',
 					src: '**/*.htm?(l)',
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			},
 			js: {
@@ -79,9 +79,9 @@ module.exports = (grunt) => {
 				files: [
 					{
 						expand: true,
-						cwd: 'dist/',
+						cwd: 'docs/',
 						src: '**/*.js',
-						dest: `dist/${site}/${sponsorPath}/`
+						dest: `docs/${site}/${sponsorPath}/`
 					}
 				]
 			},
@@ -90,17 +90,17 @@ module.exports = (grunt) => {
 					expand: true,
 					cwd: 'src/img/',
 					src: '**/*',
-					dest: `dist/${site}/${sponsorPath}/`
+					dest: `docs/${site}/${sponsorPath}/`
 				}]
 			}
 		},
 		'cssmin': {
-			dist: {
+			docs: {
 				files: [{
 					expand: true,
-					cwd: 'dist/',
+					cwd: 'docs/',
 					src: '**/*.css',
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			}
 		},
@@ -116,7 +116,7 @@ module.exports = (grunt) => {
 			cwd: '.'
 		},
 		'htmlmin': {
-			dist: {
+			docs: {
 				options: {
 					removeComments: false,
 					collapseBooleanAttributes: true,
@@ -130,9 +130,9 @@ module.exports = (grunt) => {
 				},
 				files: [{
 					expand: true,
-					cwd: 'dist/',
+					cwd: 'docs/',
 					src: '*.htm?(l)',
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			}
 		},
@@ -159,20 +159,20 @@ module.exports = (grunt) => {
 					require('autoprefixer')({ browsers: ['last 1 version', 'ie 11'] })
 				]
 			},
-			dist: {
-				src: 'dist/*.css'
+			docs: {
+				src: 'docs/*.css'
 			}
 		},
 		'sass': {
 			options: {
 				implementation: require('node-sass')
 			},
-			dist: {
+			docs: {
 				files: [{
 					expand: true,
 					cwd: 'src/',
 					src: '**/*.scss',
-					dest: 'dist/',
+					dest: 'docs/',
 					ext: '.css'
 				}]
 			}
@@ -200,9 +200,9 @@ module.exports = (grunt) => {
 			assets: {
 				files: [{
 					expand: true,
-					cwd: 'dist/',
+					cwd: 'docs/',
 					src: ['**/*.js'],
-					dest: 'dist/'
+					dest: 'docs/'
 				}]
 			}
 		},
@@ -213,8 +213,8 @@ module.exports = (grunt) => {
 				},
 				files: {
 					src: [
-						'dist/**/*.css',
-						'dist/**/*.js'
+						'docs/**/*.css',
+						'docs/**/*.js'
 					]
 				}
 			}
@@ -249,7 +249,7 @@ module.exports = (grunt) => {
 			webmd: {
 				files: [{
 					expand: true,
-					cwd: 'dist/',
+					cwd: 'docs/',
 					src: 'webmd/',
 					dest: 'ingest.zip'
 				}]
