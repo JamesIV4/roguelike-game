@@ -174,7 +174,7 @@ body {
 			}
 
 			#show-goal {
-				background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/target.svg');
+				background-image: url('imgs/target.svg');
 				background-position: center;
 				background-repeat: no-repeat;
 				background-size: 70%;
@@ -182,7 +182,7 @@ body {
 			}
 
 			#switch-camera {
-				background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/camera.svg');
+				background-image: url('imgs/camera.svg');
 				background-position: center;
 				background-repeat: no-repeat;
 				background-size: 70%;
@@ -192,7 +192,7 @@ body {
 	}
 
 	&.titlescreen {
-		background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/fire-swirl-2.jpg');
+		background-image: url('imgs/fire-swirl-2.jpg');
 		background-position: center;
 		background-repeat: no-repeat;
 		background-size: cover;
@@ -242,79 +242,79 @@ body {
 				}
 
 				&.wall {
-					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-wall.png');
+					background-image: url('imgs/js-game-wall.png');
 				}
 
 				&.floor {
-					background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-empty-1px.gif');
+					background-image: url('imgs/floor-empty-1px.gif');
 
 					&.sidewall {
 						&.top {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-top.png');
+							background-image: url('imgs/floor-edge-top.png');
 						}
 
 						&.left {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-left.png');
+							background-image: url('imgs/floor-edge-left.png');
 						}
 
 						&.right {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-edge-right.png');
+							background-image: url('imgs/floor-edge-right.png');
 						}
 
 						&.bottom {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-empty-1px.gif');
+							background-image: url('imgs/floor-empty-1px.gif');
 						}
 					}
 
 					&.corner {
 						&.top-left {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-top-left.png');
+							background-image: url('imgs/floor-corner-top-left.png');
 						}
 
 						&.top-right {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-top-right.png');
+							background-image: url('imgs/floor-corner-top-right.png');
 						}
 
 						&.bottom-left {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-bottom-left.png');
+							background-image: url('imgs/floor-corner-bottom-left.png');
 						}
 
 						&.bottom-right {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-corner-bottom-right.png');
+							background-image: url('imgs/floor-corner-bottom-right.png');
 						}
 					}
 
 					&.hall {
 						&.up {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-hall-up.png');
+							background-image: url('imgs/floor-hall-up.png');
 						}
 
 						&.side {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-hall-side.png');
+							background-image: url('imgs/floor-hall-side.png');
 						}
 					}
 
 					&.cap {
 						&.top {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-top.png');
+							background-image: url('imgs/floor-cap-top.png');
 						}
 
 						&.left {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-left.png');
+							background-image: url('imgs/floor-cap-left.png');
 						}
 
 						&.right {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-right.png');
+							background-image: url('imgs/floor-cap-right.png');
 						}
 
 						&.bottom {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/floor-cap-bottom.png');
+							background-image: url('imgs/floor-cap-bottom.png');
 						}
 					}
 
 					&.player {
 						&::after {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-knight.png');
+							background-image: url('imgs/js-game-knight.png');
 							background-size: cover;
 							content: '';
 							display: block;
@@ -326,7 +326,7 @@ body {
 
 						&.ashes {
 							&::after {
-								background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/ashes-2e.gif');
+								background-image: url('imgs/ashes-2e.gif');
 								z-index: 101;
 							}
 						}
@@ -334,7 +334,7 @@ body {
 
 					&.enemy {
 						&::after {
-							background-image: url('http://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/test/jpound/js-game-monster3.png');
+							background-image: url('imgs/js-game-monster3.png');
 							background-size: cover;
 							content: '';
 							display: block;
