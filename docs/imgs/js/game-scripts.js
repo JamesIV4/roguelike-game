@@ -1,4 +1,4 @@
-/* gh-pages#8c5f20c - James Pound @ 2021-07-22 19:47 */
+/* gh-pages#222d3c3 - James Pound @ 2021-08-03 12:58 */
 "use strict";
 
 /* eslint-disable no-console */
@@ -724,7 +724,7 @@ function displayVictoryMessage() {
   if (levelData.length === currentLevel + 1) {
     // Only happens if you're on the last level
     if (sessionStats.retries === 0) {
-      message.innerHTML = 'Perfect run! You beat the game with no reties.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + sessionStats.turnsLevel + ' turns, and beat the game in ' + sessionStats.turnsTotal + ' turns. Good job!';
+      message.innerHTML = 'Perfect run! You beat the game with no retries.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + sessionStats.turnsLevel + ' turns, and beat the game in ' + sessionStats.turnsTotal + ' turns. Good job!';
     } else {
       message.innerHTML = 'You win! You beat the game.<br /><br />You completed level ' + (currentLevel + 1) + ' in ' + sessionStats.turnsLevel + ' turns, and beat the game in ' + sessionStats.turnsTotal + ' turns, with ' + sessionStats.retries + ' retries. Good job!';
     }
