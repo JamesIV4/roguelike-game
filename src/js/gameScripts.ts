@@ -210,9 +210,7 @@ type SessionStats = {
         elemRow.appendChild(elemCell);
 
         // Add to level store tracking
-        levelStore[currentLevel][rowIndex].push(
-          new Cell(elemCell, rowIndex + '-' + cellIndex)
-        );
+        levelStore[currentLevel][rowIndex].push(new Cell(elemCell, rowIndex + '-' + cellIndex));
 
         switch (cell) {
           case '.':
@@ -228,13 +226,7 @@ type SessionStats = {
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             break;
           case '@':
-            player = new Player(
-              elemCell,
-              1,
-              [rowIndex, cellIndex],
-              'player',
-              100
-            );
+            player = new Player(elemCell, 1, [rowIndex, cellIndex], 'player', 100);
 
             elemCell.classList.add('floor');
             elemCell.classList.add('player');
@@ -246,23 +238,12 @@ type SessionStats = {
             break;
           case 'F':
             enemyCounter++;
-            enemies[currentLevel].push(
-              new Enemy(
-                elemCell,
-                enemyCounter,
-                [rowIndex, cellIndex],
-                'fire-vortex',
-                100
-              )
-            );
+            enemies[currentLevel].push(new Enemy(elemCell, enemyCounter, [rowIndex, cellIndex], 'fire-vortex', 100));
 
             elemCell.classList.add('floor');
             elemCell.classList.add('enemy');
             elemCell.classList.add('enemy-' + enemyCounter);
-            renderEnemy(
-              enemies[currentLevel][enemyCounter - 1],
-              enemies[currentLevel][enemyCounter - 1].pos
-            );
+            renderEnemy(enemies[currentLevel][enemyCounter - 1], enemies[currentLevel][enemyCounter - 1].pos);
 
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
@@ -273,9 +254,7 @@ type SessionStats = {
             elemCell.classList.add('goal');
 
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
-            levelStore[currentLevel][rowIndex][cellIndex].inside.push(
-              'stairsDown'
-            );
+            levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
             break;
         }
       }
@@ -309,12 +288,7 @@ type SessionStats = {
       grid.classList.add('no-anim'); // Move characters instantly during zoom
 
       sessionStats.zoomLevel++;
-      zoomLevelStyle.innerHTML =
-        '#display-wrapper #game-grid .row .cell {height: ' +
-        sessionStats.zoomLevel * 8 +
-        'px !important; width: ' +
-        sessionStats.zoomLevel * 8 +
-        'px !important;}';
+      zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
       renderPlayer(player.pos);
       renderEnemies();
       centerPlayerInScreen();
@@ -326,12 +300,7 @@ type SessionStats = {
         grid.classList.add('no-anim'); // Move characters instantly during zoom
 
         sessionStats.zoomLevel--;
-        zoomLevelStyle.innerHTML =
-          '#display-wrapper #game-grid .row .cell {height: ' +
-          sessionStats.zoomLevel * 8 +
-          'px !important; width: ' +
-          sessionStats.zoomLevel * 8 +
-          'px !important;}';
+        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
         renderPlayer(player.pos);
         renderEnemies();
         centerPlayerInScreen();
@@ -343,42 +312,18 @@ type SessionStats = {
 
   const drawDecorations = () => {
     // After the levelStore is initialized, go over it again and add the floor and wall decorations
-    for (
-      let rowStore = 0;
-      rowStore < levelStore[currentLevel].length;
-      rowStore++
-    ) {
-      for (
-        let cellStore = 0;
-        cellStore < levelStore[currentLevel][rowStore].length;
-        cellStore++
-      ) {
+    for (let rowStore = 0; rowStore < levelStore[currentLevel].length; rowStore++) {
+      for (let cellStore = 0; cellStore < levelStore[currentLevel][rowStore].length; cellStore++) {
         let cell = levelStore[currentLevel][rowStore][cellStore];
         if (cell === '' || cell === undefined) continue; // Skip if cell is empty or undefined
 
         // Ensure cell is valid and has a 'type'
         if (cell.type === 'floor') {
           // Safeguard against out-of-bounds access
-          const wallTop =
-            (rowStore > 0 &&
-              levelStore[currentLevel][rowStore - 1][cellStore]?.type ===
-                'wall') ||
-            false;
-          const wallRight =
-            (cellStore < levelStore[currentLevel][rowStore].length - 1 &&
-              levelStore[currentLevel][rowStore][cellStore + 1]?.type ===
-                'wall') ||
-            false;
-          const wallBottom =
-            (rowStore < levelStore[currentLevel].length - 1 &&
-              levelStore[currentLevel][rowStore + 1][cellStore]?.type ===
-                'wall') ||
-            false;
-          const wallLeft =
-            (cellStore > 0 &&
-              levelStore[currentLevel][rowStore][cellStore - 1]?.type ===
-                'wall') ||
-            false;
+          const wallTop = (rowStore > 0 && levelStore[currentLevel][rowStore - 1][cellStore]?.type === 'wall') || false;
+          const wallRight = (cellStore < levelStore[currentLevel][rowStore].length - 1 && levelStore[currentLevel][rowStore][cellStore + 1]?.type === 'wall') || false;
+          const wallBottom = (rowStore < levelStore[currentLevel].length - 1 && levelStore[currentLevel][rowStore + 1][cellStore]?.type === 'wall') || false;
+          const wallLeft = (cellStore > 0 && levelStore[currentLevel][rowStore][cellStore - 1]?.type === 'wall') || false;
 
           // Sidewall top
           if (wallTop && !wallRight && !wallBottom && !wallLeft) {
@@ -499,50 +444,23 @@ type SessionStats = {
     let left;
 
     // Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
-    topLevelOffset =
-      (levelStore[currentLevel].length / 2 - player.pos[0]) *
-      sessionStats.zoomLevel *
-      4;
-    leftLevelOffset =
-      (levelStore[currentLevel][0].length / 2 - player.pos[1]) *
-      sessionStats.zoomLevel *
-      4;
+    topLevelOffset = (levelStore[currentLevel].length / 2 - player.pos[0]) * sessionStats.zoomLevel * 4;
+    leftLevelOffset = (levelStore[currentLevel][0].length / 2 - player.pos[1]) * sessionStats.zoomLevel * 4;
 
     if (options.centerMode === false) {
       // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
-      top =
-        player.elem.offsetTop * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerHeight / 2 -
-        Math.min(
-          Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1),
-          window.innerHeight / 3
-        );
+      top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
 
-      left =
-        player.elem.offsetLeft * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerWidth / 2 -
-        Math.min(
-          Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1),
-          window.innerWidth / 3
-        );
+      left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
 
       //console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
     } else {
       // Follow centered only
-      top =
-        player.elem.offsetTop * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerHeight / 2;
-      left =
-        player.elem.offsetLeft * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerWidth / 2;
+      top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+      left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
     }
 
-    overrides.innerHTML =
-      '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+    overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 
     // Center mode will return the camera to the player. This can de-sync the viewing goal state, so reset it here
     if (viewingGoal) {
@@ -559,21 +477,10 @@ type SessionStats = {
       centerPlayerInScreen();
       viewingGoal = false;
     } else {
-      top =
-        goal?.offsetTop * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerHeight / 2;
-      left =
-        goal?.offsetLeft * -1 -
-        sessionStats.zoomLevel * 4 +
-        window.innerWidth / 2;
+      top = goal?.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+      left = goal?.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
 
-      overrides.innerHTML =
-        '#display-wrapper #game-grid {top: ' +
-        top +
-        'px; left: ' +
-        left +
-        'px;}';
+      overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
       viewingGoal = true;
     }
   };
@@ -611,28 +518,13 @@ type SessionStats = {
     newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 
     // Do not allow movement onto a wall or another enemy
-    if (
-      levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' &&
-      levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') ===
-        -1
-    ) {
-      if (
-        levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf(
-          'player'
-        ) > -1
-      ) {
+    if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' && levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') === -1) {
+      if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('player') > -1) {
         death();
       }
 
       // Update the level database
-      levelStore[currentLevel][enemyObject.pos[0]][
-        enemyObject.pos[1]
-      ].inside.splice(
-        levelStore[currentLevel][enemyObject.pos[0]][
-          enemyObject.pos[1]
-        ].inside.indexOf('enemy'),
-        1
-      );
+      levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
       levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
 
       // Update the visuals
@@ -677,10 +569,7 @@ type SessionStats = {
     newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
 
     // Ran into an enemy
-    if (
-      levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') >
-      -1
-    ) {
+    if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
       death();
       return;
     }
@@ -690,12 +579,7 @@ type SessionStats = {
       renderPlayer(newPos);
 
       // Update the levelStore
-      levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(
-        levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf(
-          'player'
-        ),
-        1
-      );
+      levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
       levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('player');
 
       // Update player object
@@ -735,11 +619,7 @@ type SessionStats = {
   };
 
   const renderEnemies = () => {
-    for (
-      let enemyIndex = 0;
-      enemyIndex < enemies[currentLevel].length;
-      enemyIndex++
-    ) {
+    for (let enemyIndex = 0; enemyIndex < enemies[currentLevel].length; enemyIndex++) {
       let enemyObj = enemies[currentLevel][enemyIndex];
 
       renderEnemy(enemyObj, enemyObj.pos);
@@ -755,11 +635,7 @@ type SessionStats = {
   };
 
   const checkVictory = () => {
-    if (
-      levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf(
-        'stairsDown'
-      ) > -1
-    ) {
+    if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
       return true;
     } else {
       return false;
@@ -832,11 +708,7 @@ type SessionStats = {
     goToNewLevel(0); // Go to level 1
   };
 
-  const displayMessageBox = (
-    messageText: string,
-    btnText: string,
-    action: 'dismiss'
-  ) => {
+  const displayMessageBox = (messageText: string, btnText: string, action: 'dismiss') => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
@@ -905,11 +777,7 @@ type SessionStats = {
   };
 
   const submitHighscore = () => {
-    setCookie(
-      'highscores',
-      sessionStats.turnsTotal + '-' + sessionStats.retries,
-      1000000
-    );
+    setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
   };
 
   const getHighscoreList = () => {
@@ -940,12 +808,7 @@ type SessionStats = {
     const button = document.createElement('a');
     const button2 = document.createElement('a');
 
-    message.innerHTML =
-      'You beat level ' +
-      (currentLevel + 1) +
-      '!<br /><br />You completed it in ' +
-      sessionStats.turnsLevel +
-      ' turns. Good job!';
+    message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
 
     button.classList.add('btn');
     button.textContent = 'Play again';
@@ -1057,9 +920,7 @@ type SessionStats = {
     sessionStats.dead = true;
 
     message.innerHTML =
-      'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' +
-      sessionStats.turnsLevel +
-      ' turns.';
+      'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
 
     button.classList.add('btn');
     button.textContent = 'Try again';
@@ -1110,10 +971,7 @@ type SessionStats = {
     let yDiff = yDown - yUp;
 
     /* Determine touch direction */
-    if (
-      !sessionStats.dead &&
-      !document.getElementById('message')?.classList.contains('show')
-    ) {
+    if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
       if (Math.abs(xDiff) > Math.abs(yDiff)) {
         if (xDiff > 0) {
           /* left swipe */
@@ -1146,24 +1004,9 @@ type SessionStats = {
   document.addEventListener('touchmove', handleTouchMove, false);
 
   document.addEventListener('keydown', (e) => {
-    const keyList = [
-      'ArrowUp',
-      'ArrowRight',
-      'ArrowDown',
-      'ArrowDown',
-      'ArrowLeft',
-      'Space',
-      'Up',
-      'Right',
-      'Down',
-      'Left',
-      'Spacebar'
-    ];
+    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
 
-    if (
-      !sessionStats.dead &&
-      !document.getElementById('message')?.classList.contains('show')
-    ) {
+    if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
       // The message window isn't displayed, and you're not dead
       if (keyList.indexOf(e.key) > -1) {
         // Key matches one of the permitted keys

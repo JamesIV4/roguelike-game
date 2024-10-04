@@ -1,4 +1,4 @@
-// Generated: Friday, October 4, 2024 at 04:47:32 PM EDT
+// Generated: Friday, October 4, 2024 at 04:51:33 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -222,12 +222,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         zoomUp.addEventListener('click', () => {
             grid.classList.add('no-anim'); // Move characters instantly during zoom
             sessionStats.zoomLevel++;
-            zoomLevelStyle.innerHTML =
-                '#display-wrapper #game-grid .row .cell {height: ' +
-                    sessionStats.zoomLevel * 8 +
-                    'px !important; width: ' +
-                    sessionStats.zoomLevel * 8 +
-                    'px !important;}';
+            zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
             renderPlayer(player.pos);
             renderEnemies();
             centerPlayerInScreen();
@@ -237,12 +232,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             if (sessionStats.zoomLevel > 1) {
                 grid.classList.add('no-anim'); // Move characters instantly during zoom
                 sessionStats.zoomLevel--;
-                zoomLevelStyle.innerHTML =
-                    '#display-wrapper #game-grid .row .cell {height: ' +
-                        sessionStats.zoomLevel * 8 +
-                        'px !important; width: ' +
-                        sessionStats.zoomLevel * 8 +
-                        'px !important;}';
+                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
                 renderPlayer(player.pos);
                 renderEnemies();
                 centerPlayerInScreen();
@@ -261,22 +251,10 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 // Ensure cell is valid and has a 'type'
                 if (cell.type === 'floor') {
                     // Safeguard against out-of-bounds access
-                    const wallTop = (rowStore > 0 &&
-                        ((_a = levelStore[currentLevel][rowStore - 1][cellStore]) === null || _a === void 0 ? void 0 : _a.type) ===
-                            'wall') ||
-                        false;
-                    const wallRight = (cellStore < levelStore[currentLevel][rowStore].length - 1 &&
-                        ((_b = levelStore[currentLevel][rowStore][cellStore + 1]) === null || _b === void 0 ? void 0 : _b.type) ===
-                            'wall') ||
-                        false;
-                    const wallBottom = (rowStore < levelStore[currentLevel].length - 1 &&
-                        ((_c = levelStore[currentLevel][rowStore + 1][cellStore]) === null || _c === void 0 ? void 0 : _c.type) ===
-                            'wall') ||
-                        false;
-                    const wallLeft = (cellStore > 0 &&
-                        ((_d = levelStore[currentLevel][rowStore][cellStore - 1]) === null || _d === void 0 ? void 0 : _d.type) ===
-                            'wall') ||
-                        false;
+                    const wallTop = (rowStore > 0 && ((_a = levelStore[currentLevel][rowStore - 1][cellStore]) === null || _a === void 0 ? void 0 : _a.type) === 'wall') || false;
+                    const wallRight = (cellStore < levelStore[currentLevel][rowStore].length - 1 && ((_b = levelStore[currentLevel][rowStore][cellStore + 1]) === null || _b === void 0 ? void 0 : _b.type) === 'wall') || false;
+                    const wallBottom = (rowStore < levelStore[currentLevel].length - 1 && ((_c = levelStore[currentLevel][rowStore + 1][cellStore]) === null || _c === void 0 ? void 0 : _c.type) === 'wall') || false;
+                    const wallLeft = (cellStore > 0 && ((_d = levelStore[currentLevel][rowStore][cellStore - 1]) === null || _d === void 0 ? void 0 : _d.type) === 'wall') || false;
                     // Sidewall top
                     if (wallTop && !wallRight && !wallBottom && !wallLeft) {
                         cell.elem.classList.add('sidewall');
@@ -381,41 +359,20 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         let top;
         let left;
         // Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
-        topLevelOffset =
-            (levelStore[currentLevel].length / 2 - player.pos[0]) *
-                sessionStats.zoomLevel *
-                4;
-        leftLevelOffset =
-            (levelStore[currentLevel][0].length / 2 - player.pos[1]) *
-                sessionStats.zoomLevel *
-                4;
+        topLevelOffset = (levelStore[currentLevel].length / 2 - player.pos[0]) * sessionStats.zoomLevel * 4;
+        leftLevelOffset = (levelStore[currentLevel][0].length / 2 - player.pos[1]) * sessionStats.zoomLevel * 4;
         if (options.centerMode === false) {
             // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
-            top =
-                player.elem.offsetTop * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerHeight / 2 -
-                    Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
-            left =
-                player.elem.offsetLeft * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerWidth / 2 -
-                    Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
+            top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
+            left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
             //console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
         }
         else {
             // Follow centered only
-            top =
-                player.elem.offsetTop * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerHeight / 2;
-            left =
-                player.elem.offsetLeft * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerWidth / 2;
+            top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+            left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
         }
-        overrides.innerHTML =
-            '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+        overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
         // Center mode will return the camera to the player. This can de-sync the viewing goal state, so reset it here
         if (viewingGoal) {
             viewingGoal = false;
@@ -428,20 +385,9 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             viewingGoal = false;
         }
         else {
-            top =
-                (goal === null || goal === void 0 ? void 0 : goal.offsetTop) * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerHeight / 2;
-            left =
-                (goal === null || goal === void 0 ? void 0 : goal.offsetLeft) * -1 -
-                    sessionStats.zoomLevel * 4 +
-                    window.innerWidth / 2;
-            overrides.innerHTML =
-                '#display-wrapper #game-grid {top: ' +
-                    top +
-                    'px; left: ' +
-                    left +
-                    'px;}';
+            top = (goal === null || goal === void 0 ? void 0 : goal.offsetTop) * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+            left = (goal === null || goal === void 0 ? void 0 : goal.offsetLeft) * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
+            overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
             viewingGoal = true;
         }
     };
@@ -472,9 +418,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }
         newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
         // Do not allow movement onto a wall or another enemy
-        if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' &&
-            levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') ===
-                -1) {
+        if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' && levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') === -1) {
             if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('player') > -1) {
                 death();
             }
@@ -517,8 +461,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }
         newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
         // Ran into an enemy
-        if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') >
-            -1) {
+        if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
             death();
             return;
         }
@@ -710,12 +653,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         const message = document.createElement('p');
         const button = document.createElement('a');
         const button2 = document.createElement('a');
-        message.innerHTML =
-            'You beat level ' +
-                (currentLevel + 1) +
-                '!<br /><br />You completed it in ' +
-                sessionStats.turnsLevel +
-                ' turns. Good job!';
+        message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
         button.classList.add('btn');
         button.textContent = 'Play again';
         button2.classList.add('btn');
@@ -808,9 +746,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         playerGraphic === null || playerGraphic === void 0 ? void 0 : playerGraphic.classList.add('ashes');
         sessionStats.dead = true;
         message.innerHTML =
-            'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' +
-                sessionStats.turnsLevel +
-                ' turns.';
+            'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
         button.classList.add('btn');
         button.textContent = 'Try again';
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
@@ -848,8 +784,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         let xDiff = xDown - xUp;
         let yDiff = yDown - yUp;
         /* Determine touch direction */
-        if (!sessionStats.dead &&
-            !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
+        if (!sessionStats.dead && !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
             if (Math.abs(xDiff) > Math.abs(yDiff)) {
                 if (xDiff > 0) {
                     /* left swipe */
@@ -882,21 +817,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     document.addEventListener('touchmove', handleTouchMove, false);
     document.addEventListener('keydown', (e) => {
         var _a;
-        const keyList = [
-            'ArrowUp',
-            'ArrowRight',
-            'ArrowDown',
-            'ArrowDown',
-            'ArrowLeft',
-            'Space',
-            'Up',
-            'Right',
-            'Down',
-            'Left',
-            'Spacebar'
-        ];
-        if (!sessionStats.dead &&
-            !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
+        const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+        if (!sessionStats.dead && !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
             // The message window isn't displayed, and you're not dead
             if (keyList.indexOf(e.key) > -1) {
                 // Key matches one of the permitted keys
