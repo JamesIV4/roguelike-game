@@ -1,108 +1,11 @@
-/* eslint-disable no-console */
-/* eslint-disable no-unused-vars */
+import { levelData } from './levels.js';
 
-(runGame = () => {
-  const levelData = [
-    `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
-.,.,.,.,.,.,#,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,#,,#,#,#,,#,,#,F,#,.,.,.
-.,.,.,#,#,#,#,,#,#,#,,#,#,#,,#,.,.,.
-.,.,.,#,,,,F,,#,#,,,,,,#,.,.,.
-.,.,.,#,F,,,,,#,#,#,#,#,#,#,#,.,.,.
-.,.,.,#,,,,,,,,,,#,#,#,#,#,#,#
-.,.,.,#,,,F,,,#,#,#,,#,#,,,,,#
-.,.,.,#,,,,,,#,.,#,,#,#,,,C,,#
-.,.,.,#,,,,,,#,.,#,,#,#,,F,,,#
-.,.,.,#,#,#,,#,#,#,.,#,,#,#,,,,,#
-.,.,.,.,.,#,,#,.,.,.,#,,#,#,,,,,#
-.,.,#,#,#,#,,#,#,#,#,#,,#,#,,#,#,#,#
-.,.,#,,,,,,,,,#,,,,,#,.,.,.
-.,.,#,,,,,,,,,#,#,#,#,#,#,.,.,.
-.,.,#,,,,,,,@,,#,.,.,.,.,.,.,.,.
-.,.,#,,,,,,,,,#,.,.,.,.,.,.,.,.
-.,.,#,,,,,,,,,#,.,.,.,.,.,.,.,.
-.,.,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`,
-    `.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.
-.,.,#,#,#,#,#,#,#,#,.,#,,,,,#,.,.,.,.,.,.,.,.,.,.,.
-.,.,#,,,,,,,#,#,#,,#,#,,#,.,.,.,.,.,.,.,.,.,.,.
-.,.,#,,@,,,,,#,#,,,,#,,#,.,.,.,.,.,.,.,.,.,.,.
-.,.,#,,,,,,,#,#,,F,,#,,#,.,.,.,.,.,.,.,.,.,.,.
-.,.,#,#,#,,#,#,#,#,#,,,,#,,#,#,#,#,#,#,#,#,#,#,.,.
-.,.,.,.,#,,#,.,.,.,#,,,,#,,#,#,,,,,,,,#,.,.
-.,.,.,.,#,,#,#,#,#,#,,,F,#,,#,#,,,F,,,,,#,.,.
-.,.,.,.,#,,,,,,,,,,#,,#,#,,,,,,,,#,.,.
-.,.,.,.,#,,#,#,#,#,#,,,,#,,,,,,,,F,,,#,.,.
-.,.,.,.,#,,#,.,.,.,#,,,,#,#,#,#,,,,,,,,#,.,.
-.,.,.,.,#,,#,.,.,.,#,,,,#,.,.,#,,,,,,,,#,.,.
-.,#,#,#,#,,#,#,#,.,#,,,,#,.,.,#,#,#,,#,#,#,#,#,.,.
-.,#,,,,,,,#,.,#,#,,#,#,.,.,.,.,#,,#,.,.,.,.,.,.
-.,#,,,,,F,,#,.,.,#,,#,.,.,.,#,#,#,,#,#,#,#,.,.,.
-.,#,,,,,,,#,.,.,#,,#,.,.,.,#,F,,,,,C,#,.,.,.
-.,#,,,,,,,#,.,.,#,,#,.,.,.,#,#,#,,#,#,#,#,.,.,.
-.,#,#,#,#,#,#,#,#,.,.,#,,#,.,.,.,.,.,#,,#,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,#,,#,#,#,#,#,#,#,,#,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,#,,,F,,,,,,,#,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`,
-    `.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,#,.,.
-.,.,.,#,#,#,.,#,.,#,.,.,#,.,.,#,.,.,.,#,.,#,.,#,.,.,#,#,#,#,.,.,#,,,,,,,,,,,#,.,.
-.,.,.,.,#,.,.,#,.,#,.,#,.,#,.,#,#,.,.,#,.,#,#,.,.,.,#,.,.,.,.,.,#,,C,,,,,,,,,#,.,.
-.,.,.,.,#,.,.,#,#,#,.,#,#,#,.,#,.,#,.,#,.,#,#,.,.,.,#,#,#,#,.,.,#,,,,,,,,,,,#,.,.
-.,.,.,.,#,.,.,#,.,#,.,#,.,#,.,#,.,.,#,#,.,#,.,#,.,.,.,.,.,#,.,.,#,,,,,,,,,,,#,.,.
-.,.,.,.,#,.,.,#,.,#,.,#,.,#,.,#,.,.,.,#,.,#,.,.,#,.,#,#,#,#,.,.,#,#,#,#,#,#,,,#,#,#,#,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,#,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,#,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,,,#,#,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,,,,,,,,F,,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,F,,,,F,,,,,,F,,,,,,#,.,.,.
-.,.,.,.,.,.,.,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,F,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,#,,F,,#,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,#,,,,#,.,.,.,.,#,#,#,#,#,.,.,#,,,,,,,,F,,,,,F,,,,,,#,.,.,.
-.,.,.,.,#,#,#,#,,,,#,#,#,#,#,#,,,,#,#,#,#,,,,F,,,,,,,,,,,,,F,,#,.,.,.
-.,.,.,.,#,,,,,,,,,,,,,,,,,,,,,,,,,,,,F,,,F,,,,,,,#,.,.,.
-.,.,.,.,#,,#,#,,,,#,#,#,#,#,#,#,#,#,#,#,#,#,,,,,,,,,,,,,,,F,,,,#,.,.,.
-.,.,.,.,#,,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,#,,,,F,,,,,F,,,,,,,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,,F,,,,,,,,,,F,,,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,#,#,#,#,#,#,#,#,#,#,.,.,#,,,,,,,F,,,F,,,,,,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,#,,F,,,,,,,#,.,.,#,,,,,,,,,,,,,,,F,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,#,,,,F,,F,,,#,#,#,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,#,,#,.,.,.,.,#,,,#,#,,,,,,,,,,,,F,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,#,#,,#,#,#,.,.,#,,,,#,#,,,,,,,,,,,,,,,,,,,F,,,,,,,#,.,.,.
-.,.,.,#,,,,,#,.,.,#,,F,,,#,#,,,#,#,#,#,,,,,,,,,F,,,,,,F,,,,#,.,.,.
-.,.,.,#,,,,,#,#,#,#,,,,,,,,,#,.,.,#,,,F,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,#,,F,,,,,,,,,,,,,,,#,.,.,#,,,,,,,F,,,,F,,,,,,,,#,.,.,.
-.,.,.,#,,,,,,,,,,,,,,,,,#,.,.,#,,,,,F,,,,,,,,,,,F,,,#,.,.,.
-.,.,.,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,,#,#,.,.,#,,,,,,,,,F,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,#,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,#,,#,.,.,.,#,,,,,,,,,,,,,,,,,,,#,.,.,.
-.,.,.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,,#,.,.,.,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,.,.,.
-.,.,.,.,.,.,.,.,#,,,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,#,,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,#,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,#,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,#,#,#,#,#,#,#,,#,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,,,,,,F,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,@,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,,,,,,,,,,,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,#,#,#,#,#,#,#,#,#,#,#,#,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.
-.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`
-  ];
-
+(() => {
   let currentLevel = 0;
-  let levelStore = [];
-  let enemies = [];
+  let levelStore: any[] = [];
+  let enemies: any[] = [];
   let enemyCounter = 0;
-  let player;
+  let player: Player;
   let viewingGoal = false;
   let options = {
     centerMode: false
@@ -116,44 +19,87 @@
   };
 
   // Touch controls variables
-  let xDown = null;
-  let yDown = null;
+  let xDown: number | null = null;
+  let yDown: number | null = null;
 
   // Style overrides block
   const overrides = document.createElement('style');
   const zoomLevelStyle = document.createElement('style');
   const stylePlayer = document.createElement('style');
-  document.querySelector('head').appendChild(overrides);
-  document.querySelector('head').appendChild(zoomLevelStyle);
-  document.querySelector('head').appendChild(stylePlayer);
+  document.querySelector('head')?.appendChild(overrides);
+  document.querySelector('head')?.appendChild(zoomLevelStyle);
+  document.querySelector('head')?.appendChild(stylePlayer);
 
   // UNIT prototypes
   class Enemy {
-    constructor(elem, id, pos, type, health) {
+    elem: HTMLElement;
+    id: number;
+    pos: number[];
+    type: string;
+    health: number;
+    stylePos: HTMLStyleElement;
+    moveTries: number;
+
+    constructor(
+      elem: HTMLElement,
+      id: number,
+      pos: number[],
+      type: string,
+      health: number
+    ) {
       this.elem = elem;
       this.id = id;
       this.type = type;
       this.health = health;
       this.pos = pos;
-
       this.stylePos = document.createElement('style');
-      document.querySelector('head').appendChild(this.stylePos);
+      this.moveTries = 0;
+
+      document.querySelector('head')?.appendChild(this.stylePos);
     }
   }
 
   class Player {
-    constructor(elem, id, pos, type, health) {
+    elem: HTMLElement;
+    id: number;
+    pos: number[];
+    type: string;
+    health: number;
+
+    constructor(
+      elem: HTMLElement,
+      id: number,
+      pos: number[],
+      type: string,
+      health: number
+    ) {
       this.elem = elem;
       this.id = id;
       this.type = type;
       this.health = health;
       this.pos = pos;
+    }
+
+    reset() {
+      // Reset to default values
+      this.pos = [];
+      this.health = 100;
     }
   }
 
   // Map prototypes
   class Cell {
-    constructor(elem, id, type, inside = []) {
+    elem: HTMLElement;
+    id: any;
+    type?: string;
+    inside?: any[];
+
+    constructor(
+      elem: HTMLElement,
+      id: string,
+      type?: string,
+      inside: any = []
+    ) {
       this.elem = elem;
       this.id = id;
       this.type = type;
@@ -180,13 +126,13 @@
     btnStartNormal.classList.add('btn');
     btnStartProcudural.classList.add('btn');
 
-    background.classList.add('titlescreen');
+    background?.classList.add('titlescreen');
 
     titleHeader.textContent = 'Fire Gauntlet';
     btnStartNormal.textContent = 'Start Normal Game';
     btnStartProcudural.textContent = 'Start Procedural Game';
 
-    background.appendChild(uiElem);
+    background?.appendChild(uiElem);
     titleContainer.appendChild(titleHeader);
     titleContainer.appendChild(buttonContainer);
     buttonContainer.appendChild(btnStartNormal);
@@ -199,14 +145,12 @@
     }, 150);
 
     const closeTitlescreen = () => {
-      background.classList.remove('titlescreen');
+      background?.classList.remove('titlescreen');
       titleContainer.classList.remove('show');
 
       setTimeout(() => {
-        btnStartNormal.removeEventListener('click', destroyTitlescreen);
-        btnStartProcudural.removeEventListener('click', destroyTitlescreen);
         uiElem.removeChild(titleContainer);
-        background.removeChild(uiElem);
+        background?.removeChild(uiElem);
       }, 1000);
     };
 
@@ -224,7 +168,7 @@
     });
   };
 
-  const drawScreen = (selectedLevel) => {
+  const drawScreen = (selectedLevel: any) => {
     const background = document.querySelector('#display-wrapper'),
       grid = document.createElement('div'),
       messageWindow = document.createElement('div'),
@@ -255,7 +199,7 @@
     // Initialize level storage
     if (levelStore.length === currentLevel) {
       // If we're in a NEW level, add new arrays
-      levelStore.splice(currentLevel, 0, new Array()); // Create new array in the appropriate place.. may not work right, have to revisit
+      levelStore.splice(currentLevel, 0, [new Array()]); // Create new array in the appropriate place.. may not work right, have to revisit
       enemies.splice(currentLevel, 0, new Array());
     }
 
@@ -354,14 +298,14 @@
       }
     }
 
-    background.appendChild(uiElem);
+    background?.appendChild(uiElem);
     uiElem.appendChild(zoomButtons);
     uiElem.appendChild(messageWindow);
     zoomButtons.appendChild(switchCameraBtn);
     zoomButtons.appendChild(showGoalBtn);
     zoomButtons.appendChild(zoomUp);
     zoomButtons.appendChild(zoomDown);
-    background.appendChild(grid);
+    background?.appendChild(grid);
 
     renderPlayer(player.pos);
     drawDecorations();
@@ -573,10 +517,7 @@
         sessionStats.zoomLevel * 4 +
         window.innerHeight / 2 -
         Math.min(
-          Math.max(
-            parseInt(topLevelOffset * 0.75),
-            (window.innerHeight / 3) * -1
-          ),
+          Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1),
           window.innerHeight / 3
         );
 
@@ -585,10 +526,7 @@
         sessionStats.zoomLevel * 4 +
         window.innerWidth / 2 -
         Math.min(
-          Math.max(
-            parseInt(leftLevelOffset * 0.75),
-            (window.innerWidth / 3) * -1
-          ),
+          Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1),
           window.innerWidth / 3
         );
 
@@ -617,18 +555,18 @@
   const showGoal = () => {
     let top,
       left,
-      goal = document.querySelector('.goal');
+      goal: HTMLElement = document.querySelector('.goal')!;
 
     if (viewingGoal) {
       centerPlayerInScreen();
       viewingGoal = false;
     } else {
       top =
-        goal.offsetTop * -1 -
+        goal?.offsetTop * -1 -
         sessionStats.zoomLevel * 4 +
         window.innerHeight / 2;
       left =
-        goal.offsetLeft * -1 -
+        goal?.offsetLeft * -1 -
         sessionStats.zoomLevel * 4 +
         window.innerWidth / 2;
 
@@ -649,12 +587,13 @@
     }
   };
 
-  const moveEnemy = (enemyObject, direction) => {
+  const moveEnemy = (enemyObject: Enemy, direction: number) => {
     if (sessionStats.dead) {
       return;
     }
 
-    let newCell, newPos;
+    let newCell,
+      newPos: number[] = [];
 
     switch (direction) {
       case 1: // Up
@@ -718,8 +657,9 @@
     return Math.floor(Math.random() * 4 + 1);
   };
 
-  const movePlayer = (direction) => {
-    let newCell, newPos;
+  const movePlayer = (direction: number) => {
+    let newCell,
+      newPos: number[] = [];
 
     switch (direction) {
       case 1: // Up
@@ -768,7 +708,7 @@
     }
   };
 
-  const renderPlayer = (pos) => {
+  const renderPlayer = (pos: number[]) => {
     stylePlayer.innerHTML =
       '#display-wrapper #game-grid .row .cell.floor.player::after {top: ' +
       pos[0] * sessionStats.zoomLevel * 8 +
@@ -781,7 +721,7 @@
       'px;}';
   };
 
-  const renderEnemy = (enemyObj, pos) => {
+  const renderEnemy = (enemyObj: Enemy, pos: number[]) => {
     enemyObj.stylePos.innerHTML =
       '#display-wrapper #game-grid .row .cell.floor.enemy-' +
       enemyObj.id +
@@ -808,7 +748,7 @@
     }
   };
 
-  const cleanupEnemyStyles = (level) => {
+  const cleanupEnemyStyles = (level: number) => {
     for (let enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
       let enemyObj = enemies[level][enemyIndex];
 
@@ -830,7 +770,7 @@
 
   const retryLevel = () => {
     // Reset player
-    player = {};
+    player.reset();
 
     // Clean up enemies
     cleanupEnemyStyles(currentLevel);
@@ -857,11 +797,11 @@
       grid = document.querySelector('#game-grid'),
       ui = document.querySelector('#ui-display');
 
-    background.removeChild(ui);
-    background.removeChild(grid);
+    background?.removeChild(ui!);
+    background?.removeChild(grid!);
   };
 
-  const goToNewLevel = (newLevel) => {
+  const goToNewLevel = (newLevel: number) => {
     sessionStats.turnsLevel = 0;
     enemyCounter = 0;
 
@@ -889,7 +829,11 @@
     goToNewLevel(0); // Go to level 1
   };
 
-  const displayMessageBox = (messageText, btnText, action) => {
+  const displayMessageBox = (
+    messageText: string,
+    btnText: string,
+    action: 'dismiss'
+  ) => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
@@ -906,32 +850,28 @@
         case 'dismiss':
           closeMessageWindow();
           break;
-
-        default:
-          closeMessageWindow();
-          break;
       }
     });
 
-    messageBox.appendChild(message);
-    messageBox.appendChild(button);
+    messageBox?.appendChild(message);
+    messageBox?.appendChild(button);
 
-    messageBox.classList.add('top');
-    messageBox.classList.add('show');
+    messageBox?.classList.add('top');
+    messageBox?.classList.add('show');
 
     const closeMessageWindow = () => {
-      messageBox.classList.remove('show');
+      messageBox?.classList.remove('show');
 
       setTimeout(() => {
-        messageBox.classList.remove('top');
-        messageBox.removeChild(message);
-        messageBox.removeChild(button);
+        messageBox?.classList.remove('top');
+        messageBox?.removeChild(message);
+        messageBox?.removeChild(button);
         button.removeEventListener('click', closeMessageWindow);
       }, 360);
     };
   };
 
-  const setCookie = (cname, cvalue, exdays) => {
+  const setCookie = (cname: string, cvalue: string, exdays: number) => {
     let d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     let expires = 'expires=' + d.toUTCString();
@@ -945,7 +885,7 @@
     document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
   };
 
-  const getCookie = (cname) => {
+  const getCookie = (cname: string) => {
     let name = cname + '=';
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
@@ -970,7 +910,7 @@
   };
 
   const getHighscoreList = () => {
-    let list = [];
+    let list: any[] = [];
     let cookieOutput = getCookie('highscores');
 
     list = cookieOutput.split('|');
@@ -1069,24 +1009,24 @@
       }, 360);
     });
 
-    messageBox.appendChild(message);
-    messageBox.appendChild(button);
+    messageBox?.appendChild(message);
+    messageBox?.appendChild(button);
 
     if (levelData.length > currentLevel + 1) {
       // Only happens in you aren't on the last level
-      messageBox.appendChild(button2);
+      messageBox?.appendChild(button2);
     }
 
-    messageBox.classList.add('top');
-    messageBox.classList.add('show');
+    messageBox?.classList.add('top');
+    messageBox?.classList.add('show');
 
     const closeMessageWindow = () => {
-      messageBox.classList.remove('show');
+      messageBox?.classList.remove('show');
 
       setTimeout(() => {
-        messageBox.classList.remove('top');
-        messageBox.removeChild(message);
-        messageBox.removeChild(button);
+        messageBox?.classList.remove('top');
+        messageBox?.removeChild(message);
+        messageBox?.removeChild(button);
         button.removeEventListener('click', closeMessageWindow);
       }, 360);
     };
@@ -1109,7 +1049,7 @@
     const button = document.createElement('a');
     const playerGraphic = document.querySelector('.player');
 
-    playerGraphic.classList.add('ashes');
+    playerGraphic?.classList.add('ashes');
 
     sessionStats.dead = true;
 
@@ -1121,37 +1061,37 @@
     button.classList.add('btn');
     button.textContent = 'Try again';
 
-    button.addEventListener('click', closeMessageWindow);
+    messageBox?.appendChild(message);
+    messageBox?.appendChild(button);
 
-    messageBox.appendChild(message);
-    messageBox.appendChild(button);
+    messageBox?.classList.add('top');
+    messageBox?.classList.add('show');
 
-    messageBox.classList.add('top');
-    messageBox.classList.add('show');
-
-    const closeMessageWindow = (e) => {
+    const closeMessageWindow = (e: { preventDefault: () => void }) => {
       e.preventDefault();
 
-      messageBox.classList.remove('show');
+      messageBox?.classList.remove('show');
 
       setTimeout(() => {
-        messageBox.classList.remove('top');
-        messageBox.removeChild(message);
-        messageBox.removeChild(button);
+        messageBox?.classList.remove('top');
+        messageBox?.removeChild(message);
+        messageBox?.removeChild(button);
         button.removeEventListener('click', closeMessageWindow);
 
         // Reset gameboard
         retryLevel();
       }, 360);
     };
+
+    button.addEventListener('click', closeMessageWindow);
   };
 
-  const handleTouchStart = (evt) => {
+  const handleTouchStart = (evt: TouchEvent) => {
     xDown = evt.touches[0].clientX;
     yDown = evt.touches[0].clientY;
   };
 
-  const handleTouchMove = (evt) => {
+  const handleTouchMove = (evt: TouchEvent) => {
     if (!xDown || !yDown) {
       return;
     }
@@ -1169,7 +1109,7 @@
     /* Determine touch direction */
     if (
       !sessionStats.dead &&
-      !document.getElementById('message').classList.contains('show')
+      !document.getElementById('message')?.classList.contains('show')
     ) {
       if (Math.abs(xDiff) > Math.abs(yDiff)) {
         if (xDiff > 0) {
@@ -1219,7 +1159,7 @@
 
     if (
       !sessionStats.dead &&
-      !document.getElementById('message').classList.contains('show')
+      !document.getElementById('message')?.classList.contains('show')
     ) {
       // The message window isn't displayed, and you're not dead
       if (keyList.indexOf(e.key) > -1) {
