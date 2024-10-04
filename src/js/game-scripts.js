@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-unused-vars */
-
 (runGame = () => {
   const levelData = [
     `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.

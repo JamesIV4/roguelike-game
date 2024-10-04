@@ -1,49 +1,51 @@
-/* eslint-disable no-console */
-/* eslint-disable no-unused-vars */
-function generateRandomLevel(currentLevel, height, width) {
-  var randLevelDatabase = [];
-  var roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
-  var rooms = [];
-  var levelHeight = height;
-  var levelWidth = width;
+function generateRandomLevel(currentLevel, levelHeight, levelWidth) {
+  let randLevelDatabase = [];
+  const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
+  let rooms = [];
 
-  function Room(id, roomSize, extraSize) {
-    this.id = id;
-    this.extraSize = extraSize;
-    this.height = Math.floor(Math.random() * 10 + 4) + extraSize;
-    this.width = Math.floor(Math.random() * 10 + 4) + extraSize;
-    this.centerPos = [
-      Math.floor(Math.random() * roomSize + 1),
-      Math.floor(Math.random() * roomSize + 1)
-    ];
-    this.corners = {};
-    this.corners.topLeft = [
-      Math.round(this.centerPos[0] + this.centerPos[0] / 2),
-      Math.round(this.centerPos[1] - this.centerPos[1] / 2)
-    ];
-    this.corners.topRight = [
-      this.corners.topLeft[0],
-      this.corners.topLeft[1] + this.width
-    ];
-    this.corners.bottomLeft = [
-      this.corners.topLeft[0] + this.height,
-      this.corners.topLeft[1]
-    ];
-    this.corners.bottomRight = [
-      this.corners.topLeft[0] + this.height,
-      this.corners.topLeft[1] + this.width
-    ];
+  class Room {
+    constructor(id, roomSize, extraSize) {
+      this.id = id;
+      this.extraSize = extraSize;
+      this.height = Math.floor(Math.random() * 10 + 4) + extraSize;
+      this.width = Math.floor(Math.random() * 10 + 4) + extraSize;
+      this.centerPos = [
+        Math.floor(Math.random() * roomSize + 1),
+        Math.floor(Math.random() * roomSize + 1)
+      ];
+      this.corners = {};
+      this.calculateCorners();
+    }
+
+    calculateCorners() {
+      this.corners.topLeft = [
+        Math.round(this.centerPos[0] + this.centerPos[0] / 2),
+        Math.round(this.centerPos[1] - this.centerPos[1] / 2)
+      ];
+      this.corners.topRight = [
+        this.corners.topLeft[0],
+        this.corners.topLeft[1] + this.width
+      ];
+      this.corners.bottomLeft = [
+        this.corners.topLeft[0] + this.height,
+        this.corners.topLeft[1]
+      ];
+      this.corners.bottomRight = [
+        this.corners.topLeft[0] + this.height,
+        this.corners.topLeft[1] + this.width
+      ];
+    }
   }
 
   // Create the rooms
-  for (var roomIndex = 0; roomIndex < roomNum; roomIndex++) {
+  for (let roomIndex = 0; roomIndex < roomNum; roomIndex++) {
     createRoom(roomIndex);
   }
 
-  function createRoom(id) {
-    var bigger = Math.random() < 0.15;
-    var howMuch = Math.floor(Math.random() * 6 + 2);
-    var tries = 0;
+  createRoom = (id) => {
+    const bigger = Math.random() < 0.15;
+    const howMuch = Math.floor(Math.random() * 6 + 2);
+    let tries = 0;
 
     // if (bigger) {
     // 	console.log('Making room ' + (index + 1) + ' ' + howMuch + ' tiles bigger');
@@ -64,11 +66,11 @@ function generateRandomLevel(currentLevel, height, width) {
         rooms.push(new Room(id, 30, 0));
       }
     }
-  }
+  };
 
   // Find the right positions for the rooms
-  function overlapCheck(id) {
-    var roomChecking = rooms[id];
+  overlapCheck = (id) => {
+    const roomChecking = rooms[id];
 
     // Compare the room to the other rooms
     for (
@@ -76,7 +78,7 @@ function generateRandomLevel(currentLevel, height, width) {
       comparingIndex < rooms.length;
       comparingIndex++
     ) {
-      var roomComparingTo = rooms[comparingIndex];
+      const roomComparingTo = rooms[comparingIndex];
 
       if (roomChecking.id != roomComparingTo.id) {
         // Do not compare a room to itself
@@ -163,14 +165,14 @@ function generateRandomLevel(currentLevel, height, width) {
         return false;
       }
     }
-  }
+  };
 
   console.log(roomNum);
   console.log(rooms);
 
-  function between(x, min, max) {
+  between = (x, min, max) => {
     return x >= min && x <= max;
-  }
+  };
 }
 
 generateRandomLevel(0, 40, 40);
