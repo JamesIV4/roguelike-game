@@ -1,4 +1,5 @@
 import { levelData } from './levels.js';
+import { generateRandomLevel } from './randomLevelGenerator.js';
 
 (() => {
   let currentLevel = 0;
@@ -125,11 +126,8 @@ import { levelData } from './levels.js';
     });
 
     btnStartProcudural.addEventListener('click', () => {
-      displayMessageBox(
-        'This mode is in development and is not yet available.',
-        'Dismiss',
-        'dismiss'
-      );
+      closeTitlescreen();
+      drawScreen(generateRandomLevel(0, 40, 40));
     });
   };
 
