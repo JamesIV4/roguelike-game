@@ -1,7 +1,7 @@
 {
     "name": "roguelike-game",
     "version": "1.0.0",
-    "description": "A vanilla JS project",
+    "description": "A JS-based roguelike game that dynamically renders through DOM manipulation. The game is fully rendered with HTML and CSS.",
     "main": "index.js",
     "author": "James Pound IV",
     "license": "MIT",
