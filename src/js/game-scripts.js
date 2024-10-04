@@ -561,7 +561,7 @@
       4;
 
     if (options.centerMode === false) {
-      // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimenstions min/max
+      // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
       top =
         player.elem.offsetTop * -1 -
         sessionStats.zoomLevel * 4 +
@@ -602,7 +602,7 @@
     overrides.innerHTML =
       '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
 
-    // Center mode will return the camera to the player. This can dysync the viewing goal state, so reset it here
+    // Center mode will return the camera to the player. This can de-sync the viewing goal state, so reset it here
     if (viewingGoal) {
       viewingGoal = false;
     }
@@ -862,11 +862,11 @@
     // Erase screen
     eraseScreen();
 
-    // Clean up enemy stlye elements in head
+    // Clean up enemy style elements in head
     try {
       cleanupEnemyStyles(currentLevel);
     } catch (error) {
-      // Error happens when using newGame since the enemy array is already deleted. Revist.
+      // Error happens when using newGame since the enemy array is already deleted. Revisit.
     }
 
     currentLevel = newLevel;
