@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 
 (function runGame() {
-  var levelData = [
+  const levelData = [
     `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 .,.,.,.,.,.,#,,,,,,,,,,#,.,.,.
 .,.,.,.,.,.,#,,#,#,#,,#,,#,F,#,.,.,.
@@ -98,16 +98,16 @@
 .,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.`
   ];
 
-  var currentLevel = 0;
-  var levelStore = [];
-  var enemies = [];
-  var enemyCounter = 0;
-  var player;
-  var viewingGoal = false;
-  var options = {
+  let currentLevel = 0;
+  let levelStore = [];
+  let enemies = [];
+  let enemyCounter = 0;
+  let player;
+  let viewingGoal = false;
+  let options = {
     centerMode: false
   };
-  var sessionStats = {
+  let sessionStats = {
     turnsTotal: 0,
     turnsLevel: 0,
     retries: 0,
@@ -116,13 +116,13 @@
   };
 
   // Touch controls variables
-  var xDown = null;
-  var yDown = null;
+  let xDown = null;
+  let yDown = null;
 
   // Style overrides block
-  var overrides = document.createElement('style');
-  var zoomLevelStyle = document.createElement('style');
-  var stylePlayer = document.createElement('style');
+  const overrides = document.createElement('style');
+  const zoomLevelStyle = document.createElement('style');
+  const stylePlayer = document.createElement('style');
   document.querySelector('head').appendChild(overrides);
   document.querySelector('head').appendChild(zoomLevelStyle);
   document.querySelector('head').appendChild(stylePlayer);
@@ -157,7 +157,7 @@
 
   // Game code functions
   function drawTitleScreen() {
-    var background = document.querySelector('#display-wrapper'),
+    const background = document.querySelector('#display-wrapper'),
       uiElem = document.createElement('div'),
       titleContainer = document.createElement('div'),
       titleHeader = document.createElement('h1'),
@@ -219,7 +219,7 @@
   }
 
   function drawScreen(selectedLevel) {
-    var background = document.querySelector('#display-wrapper'),
+    const background = document.querySelector('#display-wrapper'),
       grid = document.createElement('div'),
       messageWindow = document.createElement('div'),
       uiElem = document.createElement('div'),
@@ -227,8 +227,8 @@
       zoomUp = document.createElement('div'),
       zoomDown = document.createElement('div'),
       showGoalBtn = document.createElement('div'),
-      switchCameraBtn = document.createElement('div'),
-      levelRows;
+      switchCameraBtn = document.createElement('div');
+    let levelRows;
 
     grid.id = 'game-grid';
 
@@ -258,7 +258,7 @@
 
     // Row creation logic
     for (let rowIndex = 0; rowIndex < levelRows.length; rowIndex++) {
-      var levelCells = levelRows[rowIndex].split(','),
+      let levelCells = levelRows[rowIndex].split(','),
         elemRow = document.createElement('div');
 
       elemRow.classList.add('row');
@@ -269,7 +269,7 @@
 
       // Cell creation logic
       for (let cellIndex = 0; cellIndex < levelCells.length; cellIndex++) {
-        var cell = levelCells[cellIndex],
+        let cell = levelCells[cellIndex],
           elemCell = document.createElement('div');
 
         elemCell.classList.add('cell');
@@ -411,25 +411,25 @@
   function drawDecorations() {
     // After the levelStore is initialized, go over it again and add the floor and wall decorations
     for (
-      var rowStore = 0;
+      let rowStore = 0;
       rowStore < levelStore[currentLevel].length;
       rowStore++
     ) {
       for (
-        var cellStore = 0;
+        let cellStore = 0;
         cellStore < levelStore[currentLevel][rowStore].length;
         cellStore++
       ) {
-        var cell = levelStore[currentLevel][rowStore][cellStore];
+        let cell = levelStore[currentLevel][rowStore][cellStore];
 
         if (cell.type === 'floor') {
-          var wallTop =
+          const wallTop =
             levelStore[currentLevel][rowStore - 1][cellStore].type === 'wall';
-          var wallRight =
+          const wallRight =
             levelStore[currentLevel][rowStore][cellStore + 1].type === 'wall';
-          var wallBottom =
+          const wallBottom =
             levelStore[currentLevel][rowStore + 1][cellStore].type === 'wall';
-          var wallLeft =
+          const wallLeft =
             levelStore[currentLevel][rowStore][cellStore - 1].type === 'wall';
 
           // Sidewall top
@@ -545,10 +545,10 @@
   }
 
   function centerPlayerInScreen() {
-    var topLevelOffset;
-    var leftLevelOffset;
-    var top;
-    var left;
+    let topLevelOffset;
+    let leftLevelOffset;
+    let top;
+    let left;
 
     // Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
     topLevelOffset =
@@ -609,7 +609,7 @@
   }
 
   function showGoal() {
-    var top,
+    let top,
       left,
       goal = document.querySelector('.goal');
 
@@ -648,7 +648,7 @@
       return;
     }
 
-    var newCell, newPos;
+    let newCell, newPos;
 
     switch (direction) {
       case 1: // Up
@@ -713,7 +713,7 @@
   }
 
   function movePlayer(direction) {
-    var newCell, newPos;
+    let newCell, newPos;
 
     switch (direction) {
       case 1: // Up
@@ -792,19 +792,19 @@
 
   function renderEnemies() {
     for (
-      var enemyIndex = 0;
+      let enemyIndex = 0;
       enemyIndex < enemies[currentLevel].length;
       enemyIndex++
     ) {
-      var enemyObj = enemies[currentLevel][enemyIndex];
+      let enemyObj = enemies[currentLevel][enemyIndex];
 
       renderEnemy(enemyObj, enemyObj.pos);
     }
   }
 
   function cleanupEnemyStyles(level) {
-    for (var enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
-      var enemyObj = enemies[level][enemyIndex];
+    for (let enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
+      let enemyObj = enemies[level][enemyIndex];
 
       enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
     }
@@ -847,7 +847,7 @@
   }
 
   function eraseScreen() {
-    var background = document.querySelector('#display-wrapper'),
+    let background = document.querySelector('#display-wrapper'),
       grid = document.querySelector('#game-grid'),
       ui = document.querySelector('#ui-display');
 
@@ -884,9 +884,9 @@
   }
 
   function displayMessageBox(messageText, btnText, action) {
-    var messageBox = document.querySelector('#message');
-    var message = document.createElement('p');
-    var button = document.createElement('a');
+    const messageBox = document.querySelector('#message');
+    const message = document.createElement('p');
+    const button = document.createElement('a');
 
     message.textContent = messageText;
 
@@ -926,11 +926,11 @@
   }
 
   function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
+    let d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    var expires = 'expires=' + d.toUTCString();
+    let expires = 'expires=' + d.toUTCString();
 
-    var oldCookie = getCookie('highscores');
+    let oldCookie = getCookie('highscores');
 
     if (oldCookie !== '') {
       cvalue = oldCookie + '|' + cvalue;
@@ -940,11 +940,11 @@
   }
 
   function getCookie(cname) {
-    var name = cname + '=';
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
+    let name = cname + '=';
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
       while (c.charAt(0) == ' ') {
         c = c.substring(1);
       }
@@ -964,8 +964,8 @@
   }
 
   function getHighscoreList() {
-    var list = [];
-    var cookieOutput = getCookie('highscores');
+    let list = [];
+    let cookieOutput = getCookie('highscores');
 
     list = cookieOutput.split('|');
 
@@ -986,10 +986,10 @@
   }
 
   function displayVictoryMessage() {
-    var messageBox = document.querySelector('#message');
-    var message = document.createElement('p');
-    var button = document.createElement('a');
-    var button2 = document.createElement('a');
+    const messageBox = document.querySelector('#message');
+    const message = document.createElement('p');
+    const button = document.createElement('a');
+    const button2 = document.createElement('a');
 
     message.innerHTML =
       'You beat level ' +
@@ -1098,10 +1098,10 @@
   }
 
   function death() {
-    var messageBox = document.querySelector('#message');
-    var message = document.createElement('p');
-    var button = document.createElement('a');
-    var playerGraphic = document.querySelector('.player');
+    const messageBox = document.querySelector('#message');
+    const message = document.createElement('p');
+    const button = document.createElement('a');
+    const playerGraphic = document.querySelector('.player');
 
     playerGraphic.classList.add('ashes');
 
@@ -1158,11 +1158,11 @@
       return;
     }
 
-    var xUp = evt.touches[0].clientX;
-    var yUp = evt.touches[0].clientY;
+    let xUp = evt.touches[0].clientX;
+    let yUp = evt.touches[0].clientY;
 
-    var xDiff = xDown - xUp;
-    var yDiff = yDown - yUp;
+    let xDiff = xDown - xUp;
+    let yDiff = yDown - yUp;
 
     /* Determine touch direction */
     if (
@@ -1197,7 +1197,7 @@
   // End touch controls
 
   document.addEventListener('keydown', function input(e) {
-    var keyList = [
+    const keyList = [
       'ArrowUp',
       'ArrowRight',
       'ArrowDown',
