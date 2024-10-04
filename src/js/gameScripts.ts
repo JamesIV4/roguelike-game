@@ -32,53 +32,29 @@ import { levelData } from './levels.js';
 
   // UNIT prototypes
   class Enemy {
-    elem: HTMLElement;
-    id: number;
-    pos: number[];
-    type: string;
-    health: number;
-    stylePos: HTMLStyleElement;
-    moveTries: number;
-
+    // The constructor with public properties
     constructor(
-      elem: HTMLElement,
-      id: number,
-      pos: number[],
-      type: string,
-      health: number
+      public elem: HTMLElement,
+      public id: number,
+      public pos: number[],
+      public type: string,
+      public health: number,
+      public stylePos: HTMLStyleElement = document.createElement('style'),
+      public moveTries: number = 0
     ) {
-      this.elem = elem;
-      this.id = id;
-      this.type = type;
-      this.health = health;
-      this.pos = pos;
-      this.stylePos = document.createElement('style');
-      this.moveTries = 0;
-
+      // Append style element to the head
       document.querySelector('head')?.appendChild(this.stylePos);
     }
   }
 
   class Player {
-    elem: HTMLElement;
-    id: number;
-    pos: number[];
-    type: string;
-    health: number;
-
     constructor(
-      elem: HTMLElement,
-      id: number,
-      pos: number[],
-      type: string,
-      health: number
-    ) {
-      this.elem = elem;
-      this.id = id;
-      this.type = type;
-      this.health = health;
-      this.pos = pos;
-    }
+      public elem: HTMLElement,
+      public id: number,
+      public pos: number[],
+      public type: string,
+      public health: number
+    ) {}
 
     reset() {
       // Reset to default values
@@ -89,22 +65,12 @@ import { levelData } from './levels.js';
 
   // Map prototypes
   class Cell {
-    elem: HTMLElement;
-    id: any;
-    type?: string;
-    inside?: any[];
-
     constructor(
-      elem: HTMLElement,
-      id: string,
-      type?: string,
-      inside: any = []
-    ) {
-      this.elem = elem;
-      this.id = id;
-      this.type = type;
-      this.inside = inside;
-    }
+      public elem: HTMLElement,
+      public id: any,
+      public type?: string,
+      public inside: any[] = []
+    ) {}
   }
 
   // Game code functions

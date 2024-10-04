@@ -1,4 +1,4 @@
-// Generated: Friday, October 4, 2024 at 03:17:56 PM EDT
+// Generated: Friday, October 4, 2024 at 03:27:33 PM EDT
 import { levelData } from './levels.js';
 (() => {
     var _a, _b, _c;
@@ -30,15 +30,17 @@ import { levelData } from './levels.js';
     (_c = document.querySelector('head')) === null || _c === void 0 ? void 0 : _c.appendChild(stylePlayer);
     // UNIT prototypes
     class Enemy {
-        constructor(elem, id, pos, type, health) {
+        // The constructor with public properties
+        constructor(elem, id, pos, type, health, stylePos = document.createElement('style'), moveTries = 0) {
             var _a;
             this.elem = elem;
             this.id = id;
+            this.pos = pos;
             this.type = type;
             this.health = health;
-            this.pos = pos;
-            this.stylePos = document.createElement('style');
-            this.moveTries = 0;
+            this.stylePos = stylePos;
+            this.moveTries = moveTries;
+            // Append style element to the head
             (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(this.stylePos);
         }
     }
@@ -46,9 +48,9 @@ import { levelData } from './levels.js';
         constructor(elem, id, pos, type, health) {
             this.elem = elem;
             this.id = id;
+            this.pos = pos;
             this.type = type;
             this.health = health;
-            this.pos = pos;
         }
         reset() {
             // Reset to default values
