@@ -1,13 +1,1 @@
-_etc
-build/
-ingest/
 node_modules/
-tmp/
-**/*.css.map
-.sass-cache/
-**/*.php
-**/*.zip
-**/*.zip
-**/i
-**/img
-**/*.xlsx

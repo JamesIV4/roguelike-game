@@ -1,29 +1,21 @@
 {
-	"root": true,
-	"extends": "eslint:recommended",
-	"parserOptions": {
-		"ecmaVersion": 9,
-		"sourceType": "module"
-	},
-	"env": {
-		"browser": true,
-		"node": true,
-		"es6": true,
-		"amd": true,
-		"jquery": true
-	},
-	"globals": {
-		"webmd": false,
-		"wmdPageLink": false,
-		"wmdPageview": false,
-		"wmdTrack": false
-	},
-	"plugins": ["import"],
-	"rules": {
-		"comma-dangle": ["error", "never"],
-		"func-names": ["error", "always"],
-		"indent": ["error", "tab"],
-		"quote-props": ["error", "consistent-as-needed"],
-		"semi": ["error", "always"]
-	}
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 12, // or 2021 depending on your needs
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-console": "off", // You can turn this to 'warn' or 'error' if you prefer
+    "eqeqeq": "error",
+    "curly": "error",
+    "semi": ["error", "always"],
+    "quotes": ["error", "single"],
+    "indent": ["error", 2]
+  }
 }

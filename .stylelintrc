@@ -7,6 +7,6 @@
 		"at-rule-no-unknown": null,
 		"indentation": "tab",
 		"scss/at-rule-no-unknown": true,
-		'no-empty-source': null
+		"no-empty-source": null
 	}
 }
