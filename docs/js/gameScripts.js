@@ -1,4 +1,4 @@
-// Generated: Friday, October 4, 2024 at 04:18:09 PM EDT
+// Generated: Friday, October 4, 2024 at 04:37:15 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -240,15 +240,32 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
     };
     const drawDecorations = () => {
+        var _a, _b, _c, _d;
         // After the levelStore is initialized, go over it again and add the floor and wall decorations
         for (let rowStore = 0; rowStore < levelStore[currentLevel].length; rowStore++) {
             for (let cellStore = 0; cellStore < levelStore[currentLevel][rowStore].length; cellStore++) {
                 let cell = levelStore[currentLevel][rowStore][cellStore];
+                if (cell === '' || cell === undefined)
+                    continue; // Skip if cell is empty or undefined
+                // Ensure cell is valid and has a 'type'
                 if (cell.type === 'floor') {
-                    const wallTop = levelStore[currentLevel][rowStore - 1][cellStore].type === 'wall';
-                    const wallRight = levelStore[currentLevel][rowStore][cellStore + 1].type === 'wall';
-                    const wallBottom = levelStore[currentLevel][rowStore + 1][cellStore].type === 'wall';
-                    const wallLeft = levelStore[currentLevel][rowStore][cellStore - 1].type === 'wall';
+                    // Safeguard against out-of-bounds access
+                    const wallTop = (rowStore > 0 &&
+                        ((_a = levelStore[currentLevel][rowStore - 1][cellStore]) === null || _a === void 0 ? void 0 : _a.type) ===
+                            'wall') ||
+                        false;
+                    const wallRight = (cellStore < levelStore[currentLevel][rowStore].length - 1 &&
+                        ((_b = levelStore[currentLevel][rowStore][cellStore + 1]) === null || _b === void 0 ? void 0 : _b.type) ===
+                            'wall') ||
+                        false;
+                    const wallBottom = (rowStore < levelStore[currentLevel].length - 1 &&
+                        ((_c = levelStore[currentLevel][rowStore + 1][cellStore]) === null || _c === void 0 ? void 0 : _c.type) ===
+                            'wall') ||
+                        false;
+                    const wallLeft = (cellStore > 0 &&
+                        ((_d = levelStore[currentLevel][rowStore][cellStore - 1]) === null || _d === void 0 ? void 0 : _d.type) ===
+                            'wall') ||
+                        false;
                     // Sidewall top
                     if (wallTop && !wallRight && !wallBottom && !wallLeft) {
                         cell.elem.classList.add('sidewall');

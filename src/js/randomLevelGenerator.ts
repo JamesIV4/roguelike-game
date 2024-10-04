@@ -60,13 +60,20 @@ export const generateRandomLevel = (
               j === this.corners.topLeft[1] || // Left wall
               j === this.corners.bottomRight[1] - 1 // Right wall
             ) {
-              grid[i][j] = '#'; // Fill room with walls
+              grid[i][j] = '#'; // Set walls
             } else {
-              grid[i][j] = ''; // Fill room with floor (empty space)
+              grid[i][j] = ''; // Set floor as an empty string
             }
           }
         }
       }
+    };
+
+    public getCenter = (): number[] => {
+      return [
+        Math.floor((this.corners.topLeft[0] + this.corners.bottomRight[0]) / 2),
+        Math.floor((this.corners.topLeft[1] + this.corners.bottomRight[1]) / 2)
+      ];
     };
   }
 
@@ -130,6 +137,54 @@ export const generateRandomLevel = (
   // Create rooms and add them to the grid
   for (let roomIndex = 0; roomIndex < roomNum; roomIndex++) {
     createRoom(roomIndex);
+  }
+
+  // Function to connect rooms with hallways
+  const connectRooms = (roomA: Room, roomB: Room) => {
+    const centerA = roomA.getCenter();
+    const centerB = roomB.getCenter();
+
+    const [startX, startY] = centerA;
+    const [endX, endY] = centerB;
+
+    if (Math.random() < 0.5) {
+      // Horizontal then vertical
+      for (let x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
+        if (levelGrid[startY][x] !== undefined) {
+          levelGrid[startY][x] = '#'; // Horizontal hallway walls
+          if (startY - 1 >= 0) levelGrid[startY - 1][x] = '.'; // Empty space above
+          if (startY + 1 < levelHeight) levelGrid[startY + 1][x] = '.'; // Empty space below
+        }
+      }
+      for (let y = Math.min(startY, endY); y <= Math.max(startY, endY); y++) {
+        if (levelGrid[y]) {
+          levelGrid[y][endX] = '#'; // Vertical hallway walls
+          if (endX - 1 >= 0) levelGrid[y][endX - 1] = '.'; // Empty space to the left
+          if (endX + 1 < levelWidth) levelGrid[y][endX + 1] = '.'; // Empty space to the right
+        }
+      }
+    } else {
+      // Vertical then horizontal
+      for (let y = Math.min(startY, endY); y <= Math.max(startY, endY); y++) {
+        if (levelGrid[y]) {
+          levelGrid[y][startX] = '#'; // Vertical hallway walls
+          if (startX - 1 >= 0) levelGrid[y][startX - 1] = '.'; // Empty space to the left
+          if (startX + 1 < levelWidth) levelGrid[y][startX + 1] = '.'; // Empty space to the right
+        }
+      }
+      for (let x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
+        if (levelGrid[endY]) {
+          levelGrid[endY][x] = '#'; // Horizontal hallway walls
+          if (endY - 1 >= 0) levelGrid[endY - 1][x] = '.'; // Empty space above
+          if (endY + 1 < levelHeight) levelGrid[endY + 1][x] = '.'; // Empty space below
+        }
+      }
+    }
+  };
+
+  // Connect all rooms
+  for (let i = 0; i < rooms.length - 1; i++) {
+    connectRooms(rooms[i], rooms[i + 1]);
   }
 
   // Place enemies randomly on the grid

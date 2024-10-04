@@ -334,16 +334,31 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         cellStore++
       ) {
         let cell = levelStore[currentLevel][rowStore][cellStore];
+        if (cell === '' || cell === undefined) continue; // Skip if cell is empty or undefined
 
+        // Ensure cell is valid and has a 'type'
         if (cell.type === 'floor') {
+          // Safeguard against out-of-bounds access
           const wallTop =
-            levelStore[currentLevel][rowStore - 1][cellStore].type === 'wall';
+            (rowStore > 0 &&
+              levelStore[currentLevel][rowStore - 1][cellStore]?.type ===
+                'wall') ||
+            false;
           const wallRight =
-            levelStore[currentLevel][rowStore][cellStore + 1].type === 'wall';
+            (cellStore < levelStore[currentLevel][rowStore].length - 1 &&
+              levelStore[currentLevel][rowStore][cellStore + 1]?.type ===
+                'wall') ||
+            false;
           const wallBottom =
-            levelStore[currentLevel][rowStore + 1][cellStore].type === 'wall';
+            (rowStore < levelStore[currentLevel].length - 1 &&
+              levelStore[currentLevel][rowStore + 1][cellStore]?.type ===
+                'wall') ||
+            false;
           const wallLeft =
-            levelStore[currentLevel][rowStore][cellStore - 1].type === 'wall';
+            (cellStore > 0 &&
+              levelStore[currentLevel][rowStore][cellStore - 1]?.type ===
+                'wall') ||
+            false;
 
           // Sidewall top
           if (wallTop && !wallRight && !wallBottom && !wallLeft) {
