@@ -1,4 +1,4 @@
-// Generated: Friday, October 4, 2024 at 03:27:33 PM EDT
+// Generated: Friday, October 4, 2024 at 03:30:09 PM EDT
 import { levelData } from './levels.js';
 (() => {
     var _a, _b, _c;
@@ -28,9 +28,8 @@ import { levelData } from './levels.js';
     (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(overrides);
     (_b = document.querySelector('head')) === null || _b === void 0 ? void 0 : _b.appendChild(zoomLevelStyle);
     (_c = document.querySelector('head')) === null || _c === void 0 ? void 0 : _c.appendChild(stylePlayer);
-    // UNIT prototypes
+    // Unit type classes
     class Enemy {
-        // The constructor with public properties
         constructor(elem, id, pos, type, health, stylePos = document.createElement('style'), moveTries = 0) {
             var _a;
             this.elem = elem;
@@ -58,7 +57,7 @@ import { levelData } from './levels.js';
             this.health = 100;
         }
     }
-    // Map prototypes
+    // Map classes
     class Cell {
         constructor(elem, id, type, inside = []) {
             this.elem = elem;

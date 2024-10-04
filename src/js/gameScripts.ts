@@ -30,9 +30,8 @@ import { levelData } from './levels.js';
   document.querySelector('head')?.appendChild(zoomLevelStyle);
   document.querySelector('head')?.appendChild(stylePlayer);
 
-  // UNIT prototypes
+  // Unit type classes
   class Enemy {
-    // The constructor with public properties
     constructor(
       public elem: HTMLElement,
       public id: number,
@@ -63,7 +62,7 @@ import { levelData } from './levels.js';
     }
   }
 
-  // Map prototypes
+  // Map classes
   class Cell {
     constructor(
       public elem: HTMLElement,
