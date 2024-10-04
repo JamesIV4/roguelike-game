@@ -1,20 +1,20 @@
 {
-  "name": "roguelike-game",
-  "version": "1.0.0",
-  "description": "A vanilla JS project",
-  "main": "index.js",
-  "author": "James Pound IV",
-  "license": "MIT",
-  "scripts": {
-    "build": "sass src/css/style.scss docs/css/style.css --no-source-map && cpx 'src/js/*' docs/js/ && cpx 'src/js/*' docs/imgs/js/ && cpx 'src/index.html' docs/",
-    "watch": "sass --watch src/css/style.scss:docs/css/style.css",
-    "format": "prettier --write '*.{json,stylelintrc}' 'src/**/*.{js,css,scss,html}'"
-  },
-  "devDependencies": {
-    "cpx": "^1.5.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.3.3",
-    "sass": "^1.56.0"
-  }
+    "name": "roguelike-game",
+    "version": "1.0.0",
+    "description": "A vanilla JS project",
+    "main": "index.js",
+    "author": "James Pound IV",
+    "license": "MIT",
+    "scripts": {
+        "build": "sass src/css/style.scss docs/css/style.css --no-source-map && cpx 'src/js/*' docs/js/ && cpx 'src/js/*' docs/imgs/js/ && cpx 'src/index.html' docs/",
+        "watch": "sass --watch src/css/style.scss:docs/css/style.css",
+        "format": "prettier --write '*.{json,stylelintrc}' 'src/**/*.{js,css,scss,html}'"
+    },
+    "devDependencies": {
+        "cpx": "^1.5.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^9.1.0",
+        "prettier": "^3.3.3",
+        "sass": "^1.56.0"
+    }
 }

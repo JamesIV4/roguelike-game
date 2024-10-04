@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 
-(function runGame() {
+(runGame = () => {
   const levelData = [
     `.,.,.,.,.,.,#,#,#,#,#,#,#,#,#,#,#,.,.,.
 .,.,.,.,.,.,#,,,,,,,,,,#,.,.,.
@@ -128,35 +128,41 @@
   document.querySelector('head').appendChild(stylePlayer);
 
   // UNIT prototypes
-  function Enemy(elem, id, pos, type, health) {
-    this.elem = elem;
-    this.id = id;
-    this.type = type;
-    this.health = health;
-    this.pos = pos;
+  class Enemy {
+    constructor(elem, id, pos, type, health) {
+      this.elem = elem;
+      this.id = id;
+      this.type = type;
+      this.health = health;
+      this.pos = pos;
 
-    this.stylePos = document.createElement('style');
-    document.querySelector('head').appendChild(this.stylePos);
+      this.stylePos = document.createElement('style');
+      document.querySelector('head').appendChild(this.stylePos);
+    }
   }
 
-  function Player(elem, id, pos, type, health) {
-    this.elem = elem;
-    this.id = id;
-    this.type = type;
-    this.health = health;
-    this.pos = pos;
+  class Player {
+    constructor(elem, id, pos, type, health) {
+      this.elem = elem;
+      this.id = id;
+      this.type = type;
+      this.health = health;
+      this.pos = pos;
+    }
   }
 
   // Map prototypes
-  function Cell(elem, id, type, inside = []) {
-    this.elem = elem;
-    this.id = id;
-    this.type = type;
-    this.inside = inside;
+  class Cell {
+    constructor(elem, id, type, inside = []) {
+      this.elem = elem;
+      this.id = id;
+      this.type = type;
+      this.inside = inside;
+    }
   }
 
   // Game code functions
-  function drawTitleScreen() {
+  const drawTitleScreen = () => {
     const background = document.querySelector('#display-wrapper'),
       uiElem = document.createElement('div'),
       titleContainer = document.createElement('div'),
@@ -188,37 +194,37 @@
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    setTimeout(function showTitlescreen() {
+    setTimeout(() => {
       titleContainer.classList.add('show');
     }, 150);
 
-    function closeTitlescreen() {
+    const closeTitlescreen = () => {
       background.classList.remove('titlescreen');
       titleContainer.classList.remove('show');
 
-      setTimeout(function destroyTitlescreen() {
+      setTimeout(() => {
         btnStartNormal.removeEventListener('click', destroyTitlescreen);
         btnStartProcudural.removeEventListener('click', destroyTitlescreen);
         uiElem.removeChild(titleContainer);
         background.removeChild(uiElem);
       }, 1000);
-    }
+    };
 
-    btnStartNormal.addEventListener('click', function handle() {
+    btnStartNormal.addEventListener('click', () => {
       closeTitlescreen();
       drawScreen(levelData[0]);
     });
 
-    btnStartProcudural.addEventListener('click', function handle() {
+    btnStartProcudural.addEventListener('click', () => {
       displayMessageBox(
         'This mode is in development and is not yet available.',
         'Dismiss',
         'dismiss'
       );
     });
-  }
+  };
 
-  function drawScreen(selectedLevel) {
+  const drawScreen = (selectedLevel) => {
     const background = document.querySelector('#display-wrapper'),
       grid = document.createElement('div'),
       messageWindow = document.createElement('div'),
@@ -361,18 +367,18 @@
     drawDecorations();
     centerPlayerInScreen();
 
-    setTimeout(function showGameGrid() {
+    setTimeout(() => {
       grid.classList.add('show');
     }, 300);
 
     // Button events
-    switchCameraBtn.addEventListener('click', function handle() {
+    switchCameraBtn.addEventListener('click', () => {
       toggleCenterMode();
     });
-    showGoalBtn.addEventListener('click', function handle() {
+    showGoalBtn.addEventListener('click', () => {
       showGoal();
     });
-    zoomUp.addEventListener('click', function handle() {
+    zoomUp.addEventListener('click', () => {
       grid.classList.add('no-anim'); // Move characters instantly during zoom
 
       sessionStats.zoomLevel++;
@@ -388,7 +394,7 @@
 
       grid.classList.remove('no-anim');
     });
-    zoomDown.addEventListener('click', function handle() {
+    zoomDown.addEventListener('click', () => {
       if (sessionStats.zoomLevel > 1) {
         grid.classList.add('no-anim'); // Move characters instantly during zoom
 
@@ -406,9 +412,9 @@
         grid.classList.remove('no-anim');
       }
     });
-  }
+  };
 
-  function drawDecorations() {
+  const drawDecorations = () => {
     // After the levelStore is initialized, go over it again and add the floor and wall decorations
     for (
       let rowStore = 0;
@@ -532,9 +538,9 @@
         }
       }
     }
-  }
+  };
 
-  function toggleCenterMode() {
+  const toggleCenterMode = () => {
     if (options.centerMode === false) {
       options.centerMode = true;
       centerPlayerInScreen();
@@ -542,9 +548,9 @@
       options.centerMode = false;
       centerPlayerInScreen();
     }
-  }
+  };
 
-  function centerPlayerInScreen() {
+  const centerPlayerInScreen = () => {
     let topLevelOffset;
     let leftLevelOffset;
     let top;
@@ -606,9 +612,9 @@
     if (viewingGoal) {
       viewingGoal = false;
     }
-  }
+  };
 
-  function showGoal() {
+  const showGoal = () => {
     let top,
       left,
       goal = document.querySelector('.goal');
@@ -634,16 +640,16 @@
         'px;}';
       viewingGoal = true;
     }
-  }
+  };
 
-  function enemyAITurn() {
+  const enemyAITurn = () => {
     // Iterate on each enemy
     for (let i = 0; i < enemies[currentLevel].length; i++) {
       moveEnemy(enemies[currentLevel][i], randomDirection());
     }
-  }
+  };
 
-  function moveEnemy(enemyObject, direction) {
+  const moveEnemy = (enemyObject, direction) => {
     if (sessionStats.dead) {
       return;
     }
@@ -705,14 +711,14 @@
         moveEnemy(enemyObject, randomDirection());
       }
     }
-  }
+  };
 
-  function randomDirection() {
+  const randomDirection = () => {
     // Returns 1 - 4, where 1 = Up, 2 = Right, 3 = Down, and 4 = Left
     return Math.floor(Math.random() * 4 + 1);
-  }
+  };
 
-  function movePlayer(direction) {
+  const movePlayer = (direction) => {
     let newCell, newPos;
 
     switch (direction) {
@@ -760,9 +766,9 @@
 
       centerPlayerInScreen();
     }
-  }
+  };
 
-  function renderPlayer(pos) {
+  const renderPlayer = (pos) => {
     stylePlayer.innerHTML =
       '#display-wrapper #game-grid .row .cell.floor.player::after {top: ' +
       pos[0] * sessionStats.zoomLevel * 8 +
@@ -773,9 +779,9 @@
       'px;width: ' +
       sessionStats.zoomLevel * 8 +
       'px;}';
-  }
+  };
 
-  function renderEnemy(enemyObj, pos) {
+  const renderEnemy = (enemyObj, pos) => {
     enemyObj.stylePos.innerHTML =
       '#display-wrapper #game-grid .row .cell.floor.enemy-' +
       enemyObj.id +
@@ -788,9 +794,9 @@
       'px;width: ' +
       sessionStats.zoomLevel * 8 +
       'px;}';
-  }
+  };
 
-  function renderEnemies() {
+  const renderEnemies = () => {
     for (
       let enemyIndex = 0;
       enemyIndex < enemies[currentLevel].length;
@@ -800,17 +806,17 @@
 
       renderEnemy(enemyObj, enemyObj.pos);
     }
-  }
+  };
 
-  function cleanupEnemyStyles(level) {
+  const cleanupEnemyStyles = (level) => {
     for (let enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
       let enemyObj = enemies[level][enemyIndex];
 
       enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
     }
-  }
+  };
 
-  function checkVictory() {
+  const checkVictory = () => {
     if (
       levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf(
         'stairsDown'
@@ -820,9 +826,9 @@
     } else {
       return false;
     }
-  }
+  };
 
-  function retryLevel() {
+  const retryLevel = () => {
     // Reset player
     player = {};
 
@@ -839,23 +845,23 @@
     sessionStats.turnsLevel = 0;
     sessionStats.dead = false;
     sessionStats.retries += 1;
-  }
+  };
 
-  function refreshScreen() {
+  const refreshScreen = () => {
     eraseScreen();
     drawScreen(levelData[currentLevel]);
-  }
+  };
 
-  function eraseScreen() {
+  const eraseScreen = () => {
     let background = document.querySelector('#display-wrapper'),
       grid = document.querySelector('#game-grid'),
       ui = document.querySelector('#ui-display');
 
     background.removeChild(ui);
     background.removeChild(grid);
-  }
+  };
 
-  function goToNewLevel(newLevel) {
+  const goToNewLevel = (newLevel) => {
     sessionStats.turnsLevel = 0;
     enemyCounter = 0;
 
@@ -871,9 +877,9 @@
 
     currentLevel = newLevel;
     drawScreen(levelData[newLevel]);
-  }
+  };
 
-  function newGame() {
+  const newGame = () => {
     levelStore.length = 0; // Wipe out the levelStore
 
     cleanupEnemyStyles(currentLevel);
@@ -881,9 +887,9 @@
 
     sessionStats.turnsTotal = 0; // Reset total turns
     goToNewLevel(0); // Go to level 1
-  }
+  };
 
-  function displayMessageBox(messageText, btnText, action) {
+  const displayMessageBox = (messageText, btnText, action) => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
@@ -893,7 +899,7 @@
     button.classList.add('btn');
     button.textContent = btnText;
 
-    button.addEventListener('click', function handle(e) {
+    button.addEventListener('click', (e) => {
       e.preventDefault();
 
       switch (action) {
@@ -913,19 +919,19 @@
     messageBox.classList.add('top');
     messageBox.classList.add('show');
 
-    function closeMessageWindow() {
+    const closeMessageWindow = () => {
       messageBox.classList.remove('show');
 
-      setTimeout(function destroyMessage() {
+      setTimeout(() => {
         messageBox.classList.remove('top');
         messageBox.removeChild(message);
         messageBox.removeChild(button);
         button.removeEventListener('click', closeMessageWindow);
       }, 360);
-    }
-  }
+    };
+  };
 
-  function setCookie(cname, cvalue, exdays) {
+  const setCookie = (cname, cvalue, exdays) => {
     let d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     let expires = 'expires=' + d.toUTCString();
@@ -937,9 +943,9 @@
     }
 
     document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-  }
+  };
 
-  function getCookie(cname) {
+  const getCookie = (cname) => {
     let name = cname + '=';
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
@@ -953,17 +959,17 @@
       }
     }
     return '';
-  }
+  };
 
-  function submitHighscore() {
+  const submitHighscore = () => {
     setCookie(
       'highscores',
       sessionStats.turnsTotal + '-' + sessionStats.retries,
       1000000
     );
-  }
+  };
 
-  function getHighscoreList() {
+  const getHighscoreList = () => {
     let list = [];
     let cookieOutput = getCookie('highscores');
 
@@ -975,7 +981,7 @@
     }
 
     // First sort by number of retries, then sort by number of turns
-    list.sort(function handle(a, b) {
+    list.sort((a, b) => {
       if (a[1] === b[1]) {
         return a[0] - b[0];
       }
@@ -983,9 +989,9 @@
     });
 
     return list;
-  }
+  };
 
-  function displayVictoryMessage() {
+  const displayVictoryMessage = () => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
@@ -1034,7 +1040,7 @@
       setCookie('highscores', '50-0', 1);
     }
 
-    button.addEventListener('click', function handle(e) {
+    button.addEventListener('click', (e) => {
       e.preventDefault();
 
       closeMessageWindow();
@@ -1042,23 +1048,23 @@
       if (levelData.length === currentLevel + 1) {
         // Only happens if you're on the last level
         // Start a new game from level 1
-        setTimeout(function retry() {
+        setTimeout(() => {
           newGame();
         }, 360);
       } else {
         // Reset gameboard and retry current level
-        setTimeout(function retry() {
+        setTimeout(() => {
           retryLevel();
         }, 360);
       }
     });
-    button2.addEventListener('click', function handle(e) {
+    button2.addEventListener('click', (e) => {
       e.preventDefault();
 
       closeMessageWindow();
 
       // Go to new level
-      setTimeout(function load() {
+      setTimeout(() => {
         goToNewLevel(currentLevel + 1);
       }, 360);
     });
@@ -1074,19 +1080,19 @@
     messageBox.classList.add('top');
     messageBox.classList.add('show');
 
-    function closeMessageWindow() {
+    const closeMessageWindow = () => {
       messageBox.classList.remove('show');
 
-      setTimeout(function destroyMessage() {
+      setTimeout(() => {
         messageBox.classList.remove('top');
         messageBox.removeChild(message);
         messageBox.removeChild(button);
         button.removeEventListener('click', closeMessageWindow);
       }, 360);
-    }
-  }
+    };
+  };
 
-  function newTurn() {
+  const newTurn = () => {
     sessionStats.turnsLevel++;
     sessionStats.turnsTotal++;
 
@@ -1095,9 +1101,9 @@
     } else {
       displayVictoryMessage();
     }
-  }
+  };
 
-  function death() {
+  const death = () => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
@@ -1123,12 +1129,12 @@
     messageBox.classList.add('top');
     messageBox.classList.add('show');
 
-    function closeMessageWindow(e) {
+    const closeMessageWindow = (e) => {
       e.preventDefault();
 
       messageBox.classList.remove('show');
 
-      setTimeout(function destroyMessage() {
+      setTimeout(() => {
         messageBox.classList.remove('top');
         messageBox.removeChild(message);
         messageBox.removeChild(button);
@@ -1137,19 +1143,15 @@
         // Reset gameboard
         retryLevel();
       }, 360);
-    }
-  }
+    };
+  };
 
-  // Start touch controls
-  document.addEventListener('touchstart', handleTouchStart, false);
-  document.addEventListener('touchmove', handleTouchMove, false);
-
-  function handleTouchStart(evt) {
+  const handleTouchStart = (evt) => {
     xDown = evt.touches[0].clientX;
     yDown = evt.touches[0].clientY;
-  }
+  };
 
-  function handleTouchMove(evt) {
+  const handleTouchMove = (evt) => {
     if (!xDown || !yDown) {
       return;
     }
@@ -1193,10 +1195,14 @@
 
       newTurn();
     }
-  }
+  };
   // End touch controls
 
-  document.addEventListener('keydown', function input(e) {
+  // Start touch controls
+  document.addEventListener('touchstart', handleTouchStart, false);
+  document.addEventListener('touchmove', handleTouchMove, false);
+
+  document.addEventListener('keydown', (e) => {
     const keyList = [
       'ArrowUp',
       'ArrowRight',
