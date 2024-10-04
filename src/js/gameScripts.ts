@@ -1,6 +1,15 @@
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 
+type SessionStats = {
+  turnsTotal: number;
+  turnsLevel: number;
+  retries: number;
+  zoomLevel: number;
+  dead: boolean;
+  mode: 'normal' | 'procedural';
+};
+
 (() => {
   let currentLevel = 0;
   let levelStore: any[] = [];
@@ -11,12 +20,13 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
   let options = {
     centerMode: false
   };
-  let sessionStats = {
+  let sessionStats: SessionStats = {
     turnsTotal: 0,
     turnsLevel: 0,
     retries: 0,
     zoomLevel: 4,
-    dead: false
+    dead: false,
+    mode: 'normal'
   };
 
   // Touch controls variables
@@ -74,6 +84,14 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
   }
 
   // Game code functions
+  const beginGame = () => {
+    if (sessionStats.mode === 'normal') {
+      drawScreen(levelData[0]);
+    } else {
+      drawScreen(generateRandomLevel(0, 40, 40));
+    }
+  };
+
   const drawTitleScreen = () => {
     const background = document.querySelector('#display-wrapper'),
       uiElem = document.createElement('div'),
@@ -122,12 +140,14 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
 
     btnStartNormal.addEventListener('click', () => {
       closeTitlescreen();
-      drawScreen(levelData[0]);
+      sessionStats.mode = 'normal';
+      beginGame();
     });
 
     btnStartProcudural.addEventListener('click', () => {
       closeTitlescreen();
-      drawScreen(generateRandomLevel(0, 40, 40));
+      sessionStats.mode = 'procedural';
+      beginGame();
     });
   };
 
@@ -767,7 +787,12 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
 
   const refreshScreen = () => {
     eraseScreen();
-    drawScreen(levelData[currentLevel]);
+
+    if (sessionStats.mode === 'normal') {
+      drawScreen(levelData[currentLevel]);
+    } else {
+      drawScreen(generateRandomLevel(0, 40, 40));
+    }
   };
 
   const eraseScreen = () => {

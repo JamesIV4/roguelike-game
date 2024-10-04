@@ -1,4 +1,4 @@
-// Generated: Friday, October 4, 2024 at 04:37:15 PM EDT
+// Generated: Friday, October 4, 2024 at 04:47:32 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -17,7 +17,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         turnsLevel: 0,
         retries: 0,
         zoomLevel: 4,
-        dead: false
+        dead: false,
+        mode: 'normal'
     };
     // Touch controls variables
     let xDown = null;
@@ -68,6 +69,14 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }
     }
     // Game code functions
+    const beginGame = () => {
+        if (sessionStats.mode === 'normal') {
+            drawScreen(levelData[0]);
+        }
+        else {
+            drawScreen(generateRandomLevel(0, 40, 40));
+        }
+    };
     const drawTitleScreen = () => {
         const background = document.querySelector('#display-wrapper'), uiElem = document.createElement('div'), titleContainer = document.createElement('div'), titleHeader = document.createElement('h1'), messageWindow = document.createElement('div'), buttonContainer = document.createElement('div'), btnStartNormal = document.createElement('div'), btnStartProcudural = document.createElement('div');
         uiElem.id = 'ui-display';
@@ -101,11 +110,13 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         };
         btnStartNormal.addEventListener('click', () => {
             closeTitlescreen();
-            drawScreen(levelData[0]);
+            sessionStats.mode = 'normal';
+            beginGame();
         });
         btnStartProcudural.addEventListener('click', () => {
             closeTitlescreen();
-            drawScreen(generateRandomLevel(0, 40, 40));
+            sessionStats.mode = 'procedural';
+            beginGame();
         });
     };
     const drawScreen = (selectedLevel) => {
@@ -586,7 +597,12 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     };
     const refreshScreen = () => {
         eraseScreen();
-        drawScreen(levelData[currentLevel]);
+        if (sessionStats.mode === 'normal') {
+            drawScreen(levelData[currentLevel]);
+        }
+        else {
+            drawScreen(generateRandomLevel(0, 40, 40));
+        }
     };
     const eraseScreen = () => {
         let background = document.querySelector('#display-wrapper'), grid = document.querySelector('#game-grid'), ui = document.querySelector('#ui-display');
