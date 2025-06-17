@@ -109,51 +109,39 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     if (Math.random() < 0.5) {
       // First, carve a horizontal corridor
       for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        levelGrid[y1][x] = ''; // Set the corridor path to be a floor tile
-        // Place a wall above the corridor if the tile is empty
-        if (y1 > 0 && levelGrid[y1 - 1][x] === '.') {
-          levelGrid[y1 - 1][x] = '#';
-        }
-        // Place a wall below the corridor if the tile is empty
-        if (y1 < levelHeight - 1 && levelGrid[y1 + 1][x] === '.') {
-          levelGrid[y1 + 1][x] = '#';
+        if (y1 >= 0 && y1 < levelHeight && x >= 0 && x < levelWidth) {
+          if (levelGrid[y1][x] === '.') levelGrid[y1][x] = ''; // Carve floor
+          // Place walls if adjacent is empty
+          if (y1 > 0 && levelGrid[y1 - 1][x] === '.') levelGrid[y1 - 1][x] = '#';
+          if (y1 < levelHeight - 1 && levelGrid[y1 + 1][x] === '.') levelGrid[y1 + 1][x] = '#';
         }
       }
       // Then, carve a vertical corridor
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        levelGrid[y][x2] = ''; // Set the corridor path to be a floor tile
-        // Place a wall to the left of the corridor if the tile is empty
-        if (x2 > 0 && levelGrid[y][x2 - 1] === '.') {
-          levelGrid[y][x2 - 1] = '#';
-        }
-        // Place a wall to the right of the corridor if the tile is empty
-        if (x2 < levelWidth - 1 && levelGrid[y][x2 + 1] === '.') {
-          levelGrid[y][x2 + 1] = '#';
+        if (y >= 0 && y < levelHeight && x2 >= 0 && x2 < levelWidth) {
+          if (levelGrid[y][x2] === '.') levelGrid[y][x2] = ''; // Carve floor
+          // Place walls if adjacent is empty
+          if (x2 > 0 && levelGrid[y][x2 - 1] === '.') levelGrid[y][x2 - 1] = '#';
+          if (x2 < levelWidth - 1 && levelGrid[y][x2 + 1] === '.') levelGrid[y][x2 + 1] = '#';
         }
       }
     } else {
       // First, carve a vertical corridor
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        levelGrid[y][x1] = ''; // Set the corridor path to be a floor tile
-        // Place a wall to the left of the corridor if the tile is empty
-        if (x1 > 0 && levelGrid[y][x1 - 1] === '.') {
-          levelGrid[y][x1 - 1] = '#';
-        }
-        // Place a wall to the right of the corridor if the tile is empty
-        if (x1 < levelWidth - 1 && levelGrid[y][x1 + 1] === '.') {
-          levelGrid[y][x1 + 1] = '#';
+        if (y >= 0 && y < levelHeight && x1 >= 0 && x1 < levelWidth) {
+          if (levelGrid[y][x1] === '.') levelGrid[y][x1] = ''; // Carve floor
+          // Place walls if adjacent is empty
+          if (x1 > 0 && levelGrid[y][x1 - 1] === '.') levelGrid[y][x1 - 1] = '#';
+          if (x1 < levelWidth - 1 && levelGrid[y][x1 + 1] === '.') levelGrid[y][x1 + 1] = '#';
         }
       }
       // Then, carve a horizontal corridor
       for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        levelGrid[y2][x] = ''; // Set the corridor path to be a floor tile
-        // Place a wall above the corridor if the tile is empty
-        if (y2 > 0 && levelGrid[y2 - 1][x] === '.') {
-          levelGrid[y2 - 1][x] = '#';
-        }
-        // Place a wall below the corridor if the tile is empty
-        if (y2 < levelHeight - 1 && levelGrid[y2 + 1][x] === '.') {
-          levelGrid[y2 + 1][x] = '#';
+        if (y2 >= 0 && y2 < levelHeight && x >= 0 && x < levelWidth) {
+          if (levelGrid[y2][x] === '.') levelGrid[y2][x] = ''; // Carve floor
+          // Place walls if adjacent is empty
+          if (y2 > 0 && levelGrid[y2 - 1][x] === '.') levelGrid[y2 - 1][x] = '#';
+          if (y2 < levelHeight - 1 && levelGrid[y2 + 1][x] === '.') levelGrid[y2 + 1][x] = '#';
         }
       }
     }
@@ -166,35 +154,76 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     }
   }
 
-  // Place enemies randomly on the grid
-  const placeEnemies = (numEnemies: number) => {
-    let placed: number = 0;
-    while (placed < numEnemies) {
-      const x: number = Math.floor(Math.random() * levelHeight);
-      const y: number = Math.floor(Math.random() * levelWidth);
-      if (levelGrid[x][y] === '') {
-        levelGrid[x][y] = 'F'; // Place an enemy
-        placed++;
+  // Place a player randomly in a room and return the room object
+  const placePlayer = (): Room | null => {
+    if (rooms.length === 0) return null;
+    const startRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    let placed = false;
+    while (!placed) {
+      const y = startRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (startRoom.height - 2));
+      const x = startRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (startRoom.width - 2));
+      if (y < levelHeight && x < levelWidth && levelGrid[y][x] === '') {
+        levelGrid[y][x] = '@';
+        placed = true;
       }
     }
+    return startRoom;
   };
 
-  // Place a player randomly on the grid
-  const placePlayer = () => {
-    let placed: boolean = false;
+  // Place the goal 'C' in the room furthest from the player's start
+  const placeGoal = (playerStartRoom: Room) => {
+    let furthestRoom: Room | null = null;
+    let maxDist = -1;
+
+    for (const room of rooms) {
+      if (room.id === playerStartRoom.id) continue;
+      const [y1, x1] = playerStartRoom.getCenter();
+      const [y2, x2] = room.getCenter();
+      const distance = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+      if (distance > maxDist) {
+        maxDist = distance;
+        furthestRoom = room;
+      }
+    }
+
+    if (!furthestRoom) {
+      furthestRoom = playerStartRoom; // Fallback to the same room if it's the only one
+    }
+
+    let placed = false;
     while (!placed) {
-      const x: number = Math.floor(Math.random() * levelHeight);
-      const y: number = Math.floor(Math.random() * levelWidth);
-      if (levelGrid[x][y] === '') {
-        levelGrid[x][y] = '@'; // Place the player
+      const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (furthestRoom.height - 2));
+      const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (furthestRoom.width - 2));
+      if (y < levelHeight && x < levelWidth && levelGrid[y][x] === '') {
+        levelGrid[y][x] = 'C';
         placed = true;
       }
     }
   };
 
-  // Place enemies and player on the grid
-  placeEnemies(enemies);
-  placePlayer();
+  // Place enemies randomly on empty floor tiles
+  const placeEnemies = (numEnemies: number) => {
+    let placed: number = 0;
+    let tries = 0;
+    while (placed < numEnemies && tries < levelHeight * levelWidth) {
+      const y: number = Math.floor(Math.random() * levelHeight);
+      const x: number = Math.floor(Math.random() * levelWidth);
+      if (levelGrid[y][x] === '') {
+        levelGrid[y][x] = 'F'; // Place an enemy
+        placed++;
+      }
+      tries++;
+    }
+  };
+
+  // Place everything on the grid if rooms were generated
+  if (rooms.length > 0) {
+    const playerRoom = placePlayer();
+    if (playerRoom) {
+      placeGoal(playerRoom);
+    }
+    placeEnemies(enemies);
+  }
 
   // Convert grid to CSV
   const csvOutput: string = levelGrid.map((row) => row.join(',')).join('\n');
