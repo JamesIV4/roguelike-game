@@ -1,4 +1,4 @@
-// Generated: Tuesday, June 17, 2025 at 04:40:45 PM EDT
+// Generated: Tuesday, June 17, 2025 at 04:47:11 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -544,7 +544,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawScreen(levelData[currentLevel]);
         }
         else {
-            drawScreen(generateRandomLevel(0, 40, 40));
+            drawScreen(generateRandomLevel(currentLevel, 40, 40));
         }
     };
     const eraseScreen = () => {
@@ -565,7 +565,13 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             // Error happens when using newGame since the enemy array is already deleted. Revisit.
         }
         currentLevel = newLevel;
-        drawScreen(levelData[newLevel]);
+        // Check game mode to load the correct level type
+        if (sessionStats.mode === 'normal') {
+            drawScreen(levelData[newLevel]);
+        }
+        else {
+            drawScreen(generateRandomLevel(currentLevel, 40, 40));
+        }
     };
     const newGame = () => {
         levelStore.length = 0; // Wipe out the levelStore
@@ -599,7 +605,6 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(button);
-                button.removeEventListener('click', closeMessageWindow);
             }, 360);
         };
     };
@@ -651,15 +656,51 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     const displayVictoryMessage = () => {
         const messageBox = document.querySelector('#message');
         const message = document.createElement('p');
-        const button = document.createElement('a');
-        const button2 = document.createElement('a');
+        const btnPlayAgain = document.createElement('a');
+        const btnNextLevel = document.createElement('a');
+        // This function closes the message window and removes the buttons.
+        const closeMessageWindow = () => {
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
+            setTimeout(() => {
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btnPlayAgain);
+                if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btnNextLevel)) {
+                    messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btnNextLevel);
+                }
+            }, 360);
+        };
+        // Configure the "Play again" / "New Game" button
+        btnPlayAgain.classList.add('btn');
+        btnPlayAgain.textContent = 'Play again';
+        btnPlayAgain.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+            if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+                setTimeout(() => {
+                    newGame();
+                }, 360); // Start a new game if it was the last level
+            }
+            else {
+                setTimeout(() => {
+                    retryLevel();
+                }, 360); // Otherwise, just retry the current level
+            }
+        });
+        // Configure the "Next Level" button
+        btnNextLevel.classList.add('btn');
+        btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
+        btnNextLevel.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+            setTimeout(() => {
+                goToNewLevel(currentLevel + 1);
+            }, 360);
+        });
+        // Set the main message text.
         message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
-        button.classList.add('btn');
-        button.textContent = 'Play again';
-        button2.classList.add('btn');
-        button2.textContent = 'Go to level ' + (currentLevel + 2); // Plus 2 because it's the next level and we're dealing with a 0-based value
-        if (levelData.length === currentLevel + 1) {
-            // Only happens if you're on the last level
+        // Special message for the final level of normal mode.
+        if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
             if (sessionStats.retries === 0) {
                 message.innerHTML =
                     'Perfect run! You beat the game with no retries.<br /><br />You completed level ' +
@@ -682,51 +723,19 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                         sessionStats.retries +
                         ' retries. Good job!';
             }
-            button.textContent = 'Start a new game';
+            btnPlayAgain.textContent = 'Start a new game';
             setCookie('highscores', '50-0', 1);
         }
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            if (levelData.length === currentLevel + 1) {
-                // Only happens if you're on the last level
-                // Start a new game from level 1
-                setTimeout(() => {
-                    newGame();
-                }, 360);
-            }
-            else {
-                // Reset gameboard and retry current level
-                setTimeout(() => {
-                    retryLevel();
-                }, 360);
-            }
-        });
-        button2.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            // Go to new level
-            setTimeout(() => {
-                goToNewLevel(currentLevel + 1);
-            }, 360);
-        });
+        // Add the elements to the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
-        if (levelData.length > currentLevel + 1) {
-            // Only happens in you aren't on the last level
-            messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button2);
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnPlayAgain);
+        // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
+        if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnNextLevel);
         }
+        // Show the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
-        const closeMessageWindow = () => {
-            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
-            setTimeout(() => {
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(button);
-                button.removeEventListener('click', closeMessageWindow);
-            }, 360);
-        };
     };
     const newTurn = () => {
         sessionStats.turnsLevel++;
@@ -749,23 +758,24 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
         button.classList.add('btn');
         button.textContent = 'Try again';
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
-        const closeMessageWindow = (e) => {
-            e.preventDefault();
+        const closeMessageWindow = () => {
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(button);
-                button.removeEventListener('click', closeMessageWindow);
                 // Reset gameboard
                 retryLevel();
             }, 360);
         };
-        button.addEventListener('click', closeMessageWindow);
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+        });
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
     };
     const handleTouchStart = (evt) => {
         xDown = evt.touches[0].clientX;

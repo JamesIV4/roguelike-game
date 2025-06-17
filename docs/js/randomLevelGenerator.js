@@ -1,4 +1,4 @@
-// Generated: Tuesday, June 17, 2025 at 04:40:45 PM EDT
+// Generated: Tuesday, June 17, 2025 at 04:47:11 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -82,8 +82,14 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
         }
     };
     // Create rooms and add them to the grid
-    for (let roomIndex = 0; roomIndex < roomNum; roomIndex++) {
-        createRoom(roomIndex);
+    let creationAttempts = 0;
+    // This loop ensures the generator tries to create the desired number of rooms,
+    // with a failsafe to prevent it from running forever.
+    while (rooms.length < roomNum && creationAttempts < 200) {
+        // The 'id' for a new room should be the current number of rooms,
+        // as the createRoom and overlapCheck functions rely on this index.
+        createRoom(rooms.length);
+        creationAttempts++;
     }
     // Function to connect rooms with hallways
     const connectRooms = (roomA, roomB) => {
@@ -181,13 +187,19 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
             }
         }
         if (!furthestRoom) {
-            furthestRoom = playerStartRoom; // Fallback to the same room if it's the only one
+            if (rooms.length > 1) {
+                // Pick any other room if the furthest is not found for some reason
+                furthestRoom = rooms.find((r) => r.id !== playerStartRoom.id) || null;
+            }
+            if (!furthestRoom) {
+                furthestRoom = playerStartRoom; // Fallback to the same room if it's the only one
+            }
         }
         let placed = false;
         while (!placed) {
             const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (furthestRoom.height - 2));
             const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (furthestRoom.width - 2));
-            if (y < levelHeight && x < levelWidth && levelGrid[y][x] === '') {
+            if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = 'C';
                 placed = true;
             }

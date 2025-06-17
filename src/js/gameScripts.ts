@@ -667,7 +667,7 @@ type SessionStats = {
     if (sessionStats.mode === 'normal') {
       drawScreen(levelData[currentLevel]);
     } else {
-      drawScreen(generateRandomLevel(0, 40, 40));
+      drawScreen(generateRandomLevel(currentLevel, 40, 40));
     }
   };
 
@@ -695,7 +695,13 @@ type SessionStats = {
     }
 
     currentLevel = newLevel;
-    drawScreen(levelData[newLevel]);
+
+    // Check game mode to load the correct level type
+    if (sessionStats.mode === 'normal') {
+      drawScreen(levelData[newLevel]);
+    } else {
+      drawScreen(generateRandomLevel(currentLevel, 40, 40));
+    }
   };
 
   const newGame = () => {
@@ -741,7 +747,6 @@ type SessionStats = {
         messageBox?.classList.remove('top');
         messageBox?.removeChild(message);
         messageBox?.removeChild(button);
-        button.removeEventListener('click', closeMessageWindow);
       }, 360);
     };
   };
@@ -805,20 +810,55 @@ type SessionStats = {
   const displayVictoryMessage = () => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
-    const button = document.createElement('a');
-    const button2 = document.createElement('a');
+    const btnPlayAgain = document.createElement('a');
+    const btnNextLevel = document.createElement('a');
 
+    // This function closes the message window and removes the buttons.
+    const closeMessageWindow = () => {
+      messageBox?.classList.remove('show');
+      setTimeout(() => {
+        messageBox?.classList.remove('top');
+        messageBox?.removeChild(message);
+        messageBox?.removeChild(btnPlayAgain);
+        if (messageBox?.contains(btnNextLevel)) {
+          messageBox?.removeChild(btnNextLevel);
+        }
+      }, 360);
+    };
+
+    // Configure the "Play again" / "New Game" button
+    btnPlayAgain.classList.add('btn');
+    btnPlayAgain.textContent = 'Play again';
+    btnPlayAgain.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMessageWindow();
+      if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+        setTimeout(() => {
+          newGame();
+        }, 360); // Start a new game if it was the last level
+      } else {
+        setTimeout(() => {
+          retryLevel();
+        }, 360); // Otherwise, just retry the current level
+      }
+    });
+
+    // Configure the "Next Level" button
+    btnNextLevel.classList.add('btn');
+    btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
+    btnNextLevel.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMessageWindow();
+      setTimeout(() => {
+        goToNewLevel(currentLevel + 1);
+      }, 360);
+    });
+
+    // Set the main message text.
     message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
 
-    button.classList.add('btn');
-    button.textContent = 'Play again';
-
-    button2.classList.add('btn');
-    button2.textContent = 'Go to level ' + (currentLevel + 2); // Plus 2 because it's the next level and we're dealing with a 0-based value
-
-    if (levelData.length === currentLevel + 1) {
-      // Only happens if you're on the last level
-
+    // Special message for the final level of normal mode.
+    if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
       if (sessionStats.retries === 0) {
         message.innerHTML =
           'Perfect run! You beat the game with no retries.<br /><br />You completed level ' +
@@ -840,62 +880,22 @@ type SessionStats = {
           sessionStats.retries +
           ' retries. Good job!';
       }
-
-      button.textContent = 'Start a new game';
-
+      btnPlayAgain.textContent = 'Start a new game';
       setCookie('highscores', '50-0', 1);
     }
 
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      closeMessageWindow();
-
-      if (levelData.length === currentLevel + 1) {
-        // Only happens if you're on the last level
-        // Start a new game from level 1
-        setTimeout(() => {
-          newGame();
-        }, 360);
-      } else {
-        // Reset gameboard and retry current level
-        setTimeout(() => {
-          retryLevel();
-        }, 360);
-      }
-    });
-    button2.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      closeMessageWindow();
-
-      // Go to new level
-      setTimeout(() => {
-        goToNewLevel(currentLevel + 1);
-      }, 360);
-    });
-
+    // Add the elements to the message box
     messageBox?.appendChild(message);
-    messageBox?.appendChild(button);
+    messageBox?.appendChild(btnPlayAgain);
 
-    if (levelData.length > currentLevel + 1) {
-      // Only happens in you aren't on the last level
-      messageBox?.appendChild(button2);
+    // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
+    if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
+      messageBox?.appendChild(btnNextLevel);
     }
 
+    // Show the message box
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
-
-    const closeMessageWindow = () => {
-      messageBox?.classList.remove('show');
-
-      setTimeout(() => {
-        messageBox?.classList.remove('top');
-        messageBox?.removeChild(message);
-        messageBox?.removeChild(button);
-        button.removeEventListener('click', closeMessageWindow);
-      }, 360);
-    };
   };
 
   const newTurn = () => {
@@ -925,29 +925,27 @@ type SessionStats = {
     button.classList.add('btn');
     button.textContent = 'Try again';
 
-    messageBox?.appendChild(message);
-    messageBox?.appendChild(button);
-
-    messageBox?.classList.add('top');
-    messageBox?.classList.add('show');
-
-    const closeMessageWindow = (e: { preventDefault: () => void }) => {
-      e.preventDefault();
-
+    const closeMessageWindow = () => {
       messageBox?.classList.remove('show');
-
       setTimeout(() => {
         messageBox?.classList.remove('top');
         messageBox?.removeChild(message);
         messageBox?.removeChild(button);
-        button.removeEventListener('click', closeMessageWindow);
-
         // Reset gameboard
         retryLevel();
       }, 360);
     };
 
-    button.addEventListener('click', closeMessageWindow);
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMessageWindow();
+    });
+
+    messageBox?.appendChild(message);
+    messageBox?.appendChild(button);
+
+    messageBox?.classList.add('top');
+    messageBox?.classList.add('show');
   };
 
   const handleTouchStart = (evt: TouchEvent) => {
