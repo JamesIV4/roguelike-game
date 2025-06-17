@@ -6,3 +6,7 @@ This game is an exercise in DOM manipulation using JS. Created with TS and SCSS.
 
 1. `npm i`
 2. `npm start`
+
+## Building
+
+`npm run build`
