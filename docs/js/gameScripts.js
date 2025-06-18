@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 11:31:10 AM EDT
+// Generated: Wednesday, June 18, 2025 at 11:49:24 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -732,11 +732,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         const btnPlayAgain = document.createElement('a');
         const btnNextLevel = document.createElement('a');
         // This function closes the message window and removes the buttons.
-        let isClosing = false;
         const closeMessageWindow = () => {
-            if (isClosing)
-                return; // Prevent multiple calls
-            isClosing = true;
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
@@ -747,13 +743,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 }
             }, 360);
         };
-        // Configure the "Play again" / "New Game" button
-        btnPlayAgain.classList.add('btn');
-        btnPlayAgain.textContent = 'Play again';
-        btnPlayAgain.setAttribute('tabindex', '0');
-        btnPlayAgain.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
+        const playAgainOrNewGame = () => {
             if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
                 setTimeout(() => {
                     newGame();
@@ -764,22 +754,22 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                     retryLevel();
                 }, 360); // Otherwise, just retry the current level
             }
+        };
+        // Configure the "Play again" / "New Game" button
+        btnPlayAgain.classList.add('btn');
+        btnPlayAgain.textContent = 'Play again';
+        btnPlayAgain.setAttribute('tabindex', '0');
+        btnPlayAgain.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+            playAgainOrNewGame();
         });
         // Add keyboard support for Enter key
         btnPlayAgain.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeMessageWindow();
-                if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
-                    setTimeout(() => {
-                        newGame();
-                    }, 360);
-                }
-                else {
-                    setTimeout(() => {
-                        retryLevel();
-                    }, 360);
-                }
+                playAgainOrNewGame();
             }
         });
         // Configure the "Next Level" button
