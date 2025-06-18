@@ -911,13 +911,7 @@ type SessionStats = {
       }, 360);
     };
 
-    // Configure the "Play again" / "New Game" button
-    btnPlayAgain.classList.add('btn');
-    btnPlayAgain.textContent = 'Play again';
-    btnPlayAgain.setAttribute('tabindex', '0');
-    btnPlayAgain.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
+    const playAgainOrNewGame = () => {
       if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
         setTimeout(() => {
           newGame();
@@ -927,6 +921,16 @@ type SessionStats = {
           retryLevel();
         }, 360); // Otherwise, just retry the current level
       }
+    };
+
+    // Configure the "Play again" / "New Game" button
+    btnPlayAgain.classList.add('btn');
+    btnPlayAgain.textContent = 'Play again';
+    btnPlayAgain.setAttribute('tabindex', '0');
+    btnPlayAgain.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMessageWindow();
+      playAgainOrNewGame();
     });
 
     // Add keyboard support for Enter key
@@ -934,15 +938,7 @@ type SessionStats = {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeMessageWindow();
-        if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
-          setTimeout(() => {
-            newGame();
-          }, 360);
-        } else {
-          setTimeout(() => {
-            retryLevel();
-          }, 360);
-        }
+        playAgainOrNewGame();
       }
     });
 
