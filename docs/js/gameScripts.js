@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 12:51:46 PM EDT
+// Generated: Wednesday, June 18, 2025 at 01:04:17 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -115,12 +115,36 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         buttonContainer.appendChild(btnStartProcudural);
         uiElem.appendChild(messageWindow);
         uiElem.appendChild(titleContainer);
+        // Store buttons in an array for keyboard navigation
+        const buttons = [btnStartNormal, btnStartProcudural];
+        let currentFocusIndex = 0;
+        // Add keyboard navigation between buttons
+        const handleKeyNavigation = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'Up') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+            else if (e.key === 'ArrowDown' || e.key === 'Down') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+        };
+        // Add keyboard navigation event listeners to each button
+        buttons.forEach(button => {
+            button.addEventListener('keydown', handleKeyNavigation);
+        });
         setTimeout(() => {
             titleContainer.classList.add('show');
             // Focus on the Normal Game button
             btnStartNormal.focus();
         }, 150);
         const closeTitlescreen = () => {
+            // Remove keyboard navigation event listeners
+            buttons.forEach(button => {
+                button.removeEventListener('keydown', handleKeyNavigation);
+            });
             background === null || background === void 0 ? void 0 : background.classList.remove('titlescreen');
             titleContainer.classList.remove('show');
             setTimeout(() => {
@@ -764,6 +788,10 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         const btnNextLevel = document.createElement('a');
         // This function closes the message window and removes the buttons.
         const closeMessageWindow = () => {
+            // Remove keyboard navigation event listeners
+            buttons.forEach(button => {
+                button.removeEventListener('keydown', handleKeyNavigation);
+            });
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
@@ -884,15 +912,45 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }
         // Add the "Back to Title Screen" button
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnBackToTitle);
+        // Create an array of buttons for keyboard navigation
+        const buttons = [btnPlayAgain];
+        if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
+            buttons.push(btnNextLevel);
+        }
+        buttons.push(btnBackToTitle);
+        let currentFocusIndex = 0;
+        // Add keyboard navigation between buttons
+        const handleKeyNavigation = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'Up') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+            else if (e.key === 'ArrowDown' || e.key === 'Down') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+        };
+        // Add keyboard navigation event listeners to each button
+        buttons.forEach(button => {
+            button.addEventListener('keydown', handleKeyNavigation);
+        });
         // Show the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
         // Focus on the Next Level button if it exists, otherwise focus on Play Again button
         if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btnNextLevel)) {
-            setTimeout(() => btnNextLevel.focus(), 100);
+            setTimeout(() => {
+                btnNextLevel.focus();
+                currentFocusIndex = buttons.indexOf(btnNextLevel);
+            }, 100);
         }
         else {
-            setTimeout(() => btnPlayAgain.focus(), 100);
+            setTimeout(() => {
+                btnPlayAgain.focus();
+                currentFocusIndex = 0;
+            }, 100);
         }
     };
     const newTurn = () => {
@@ -918,11 +976,18 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         button.textContent = 'Try again';
         button.setAttribute('tabindex', '0');
         const closeMessageWindow = () => {
+            // Remove keyboard navigation event listeners
+            buttons.forEach(btn => {
+                btn.removeEventListener('keydown', handleKeyNavigation);
+            });
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(button);
+                if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btnBackToTitle)) {
+                    messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btnBackToTitle);
+                }
                 // Reset gameboard
                 retryLevel();
             }, 360);
@@ -963,10 +1028,33 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnBackToTitle);
+        // Create an array of buttons for keyboard navigation
+        const buttons = [button, btnBackToTitle];
+        let currentFocusIndex = 0;
+        // Add keyboard navigation between buttons
+        const handleKeyNavigation = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'Up') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+            else if (e.key === 'ArrowDown' || e.key === 'Down') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+                buttons[currentFocusIndex].focus();
+            }
+        };
+        // Add keyboard navigation event listeners to each button
+        buttons.forEach(btn => {
+            btn.addEventListener('keydown', handleKeyNavigation);
+        });
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
-        // Focus on the button
-        setTimeout(() => button.focus(), 100);
+        // Focus on the Try Again button
+        setTimeout(() => {
+            button.focus();
+            currentFocusIndex = 0;
+        }, 100);
     };
     const handleTouchStart = (evt) => {
         xDown = evt.touches[0].clientX;

@@ -146,6 +146,28 @@ type SessionStats = {
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
+    // Store buttons in an array for keyboard navigation
+    const buttons = [btnStartNormal, btnStartProcudural];
+    let currentFocusIndex = 0;
+
+    // Add keyboard navigation between buttons
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'Up') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      }
+    };
+
+    // Add keyboard navigation event listeners to each button
+    buttons.forEach(button => {
+      button.addEventListener('keydown', handleKeyNavigation);
+    });
+
     setTimeout(() => {
       titleContainer.classList.add('show');
       // Focus on the Normal Game button
@@ -153,6 +175,11 @@ type SessionStats = {
     }, 150);
 
     const closeTitlescreen = () => {
+      // Remove keyboard navigation event listeners
+      buttons.forEach(button => {
+        button.removeEventListener('keydown', handleKeyNavigation);
+      });
+      
       background?.classList.remove('titlescreen');
       titleContainer.classList.remove('show');
 
@@ -938,6 +965,11 @@ type SessionStats = {
 
     // This function closes the message window and removes the buttons.
     const closeMessageWindow = () => {
+      // Remove keyboard navigation event listeners
+      buttons.forEach(button => {
+        button.removeEventListener('keydown', handleKeyNavigation);
+      });
+      
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
@@ -1069,15 +1101,48 @@ type SessionStats = {
     // Add the "Back to Title Screen" button
     messageBox?.appendChild(btnBackToTitle);
 
+    // Create an array of buttons for keyboard navigation
+    const buttons = [btnPlayAgain];
+    if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
+      buttons.push(btnNextLevel);
+    }
+    buttons.push(btnBackToTitle);
+    
+    let currentFocusIndex = 0;
+    
+    // Add keyboard navigation between buttons
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'Up') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      }
+    };
+
+    // Add keyboard navigation event listeners to each button
+    buttons.forEach(button => {
+      button.addEventListener('keydown', handleKeyNavigation);
+    });
+
     // Show the message box
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
 
     // Focus on the Next Level button if it exists, otherwise focus on Play Again button
     if (messageBox?.contains(btnNextLevel)) {
-      setTimeout(() => btnNextLevel.focus(), 100);
+      setTimeout(() => {
+        btnNextLevel.focus();
+        currentFocusIndex = buttons.indexOf(btnNextLevel);
+      }, 100);
     } else {
-      setTimeout(() => btnPlayAgain.focus(), 100);
+      setTimeout(() => {
+        btnPlayAgain.focus();
+        currentFocusIndex = 0;
+      }, 100);
     }
   };
 
@@ -1110,11 +1175,19 @@ type SessionStats = {
     button.setAttribute('tabindex', '0');
 
     const closeMessageWindow = () => {
+      // Remove keyboard navigation event listeners
+      buttons.forEach(btn => {
+        btn.removeEventListener('keydown', handleKeyNavigation);
+      });
+      
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
         messageBox?.removeChild(message);
         messageBox?.removeChild(button);
+        if (messageBox?.contains(btnBackToTitle)) {
+          messageBox?.removeChild(btnBackToTitle);
+        }
         // Reset gameboard
         retryLevel();
       }, 360);
@@ -1161,11 +1234,36 @@ type SessionStats = {
     messageBox?.appendChild(button);
     messageBox?.appendChild(btnBackToTitle);
 
+    // Create an array of buttons for keyboard navigation
+    const buttons = [button, btnBackToTitle];
+    let currentFocusIndex = 0;
+    
+    // Add keyboard navigation between buttons
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'Up') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
+        buttons[currentFocusIndex].focus();
+      }
+    };
+
+    // Add keyboard navigation event listeners to each button
+    buttons.forEach(btn => {
+      btn.addEventListener('keydown', handleKeyNavigation);
+    });
+
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
 
-    // Focus on the button
-    setTimeout(() => button.focus(), 100);
+    // Focus on the Try Again button
+    setTimeout(() => {
+      button.focus();
+      currentFocusIndex = 0;
+    }, 100);
   };
 
   const handleTouchStart = (evt: TouchEvent) => {
