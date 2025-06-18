@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 09:00:58 AM EDT
+// Generated: Wednesday, June 18, 2025 at 11:18:56 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -86,6 +86,9 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         buttonContainer.classList.add('button-container');
         btnStartNormal.classList.add('btn');
         btnStartProcudural.classList.add('btn');
+        // Add tabindex for keyboard navigation
+        btnStartNormal.setAttribute('tabindex', '0');
+        btnStartProcudural.setAttribute('tabindex', '0');
         background === null || background === void 0 ? void 0 : background.classList.add('titlescreen');
         titleHeader.textContent = 'Fire Gauntlet';
         btnStartNormal.textContent = 'Start Normal Game';
@@ -113,10 +116,28 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             sessionStats.mode = 'normal';
             beginGame();
         });
+        // Add keyboard support for Enter key
+        btnStartNormal.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeTitlescreen();
+                sessionStats.mode = 'normal';
+                beginGame();
+            }
+        });
         btnStartProcudural.addEventListener('click', () => {
             closeTitlescreen();
             sessionStats.mode = 'procedural';
             beginGame();
+        });
+        // Add keyboard support for Enter key
+        btnStartProcudural.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeTitlescreen();
+                sessionStats.mode = 'procedural';
+                beginGame();
+            }
         });
     };
     const drawScreen = (selectedLevel) => {
@@ -128,10 +149,14 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         zoomButtons.id = 'zoom-container';
         zoomUp.id = 'zoom-up';
         zoomUp.textContent = '+';
+        zoomUp.setAttribute('tabindex', '0');
         zoomDown.id = 'zoom-down';
         zoomDown.textContent = '-';
+        zoomDown.setAttribute('tabindex', '0');
         showGoalBtn.id = 'show-goal';
+        showGoalBtn.setAttribute('tabindex', '0');
         switchCameraBtn.id = 'switch-camera';
+        switchCameraBtn.setAttribute('tabindex', '0');
         // Initialize level storage
         if (levelStore.length === currentLevel) {
             // If we're in a NEW level, add new arrays
@@ -216,8 +241,20 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         switchCameraBtn.addEventListener('click', () => {
             toggleCenterMode();
         });
+        switchCameraBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                toggleCenterMode();
+            }
+        });
         showGoalBtn.addEventListener('click', () => {
             showGoal();
+        });
+        showGoalBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                showGoal();
+            }
         });
         zoomUp.addEventListener('click', () => {
             grid.classList.add('no-anim'); // Move characters instantly during zoom
@@ -228,9 +265,33 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             centerPlayerInScreen();
             grid.classList.remove('no-anim');
         });
+        zoomUp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                grid.classList.add('no-anim');
+                sessionStats.zoomLevel++;
+                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+                renderPlayer(player.pos);
+                renderEnemies();
+                centerPlayerInScreen();
+                grid.classList.remove('no-anim');
+            }
+        });
         zoomDown.addEventListener('click', () => {
             if (sessionStats.zoomLevel > 1) {
                 grid.classList.add('no-anim'); // Move characters instantly during zoom
+                sessionStats.zoomLevel--;
+                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+                renderPlayer(player.pos);
+                renderEnemies();
+                centerPlayerInScreen();
+                grid.classList.remove('no-anim');
+            }
+        });
+        zoomDown.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && sessionStats.zoomLevel > 1) {
+                e.preventDefault();
+                grid.classList.add('no-anim');
                 sessionStats.zoomLevel--;
                 zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
                 renderPlayer(player.pos);
@@ -587,6 +648,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         message.textContent = messageText;
         button.classList.add('btn');
         button.textContent = btnText;
+        button.setAttribute('tabindex', '0');
         button.addEventListener('click', (e) => {
             e.preventDefault();
             switch (action) {
@@ -595,10 +657,19 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                     break;
             }
         });
+        // Add keyboard support for Enter key
+        button.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeMessageWindow();
+            }
+        });
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
+        // Focus on the button
+        setTimeout(() => button.focus(), 100);
         const closeMessageWindow = () => {
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
@@ -673,6 +744,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         // Configure the "Play again" / "New Game" button
         btnPlayAgain.classList.add('btn');
         btnPlayAgain.textContent = 'Play again';
+        btnPlayAgain.setAttribute('tabindex', '0');
         btnPlayAgain.addEventListener('click', (e) => {
             e.preventDefault();
             closeMessageWindow();
@@ -687,15 +759,43 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 }, 360); // Otherwise, just retry the current level
             }
         });
+        // Add keyboard support for Enter key
+        btnPlayAgain.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeMessageWindow();
+                if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+                    setTimeout(() => {
+                        newGame();
+                    }, 360);
+                }
+                else {
+                    setTimeout(() => {
+                        retryLevel();
+                    }, 360);
+                }
+            }
+        });
         // Configure the "Next Level" button
         btnNextLevel.classList.add('btn');
         btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
+        btnNextLevel.setAttribute('tabindex', '0');
         btnNextLevel.addEventListener('click', (e) => {
             e.preventDefault();
             closeMessageWindow();
             setTimeout(() => {
                 goToNewLevel(currentLevel + 1);
             }, 360);
+        });
+        // Add keyboard support for Enter key
+        btnNextLevel.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeMessageWindow();
+                setTimeout(() => {
+                    goToNewLevel(currentLevel + 1);
+                }, 360);
+            }
         });
         // Set the main message text.
         message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
@@ -736,6 +836,13 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         // Show the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
+        // Focus on the Next Level button if it exists, otherwise focus on Play Again button
+        if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btnNextLevel)) {
+            setTimeout(() => btnNextLevel.focus(), 100);
+        }
+        else {
+            setTimeout(() => btnPlayAgain.focus(), 100);
+        }
     };
     const newTurn = () => {
         sessionStats.turnsLevel++;
@@ -758,6 +865,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
         button.classList.add('btn');
         button.textContent = 'Try again';
+        button.setAttribute('tabindex', '0');
         const closeMessageWindow = () => {
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
@@ -772,10 +880,19 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             e.preventDefault();
             closeMessageWindow();
         });
+        // Add keyboard support for Enter key
+        button.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                closeMessageWindow();
+            }
+        });
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
+        // Focus on the button
+        setTimeout(() => button.focus(), 100);
     };
     const handleTouchStart = (evt) => {
         xDown = evt.touches[0].clientX;

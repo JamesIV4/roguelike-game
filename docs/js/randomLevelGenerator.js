@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 09:00:58 AM EDT
+// Generated: Wednesday, June 18, 2025 at 11:18:56 AM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);

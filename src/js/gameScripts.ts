@@ -109,6 +109,10 @@ type SessionStats = {
     buttonContainer.classList.add('button-container');
     btnStartNormal.classList.add('btn');
     btnStartProcudural.classList.add('btn');
+    
+    // Add tabindex for keyboard navigation
+    btnStartNormal.setAttribute('tabindex', '0');
+    btnStartProcudural.setAttribute('tabindex', '0');
 
     background?.classList.add('titlescreen');
 
@@ -143,11 +147,31 @@ type SessionStats = {
       sessionStats.mode = 'normal';
       beginGame();
     });
+    
+    // Add keyboard support for Enter key
+    btnStartNormal.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeTitlescreen();
+        sessionStats.mode = 'normal';
+        beginGame();
+      }
+    });
 
     btnStartProcudural.addEventListener('click', () => {
       closeTitlescreen();
       sessionStats.mode = 'procedural';
       beginGame();
+    });
+    
+    // Add keyboard support for Enter key
+    btnStartProcudural.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeTitlescreen();
+        sessionStats.mode = 'procedural';
+        beginGame();
+      }
     });
   };
 
@@ -171,13 +195,17 @@ type SessionStats = {
     zoomButtons.id = 'zoom-container';
     zoomUp.id = 'zoom-up';
     zoomUp.textContent = '+';
+    zoomUp.setAttribute('tabindex', '0');
 
     zoomDown.id = 'zoom-down';
     zoomDown.textContent = '-';
+    zoomDown.setAttribute('tabindex', '0');
 
     showGoalBtn.id = 'show-goal';
+    showGoalBtn.setAttribute('tabindex', '0');
 
     switchCameraBtn.id = 'switch-camera';
+    switchCameraBtn.setAttribute('tabindex', '0');
 
     // Initialize level storage
     if (levelStore.length === currentLevel) {
@@ -281,9 +309,23 @@ type SessionStats = {
     switchCameraBtn.addEventListener('click', () => {
       toggleCenterMode();
     });
+    switchCameraBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        toggleCenterMode();
+      }
+    });
+    
     showGoalBtn.addEventListener('click', () => {
       showGoal();
     });
+    showGoalBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        showGoal();
+      }
+    });
+    
     zoomUp.addEventListener('click', () => {
       grid.classList.add('no-anim'); // Move characters instantly during zoom
 
@@ -295,6 +337,21 @@ type SessionStats = {
 
       grid.classList.remove('no-anim');
     });
+    zoomUp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        grid.classList.add('no-anim');
+        
+        sessionStats.zoomLevel++;
+        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+        renderPlayer(player.pos);
+        renderEnemies();
+        centerPlayerInScreen();
+        
+        grid.classList.remove('no-anim');
+      }
+    });
+    
     zoomDown.addEventListener('click', () => {
       if (sessionStats.zoomLevel > 1) {
         grid.classList.add('no-anim'); // Move characters instantly during zoom
@@ -305,6 +362,20 @@ type SessionStats = {
         renderEnemies();
         centerPlayerInScreen();
 
+        grid.classList.remove('no-anim');
+      }
+    });
+    zoomDown.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && sessionStats.zoomLevel > 1) {
+        e.preventDefault();
+        grid.classList.add('no-anim');
+        
+        sessionStats.zoomLevel--;
+        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+        renderPlayer(player.pos);
+        renderEnemies();
+        centerPlayerInScreen();
+        
         grid.classList.remove('no-anim');
       }
     });
@@ -723,6 +794,7 @@ type SessionStats = {
 
     button.classList.add('btn');
     button.textContent = btnText;
+    button.setAttribute('tabindex', '0');
 
     button.addEventListener('click', (e) => {
       e.preventDefault();
@@ -733,12 +805,23 @@ type SessionStats = {
           break;
       }
     });
+    
+    // Add keyboard support for Enter key
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeMessageWindow();
+      }
+    });
 
     messageBox?.appendChild(message);
     messageBox?.appendChild(button);
 
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
+    
+    // Focus on the button
+    setTimeout(() => button.focus(), 100);
 
     const closeMessageWindow = () => {
       messageBox?.classList.remove('show');
@@ -829,6 +912,7 @@ type SessionStats = {
     // Configure the "Play again" / "New Game" button
     btnPlayAgain.classList.add('btn');
     btnPlayAgain.textContent = 'Play again';
+    btnPlayAgain.setAttribute('tabindex', '0');
     btnPlayAgain.addEventListener('click', (e) => {
       e.preventDefault();
       closeMessageWindow();
@@ -842,16 +926,45 @@ type SessionStats = {
         }, 360); // Otherwise, just retry the current level
       }
     });
+    
+    // Add keyboard support for Enter key
+    btnPlayAgain.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeMessageWindow();
+        if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+          setTimeout(() => {
+            newGame();
+          }, 360);
+        } else {
+          setTimeout(() => {
+            retryLevel();
+          }, 360);
+        }
+      }
+    });
 
     // Configure the "Next Level" button
     btnNextLevel.classList.add('btn');
     btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
+    btnNextLevel.setAttribute('tabindex', '0');
     btnNextLevel.addEventListener('click', (e) => {
       e.preventDefault();
       closeMessageWindow();
       setTimeout(() => {
         goToNewLevel(currentLevel + 1);
       }, 360);
+    });
+    
+    // Add keyboard support for Enter key
+    btnNextLevel.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeMessageWindow();
+        setTimeout(() => {
+          goToNewLevel(currentLevel + 1);
+        }, 360);
+      }
     });
 
     // Set the main message text.
@@ -896,6 +1009,13 @@ type SessionStats = {
     // Show the message box
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
+    
+    // Focus on the Next Level button if it exists, otherwise focus on Play Again button
+    if (messageBox?.contains(btnNextLevel)) {
+      setTimeout(() => btnNextLevel.focus(), 100);
+    } else {
+      setTimeout(() => btnPlayAgain.focus(), 100);
+    }
   };
 
   const newTurn = () => {
@@ -924,6 +1044,7 @@ type SessionStats = {
 
     button.classList.add('btn');
     button.textContent = 'Try again';
+    button.setAttribute('tabindex', '0');
 
     const closeMessageWindow = () => {
       messageBox?.classList.remove('show');
@@ -940,12 +1061,23 @@ type SessionStats = {
       e.preventDefault();
       closeMessageWindow();
     });
+    
+    // Add keyboard support for Enter key
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        closeMessageWindow();
+      }
+    });
 
     messageBox?.appendChild(message);
     messageBox?.appendChild(button);
 
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
+    
+    // Focus on the button
+    setTimeout(() => button.focus(), 100);
   };
 
   const handleTouchStart = (evt: TouchEvent) => {
