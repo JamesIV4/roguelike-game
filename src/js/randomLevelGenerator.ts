@@ -108,47 +108,48 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
 
   // Function to connect rooms with hallways
   const connectRooms = (roomA: Room, roomB: Room) => {
-    // Get center coordinates [y, x] for both rooms
     const [y1, x1] = roomA.getCenter();
     const [y2, x2] = roomB.getCenter();
 
-    if (Math.random() < 0.5) {
-      // First, carve a horizontal corridor
-      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        if (y1 >= 0 && y1 < levelHeight && x >= 0 && x < levelWidth) {
-          if (levelGrid[y1][x] === '.') levelGrid[y1][x] = ''; // Carve floor
-          // Place walls if adjacent is empty
-          if (y1 > 0 && levelGrid[y1 - 1][x] === '.') levelGrid[y1 - 1][x] = '#';
-          if (y1 < levelHeight - 1 && levelGrid[y1 + 1][x] === '.') levelGrid[y1 + 1][x] = '#';
+    // Carve a path, overwriting anything (empty, wall) with floor
+    const carveFloor = (y: number, x: number) => {
+      if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth) {
+        levelGrid[y][x] = '';
+      }
+    };
+
+    // Place a wall tile, but only on empty space
+    const placeWall = (y: number, x: number) => {
+      if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth) {
+        if (levelGrid[y][x] === '.') {
+          levelGrid[y][x] = '#';
         }
       }
-      // Then, carve a vertical corridor
+    };
+
+    if (Math.random() < 0.5) {
+      // Horizontal then vertical corridor
+      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+        carveFloor(y1, x);
+        placeWall(y1 - 1, x);
+        placeWall(y1 + 1, x);
+      }
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        if (y >= 0 && y < levelHeight && x2 >= 0 && x2 < levelWidth) {
-          if (levelGrid[y][x2] === '.') levelGrid[y][x2] = ''; // Carve floor
-          // Place walls if adjacent is empty
-          if (x2 > 0 && levelGrid[y][x2 - 1] === '.') levelGrid[y][x2 - 1] = '#';
-          if (x2 < levelWidth - 1 && levelGrid[y][x2 + 1] === '.') levelGrid[y][x2 + 1] = '#';
-        }
+        carveFloor(y, x2);
+        placeWall(y, x2 - 1);
+        placeWall(y, x2 + 1);
       }
     } else {
-      // First, carve a vertical corridor
+      // Vertical then horizontal corridor
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        if (y >= 0 && y < levelHeight && x1 >= 0 && x1 < levelWidth) {
-          if (levelGrid[y][x1] === '.') levelGrid[y][x1] = ''; // Carve floor
-          // Place walls if adjacent is empty
-          if (x1 > 0 && levelGrid[y][x1 - 1] === '.') levelGrid[y][x1 - 1] = '#';
-          if (x1 < levelWidth - 1 && levelGrid[y][x1 + 1] === '.') levelGrid[y][x1 + 1] = '#';
-        }
+        carveFloor(y, x1);
+        placeWall(y, x1 - 1);
+        placeWall(y, x1 + 1);
       }
-      // Then, carve a horizontal corridor
       for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        if (y2 >= 0 && y2 < levelHeight && x >= 0 && x < levelWidth) {
-          if (levelGrid[y2][x] === '.') levelGrid[y2][x] = ''; // Carve floor
-          // Place walls if adjacent is empty
-          if (y2 > 0 && levelGrid[y2 - 1][x] === '.') levelGrid[y2 - 1][x] = '#';
-          if (y2 < levelHeight - 1 && levelGrid[y2 + 1][x] === '.') levelGrid[y2 + 1][x] = '#';
-        }
+        carveFloor(y2, x);
+        placeWall(y2 - 1, x);
+        placeWall(y2 + 1, x);
       }
     }
   };

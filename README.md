@@ -1,4 +1,4 @@
-# Game URL: https://jamesiv4.github.io/roguelike-game/
+# Game URL: <https://jamesiv4.github.io/roguelike-game/>
 
 This game is an exercise in DOM manipulation using JS. Created with TS and SCSS.
 
