@@ -193,6 +193,11 @@ type SessionStats = {
 
     uiElem.id = 'ui-display';
     messageWindow.id = 'message';
+    
+    // Create level indicator
+    const levelIndicator = document.createElement('div');
+    levelIndicator.id = 'level-indicator';
+    levelIndicator.textContent = `Level ${currentLevel + 1}`;
 
     zoomButtons.id = 'zoom-container';
     zoomUp.id = 'zoom-up';
@@ -291,6 +296,7 @@ type SessionStats = {
     }
 
     background?.appendChild(uiElem);
+    uiElem.appendChild(levelIndicator);
     uiElem.appendChild(zoomButtons);
     uiElem.appendChild(messageWindow);
     zoomButtons.appendChild(switchCameraBtn);

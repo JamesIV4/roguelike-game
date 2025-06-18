@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 12:08:07 PM EDT
+// Generated: Wednesday, June 18, 2025 at 12:20:06 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -214,8 +214,41 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
         }
         placeEnemies(enemies);
     }
+    // Find the bounds of the actual content
+    let minY = levelHeight;
+    let maxY = 0;
+    let minX = levelWidth;
+    let maxX = 0;
+    // Find the actual bounds of the level content
+    for (let y = 0; y < levelHeight; y++) {
+        for (let x = 0; x < levelWidth; x++) {
+            if (levelGrid[y][x] !== '.') {
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+            }
+        }
+    }
+    // Calculate content dimensions and offsets for centering
+    const contentHeight = maxY - minY + 1;
+    const contentWidth = maxX - minX + 1;
+    const offsetY = Math.floor((levelHeight - contentHeight) / 2) - minY;
+    const offsetX = Math.floor((levelWidth - contentWidth) / 2) - minX;
+    // Create a new centered grid
+    const centeredGrid = Array.from({ length: levelHeight }, () => new Array(levelWidth).fill('.'));
+    // Copy content to centered position
+    for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+            const newY = y + offsetY;
+            const newX = x + offsetX;
+            if (newY >= 0 && newY < levelHeight && newX >= 0 && newX < levelWidth) {
+                centeredGrid[newY][newX] = levelGrid[y][x];
+            }
+        }
+    }
     // Convert grid to CSV
-    const csvOutput = levelGrid.map((row) => row.join(',')).join('\n');
+    const csvOutput = centeredGrid.map((row) => row.join(',')).join('\n');
     console.log('GENERATED LEVEL:', csvOutput);
     return csvOutput;
 };

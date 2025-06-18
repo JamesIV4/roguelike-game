@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 12:08:07 PM EDT
+// Generated: Wednesday, June 18, 2025 at 12:20:06 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -148,6 +148,10 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         grid.id = 'game-grid';
         uiElem.id = 'ui-display';
         messageWindow.id = 'message';
+        // Create level indicator
+        const levelIndicator = document.createElement('div');
+        levelIndicator.id = 'level-indicator';
+        levelIndicator.textContent = `Level ${currentLevel + 1}`;
         zoomButtons.id = 'zoom-container';
         zoomUp.id = 'zoom-up';
         zoomUp.textContent = '+';
@@ -226,6 +230,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             }
         }
         background === null || background === void 0 ? void 0 : background.appendChild(uiElem);
+        uiElem.appendChild(levelIndicator);
         uiElem.appendChild(zoomButtons);
         uiElem.appendChild(messageWindow);
         zoomButtons.appendChild(switchCameraBtn);

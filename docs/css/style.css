@@ -130,6 +130,18 @@ body {
     width: 75%;
   }
 }
+#display-wrapper #ui-display #level-indicator {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  color: #fff;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-shadow: 0 0 3px #000;
+}
 #display-wrapper #ui-display #zoom-container {
   display: block;
   position: fixed;
