@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 11:26:51 AM EDT
+// Generated: Wednesday, June 18, 2025 at 11:28:20 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -102,6 +102,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         uiElem.appendChild(titleContainer);
         setTimeout(() => {
             titleContainer.classList.add('show');
+            // Focus on the Normal Game button
+            btnStartNormal.focus();
         }, 150);
         const closeTitlescreen = () => {
             background === null || background === void 0 ? void 0 : background.classList.remove('titlescreen');

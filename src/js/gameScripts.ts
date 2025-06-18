@@ -130,6 +130,8 @@ type SessionStats = {
 
     setTimeout(() => {
       titleContainer.classList.add('show');
+      // Focus on the Normal Game button
+      btnStartNormal.focus();
     }, 150);
 
     const closeTitlescreen = () => {
