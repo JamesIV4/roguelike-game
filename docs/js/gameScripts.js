@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 01:16:14 PM EDT
+// Generated: Wednesday, June 18, 2025 at 01:49:27 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -132,7 +132,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             }
         };
         // Add keyboard navigation event listeners to each button
-        buttons.forEach(button => {
+        buttons.forEach((button) => {
             button.addEventListener('keydown', handleKeyNavigation);
         });
         setTimeout(() => {
@@ -142,7 +142,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }, 150);
         const closeTitlescreen = () => {
             // Remove keyboard navigation event listeners
-            buttons.forEach(button => {
+            buttons.forEach((button) => {
                 button.removeEventListener('keydown', handleKeyNavigation);
             });
             background === null || background === void 0 ? void 0 : background.classList.remove('titlescreen');
@@ -346,6 +346,17 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 grid.classList.remove('no-anim');
             }
         });
+        // Slow pan across the level showing the goal and ending on the player when starting a new level
+        grid.classList.add('instant-camera');
+        showGoal();
+        setTimeout(() => {
+            grid.classList.remove('instant-camera');
+            grid.classList.add('slow-pan');
+            centerPlayerInScreen();
+        }, 20);
+        setTimeout(() => {
+            grid.classList.remove('slow-pan');
+        }, 10000);
     };
     const drawDecorations = () => {
         var _a, _b, _c, _d;
@@ -789,7 +800,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         // This function closes the message window and removes the buttons.
         const closeMessageWindow = () => {
             // Remove keyboard navigation event listeners
-            buttons.forEach(button => {
+            buttons.forEach((button) => {
                 button.removeEventListener('keydown', handleKeyNavigation);
             });
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
@@ -933,7 +944,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             }
         };
         // Add keyboard navigation event listeners to each button
-        buttons.forEach(button => {
+        buttons.forEach((button) => {
             button.addEventListener('keydown', handleKeyNavigation);
         });
         // Show the message box
@@ -977,7 +988,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         button.setAttribute('tabindex', '0');
         const closeMessageWindow = () => {
             // Remove keyboard navigation event listeners
-            buttons.forEach(btn => {
+            buttons.forEach((btn) => {
                 btn.removeEventListener('keydown', handleKeyNavigation);
             });
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
@@ -1045,7 +1056,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             }
         };
         // Add keyboard navigation event listeners to each button
-        buttons.forEach(btn => {
+        buttons.forEach((btn) => {
             btn.addEventListener('keydown', handleKeyNavigation);
         });
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');

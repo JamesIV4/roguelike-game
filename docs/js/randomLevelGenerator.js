@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 01:16:14 PM EDT
+// Generated: Wednesday, June 18, 2025 at 01:49:27 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -202,14 +202,19 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
             }
         }
     };
-    // Place enemies randomly on empty floor tiles
+    // Place enemies randomly only in rooms, not corridors
     const placeEnemies = (numEnemies) => {
         let placed = 0;
         let tries = 0;
-        while (placed < numEnemies && tries < levelHeight * levelWidth) {
-            const y = Math.floor(Math.random() * levelHeight);
-            const x = Math.floor(Math.random() * levelWidth);
-            if (levelGrid[y][x] === '') {
+        // Distribute enemies among rooms
+        while (placed < numEnemies && tries < 1000) {
+            // Select a random room
+            const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+            // Get a random position within the room (avoiding walls)
+            const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (randomRoom.height - 2));
+            const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (randomRoom.width - 2));
+            // Check if the position is valid and empty
+            if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = 'F'; // Place an enemy
                 placed++;
             }

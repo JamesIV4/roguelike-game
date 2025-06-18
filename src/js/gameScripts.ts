@@ -164,7 +164,7 @@ type SessionStats = {
     };
 
     // Add keyboard navigation event listeners to each button
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
       button.addEventListener('keydown', handleKeyNavigation);
     });
 
@@ -176,10 +176,10 @@ type SessionStats = {
 
     const closeTitlescreen = () => {
       // Remove keyboard navigation event listeners
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         button.removeEventListener('keydown', handleKeyNavigation);
       });
-      
+
       background?.classList.remove('titlescreen');
       titleContainer.classList.remove('show');
 
@@ -432,6 +432,20 @@ type SessionStats = {
         grid.classList.remove('no-anim');
       }
     });
+
+    // Slow pan across the level showing the goal and ending on the player when starting a new level
+    grid.classList.add('instant-camera');
+    showGoal();
+
+    setTimeout(() => {
+      grid.classList.remove('instant-camera');
+      grid.classList.add('slow-pan');
+      centerPlayerInScreen();
+    }, 20);
+
+    setTimeout(() => {
+      grid.classList.remove('slow-pan');
+    }, 2500);
   };
 
   const drawDecorations = () => {
@@ -966,10 +980,10 @@ type SessionStats = {
     // This function closes the message window and removes the buttons.
     const closeMessageWindow = () => {
       // Remove keyboard navigation event listeners
-      buttons.forEach(button => {
+      buttons.forEach((button) => {
         button.removeEventListener('keydown', handleKeyNavigation);
       });
-      
+
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
@@ -1107,9 +1121,9 @@ type SessionStats = {
       buttons.push(btnNextLevel);
     }
     buttons.push(btnBackToTitle);
-    
+
     let currentFocusIndex = 0;
-    
+
     // Add keyboard navigation between buttons
     const handleKeyNavigation = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'Up') {
@@ -1124,7 +1138,7 @@ type SessionStats = {
     };
 
     // Add keyboard navigation event listeners to each button
-    buttons.forEach(button => {
+    buttons.forEach((button) => {
       button.addEventListener('keydown', handleKeyNavigation);
     });
 
@@ -1176,10 +1190,10 @@ type SessionStats = {
 
     const closeMessageWindow = () => {
       // Remove keyboard navigation event listeners
-      buttons.forEach(btn => {
+      buttons.forEach((btn) => {
         btn.removeEventListener('keydown', handleKeyNavigation);
       });
-      
+
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
@@ -1237,7 +1251,7 @@ type SessionStats = {
     // Create an array of buttons for keyboard navigation
     const buttons = [button, btnBackToTitle];
     let currentFocusIndex = 0;
-    
+
     // Add keyboard navigation between buttons
     const handleKeyNavigation = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'Up') {
@@ -1252,7 +1266,7 @@ type SessionStats = {
     };
 
     // Add keyboard navigation event listeners to each button
-    buttons.forEach(btn => {
+    buttons.forEach((btn) => {
       btn.addEventListener('keydown', handleKeyNavigation);
     });
 

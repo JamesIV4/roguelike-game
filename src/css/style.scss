@@ -246,6 +246,20 @@ body {
         opacity 1s ease-out;
     }
 
+    &.slow-pan {
+      transition:
+        top 2.5s,
+        left 2.5s;
+      transition-timing-function: ease-in-out;
+    }
+
+    &.instant-camera {
+      transition:
+        top 0s,
+        left 0s;
+      transition-timing-function: unset;
+    }
+
     .row {
       display: table-row;
 
