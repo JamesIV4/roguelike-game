@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 12:20:06 PM EDT
+// Generated: Wednesday, June 18, 2025 at 12:51:46 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -57,6 +57,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             // Reset to default values
             this.pos = [];
             this.health = 100;
+            this.elem = null; // Clear element reference
         }
     }
     // Map classes
@@ -70,6 +71,20 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     }
     // Game code functions
     const beginGame = () => {
+        // Reset game state before starting a new game
+        levelStore = [];
+        enemies = [];
+        currentLevel = 0;
+        enemyCounter = 0;
+        // Reset session stats
+        sessionStats.turnsTotal = 0;
+        sessionStats.turnsLevel = 0;
+        sessionStats.retries = 0;
+        sessionStats.dead = false;
+        // Reset player object if it exists
+        if (player) {
+            player.reset();
+        }
         if (sessionStats.mode === 'normal') {
             drawScreen(levelData[0]);
         }
@@ -616,7 +631,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawScreen(generateRandomLevel(currentLevel, levelSize, levelSize));
         }
     };
-    const eraseScreen = () => {
+    const eraseScreen = (titleScreen) => {
         let background = document.querySelector('#display-wrapper'), grid = document.querySelector('#game-grid'), ui = document.querySelector('#ui-display');
         background === null || background === void 0 ? void 0 : background.removeChild(ui);
         background === null || background === void 0 ? void 0 : background.removeChild(grid);
@@ -650,89 +665,98 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         sessionStats.turnsTotal = 0; // Reset total turns
         goToNewLevel(0); // Go to level 1
     };
-    const displayMessageBox = (messageText, btnText, action) => {
-        const messageBox = document.querySelector('#message');
-        const message = document.createElement('p');
-        const button = document.createElement('a');
-        message.textContent = messageText;
-        button.classList.add('btn');
-        button.textContent = btnText;
-        button.setAttribute('tabindex', '0');
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            switch (action) {
-                case 'dismiss':
-                    closeMessageWindow();
-                    break;
-            }
-        });
-        // Add keyboard support for Enter key
-        button.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                closeMessageWindow();
-            }
-        });
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
-        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
-        // Focus on the button
-        setTimeout(() => button.focus(), 100);
-        const closeMessageWindow = () => {
-            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
-            setTimeout(() => {
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
-                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(button);
-            }, 360);
-        };
+    const backToTitleScreen = () => {
+        cleanupEnemyStyles(currentLevel);
+        // Erase the screen
+        eraseScreen();
+        // Draw the title screen
+        setTimeout(() => {
+            drawTitleScreen();
+        }, 50);
     };
-    const setCookie = (cname, cvalue, exdays) => {
-        let d = new Date();
-        d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-        let expires = 'expires=' + d.toUTCString();
-        let oldCookie = getCookie('highscores');
-        if (oldCookie !== '') {
-            cvalue = oldCookie + '|' + cvalue;
-        }
-        document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-    };
-    const getCookie = (cname) => {
-        let name = cname + '=';
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return '';
-    };
-    const submitHighscore = () => {
-        setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
-    };
-    const getHighscoreList = () => {
-        let list = [];
-        let cookieOutput = getCookie('highscores');
-        list = cookieOutput.split('|');
-        // Split the turns and retires into another array, since the first
-        for (let i = 0; i < list.length; i++) {
-            list[i] = list[i].split('-');
-        }
-        // First sort by number of retries, then sort by number of turns
-        list.sort((a, b) => {
-            if (a[1] === b[1]) {
-                return a[0] - b[0];
-            }
-            return a[1] - b[1];
-        });
-        return list;
-    };
+    // const displayMessageBox = (messageText: string, btnText: string, action: 'dismiss') => {
+    //   const messageBox = document.querySelector('#message');
+    //   const message = document.createElement('p');
+    //   const button = document.createElement('a');
+    //   message.textContent = messageText;
+    //   button.classList.add('btn');
+    //   button.textContent = btnText;
+    //   button.setAttribute('tabindex', '0');
+    //   button.addEventListener('click', (e) => {
+    //     e.preventDefault();
+    //     switch (action) {
+    //       case 'dismiss':
+    //         closeMessageWindow();
+    //         break;
+    //     }
+    //   });
+    //   // Add keyboard support for Enter key
+    //   button.addEventListener('keydown', (e) => {
+    //     if (e.key === 'Enter' || e.key === ' ') {
+    //       e.preventDefault();
+    //       closeMessageWindow();
+    //     }
+    //   });
+    //   messageBox?.appendChild(message);
+    //   messageBox?.appendChild(button);
+    //   messageBox?.classList.add('top');
+    //   messageBox?.classList.add('show');
+    //   // Focus on the button
+    //   setTimeout(() => button.focus(), 100);
+    //   const closeMessageWindow = () => {
+    //     messageBox?.classList.remove('show');
+    //     setTimeout(() => {
+    //       messageBox?.classList.remove('top');
+    //       messageBox?.removeChild(message);
+    //       messageBox?.removeChild(button);
+    //     }, 360);
+    //   };
+    // };
+    // const setCookie = (cname: string, cvalue: string, exdays: number) => {
+    //   let d = new Date();
+    //   d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    //   let expires = 'expires=' + d.toUTCString();
+    //   let oldCookie = getCookie('highscores');
+    //   if (oldCookie !== '') {
+    //     cvalue = oldCookie + '|' + cvalue;
+    //   }
+    //   document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
+    // };
+    // const getCookie = (cname: string) => {
+    //   let name = cname + '=';
+    //   let decodedCookie = decodeURIComponent(document.cookie);
+    //   let ca = decodedCookie.split(';');
+    //   for (let i = 0; i < ca.length; i++) {
+    //     let c = ca[i];
+    //     while (c.charAt(0) == ' ') {
+    //       c = c.substring(1);
+    //     }
+    //     if (c.indexOf(name) == 0) {
+    //       return c.substring(name.length, c.length);
+    //     }
+    //   }
+    //   return '';
+    // };
+    // const submitHighscore = () => {
+    //   setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
+    // };
+    // const getHighscoreList = () => {
+    //   let list: any[] = [];
+    //   let cookieOutput = getCookie('highscores');
+    //   list = cookieOutput.split('|');
+    //   // Split the turns and retires into another array, since the first
+    //   for (let i = 0; i < list.length; i++) {
+    //     list[i] = list[i].split('-');
+    //   }
+    //   // First sort by number of retries, then sort by number of turns
+    //   list.sort((a, b) => {
+    //     if (a[1] === b[1]) {
+    //       return a[0] - b[0];
+    //     }
+    //     return a[1] - b[1];
+    //   });
+    //   return list;
+    // };
     const displayVictoryMessage = () => {
         const messageBox = document.querySelector('#message');
         const message = document.createElement('p');
@@ -827,8 +851,30 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                         ' retries. Good job!';
             }
             btnPlayAgain.textContent = 'Start a new game';
-            setCookie('highscores', '50-0', 1);
+            // setCookie('highscores', '50-0', 1);
         }
+        // Create "Back to Title Screen" button
+        const btnBackToTitle = document.createElement('a');
+        btnBackToTitle.classList.add('btn');
+        btnBackToTitle.textContent = 'Back to Title Screen';
+        btnBackToTitle.setAttribute('tabindex', '0');
+        btnBackToTitle.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+            setTimeout(() => {
+                backToTitleScreen();
+            }, 360);
+        });
+        // Add keyboard support for Enter key
+        btnBackToTitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeMessageWindow();
+                setTimeout(() => {
+                    backToTitleScreen();
+                }, 360);
+            }
+        });
         // Add the elements to the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnPlayAgain);
@@ -836,6 +882,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnNextLevel);
         }
+        // Add the "Back to Title Screen" button
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnBackToTitle);
         // Show the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
@@ -890,8 +938,31 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 closeMessageWindow();
             }
         });
+        // Create "Back to Title Screen" button
+        const btnBackToTitle = document.createElement('a');
+        btnBackToTitle.classList.add('btn');
+        btnBackToTitle.textContent = 'Back to Title Screen';
+        btnBackToTitle.setAttribute('tabindex', '0');
+        btnBackToTitle.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMessageWindow();
+            setTimeout(() => {
+                backToTitleScreen();
+            }, 360);
+        });
+        // Add keyboard support for Enter key
+        btnBackToTitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeMessageWindow();
+                setTimeout(() => {
+                    backToTitleScreen();
+                }, 360);
+            }
+        });
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnBackToTitle);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
         // Focus on the button
