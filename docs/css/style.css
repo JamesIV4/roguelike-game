@@ -220,7 +220,7 @@ body {
   transition: top 0.75s, left 0.75s, opacity 1s ease-out;
 }
 #display-wrapper #game-grid.slow-pan {
-  transition: top 10s, left 10s;
+  transition: top 2.5s, left 2.5s;
   transition-timing-function: ease-in-out;
 }
 #display-wrapper #game-grid.instant-camera {

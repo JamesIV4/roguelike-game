@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 01:49:27 PM EDT
+// Generated: Wednesday, June 18, 2025 at 01:50:20 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -356,7 +356,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }, 20);
         setTimeout(() => {
             grid.classList.remove('slow-pan');
-        }, 10000);
+        }, 2500);
     };
     const drawDecorations = () => {
         var _a, _b, _c, _d;
