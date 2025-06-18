@@ -740,7 +740,8 @@ type SessionStats = {
     if (sessionStats.mode === 'normal') {
       drawScreen(levelData[currentLevel]);
     } else {
-      drawScreen(generateRandomLevel(currentLevel, 40, 40));
+      const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
+      drawScreen(generateRandomLevel(currentLevel, levelSize, levelSize));
     }
   };
 
@@ -773,7 +774,8 @@ type SessionStats = {
     if (sessionStats.mode === 'normal') {
       drawScreen(levelData[newLevel]);
     } else {
-      drawScreen(generateRandomLevel(currentLevel, 40, 40));
+      const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
+      drawScreen(generateRandomLevel(currentLevel, 40 + levelSize, 40 + levelSize));
     }
   };
 
@@ -1132,7 +1134,7 @@ type SessionStats = {
   document.addEventListener('touchmove', handleTouchMove, false);
 
   document.addEventListener('keydown', (e) => {
-    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', ' ', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', '.', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
 
     if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
       // The message window isn't displayed, and you're not dead

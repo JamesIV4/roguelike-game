@@ -2,7 +2,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
   let randLevelDatabase: any[] = [];
   const roomNum: number = Math.floor(Math.random() * (currentLevel + 4) + 3);
   const rooms: Room[] = []; // Specify the type of rooms
-  const enemies: number = Math.floor(Math.random() * 5) + 3; // Random number of enemies
+  const enemies: number = Math.floor(Math.random() * 5) + 3 + Math.floor(Math.random() * currentLevel * 2); // Random number of enemies, with more based on the level
   let playerPlaced: boolean = false;
 
   // Initialize a 2D array filled with empty spaces

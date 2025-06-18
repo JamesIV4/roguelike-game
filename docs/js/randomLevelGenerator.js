@@ -1,9 +1,9 @@
-// Generated: Wednesday, June 18, 2025 at 11:49:24 AM EDT
+// Generated: Wednesday, June 18, 2025 at 12:08:07 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
     const rooms = []; // Specify the type of rooms
-    const enemies = Math.floor(Math.random() * 5) + 3; // Random number of enemies
+    const enemies = Math.floor(Math.random() * 5) + 3 + Math.floor(Math.random() * currentLevel * 2); // Random number of enemies, with more based on the level
     let playerPlaced = false;
     // Initialize a 2D array filled with empty spaces
     const levelGrid = Array.from({ length: levelHeight }, () => new Array(levelWidth).fill('.'));

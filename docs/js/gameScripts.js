@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 11:49:24 AM EDT
+// Generated: Wednesday, June 18, 2025 at 12:08:07 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -607,7 +607,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawScreen(levelData[currentLevel]);
         }
         else {
-            drawScreen(generateRandomLevel(currentLevel, 40, 40));
+            const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
+            drawScreen(generateRandomLevel(currentLevel, levelSize, levelSize));
         }
     };
     const eraseScreen = () => {
@@ -633,7 +634,8 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawScreen(levelData[newLevel]);
         }
         else {
-            drawScreen(generateRandomLevel(currentLevel, 40, 40));
+            const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
+            drawScreen(generateRandomLevel(currentLevel, 40 + levelSize, 40 + levelSize));
         }
     };
     const newGame = () => {
@@ -940,7 +942,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     document.addEventListener('touchmove', handleTouchMove, false);
     document.addEventListener('keydown', (e) => {
         var _a;
-        const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', ' ', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+        const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', '.', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
         if (!sessionStats.dead && !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
             // The message window isn't displayed, and you're not dead
             if (keyList.indexOf(e.key) > -1) {
