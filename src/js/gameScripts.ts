@@ -109,7 +109,7 @@ type SessionStats = {
     buttonContainer.classList.add('button-container');
     btnStartNormal.classList.add('btn');
     btnStartProcudural.classList.add('btn');
-    
+
     // Add tabindex for keyboard navigation
     btnStartNormal.setAttribute('tabindex', '0');
     btnStartProcudural.setAttribute('tabindex', '0');
@@ -147,10 +147,10 @@ type SessionStats = {
       sessionStats.mode = 'normal';
       beginGame();
     });
-    
+
     // Add keyboard support for Enter key
     btnStartNormal.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeTitlescreen();
         sessionStats.mode = 'normal';
@@ -163,10 +163,10 @@ type SessionStats = {
       sessionStats.mode = 'procedural';
       beginGame();
     });
-    
+
     // Add keyboard support for Enter key
     btnStartProcudural.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeTitlescreen();
         sessionStats.mode = 'procedural';
@@ -310,22 +310,22 @@ type SessionStats = {
       toggleCenterMode();
     });
     switchCameraBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         toggleCenterMode();
       }
     });
-    
+
     showGoalBtn.addEventListener('click', () => {
       showGoal();
     });
     showGoalBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         showGoal();
       }
     });
-    
+
     zoomUp.addEventListener('click', () => {
       grid.classList.add('no-anim'); // Move characters instantly during zoom
 
@@ -338,20 +338,20 @@ type SessionStats = {
       grid.classList.remove('no-anim');
     });
     zoomUp.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         grid.classList.add('no-anim');
-        
+
         sessionStats.zoomLevel++;
         zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
         renderPlayer(player.pos);
         renderEnemies();
         centerPlayerInScreen();
-        
+
         grid.classList.remove('no-anim');
       }
     });
-    
+
     zoomDown.addEventListener('click', () => {
       if (sessionStats.zoomLevel > 1) {
         grid.classList.add('no-anim'); // Move characters instantly during zoom
@@ -366,16 +366,16 @@ type SessionStats = {
       }
     });
     zoomDown.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && sessionStats.zoomLevel > 1) {
+      if (e.key === 'Enter' || (e.key === ' ' && sessionStats.zoomLevel > 1)) {
         e.preventDefault();
         grid.classList.add('no-anim');
-        
+
         sessionStats.zoomLevel--;
         zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
         renderPlayer(player.pos);
         renderEnemies();
         centerPlayerInScreen();
-        
+
         grid.classList.remove('no-anim');
       }
     });
@@ -805,10 +805,10 @@ type SessionStats = {
           break;
       }
     });
-    
+
     // Add keyboard support for Enter key
     button.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeMessageWindow();
       }
@@ -819,7 +819,7 @@ type SessionStats = {
 
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
-    
+
     // Focus on the button
     setTimeout(() => button.focus(), 100);
 
@@ -926,10 +926,10 @@ type SessionStats = {
         }, 360); // Otherwise, just retry the current level
       }
     });
-    
+
     // Add keyboard support for Enter key
     btnPlayAgain.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeMessageWindow();
         if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
@@ -955,10 +955,10 @@ type SessionStats = {
         goToNewLevel(currentLevel + 1);
       }, 360);
     });
-    
+
     // Add keyboard support for Enter key
     btnNextLevel.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeMessageWindow();
         setTimeout(() => {
@@ -1009,7 +1009,7 @@ type SessionStats = {
     // Show the message box
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
-    
+
     // Focus on the Next Level button if it exists, otherwise focus on Play Again button
     if (messageBox?.contains(btnNextLevel)) {
       setTimeout(() => btnNextLevel.focus(), 100);
@@ -1061,10 +1061,10 @@ type SessionStats = {
       e.preventDefault();
       closeMessageWindow();
     });
-    
+
     // Add keyboard support for Enter key
     button.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         closeMessageWindow();
       }
@@ -1075,7 +1075,7 @@ type SessionStats = {
 
     messageBox?.classList.add('top');
     messageBox?.classList.add('show');
-    
+
     // Focus on the button
     setTimeout(() => button.focus(), 100);
   };
@@ -1134,7 +1134,7 @@ type SessionStats = {
   document.addEventListener('touchmove', handleTouchMove, false);
 
   document.addEventListener('keydown', (e) => {
-    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', ' ', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
 
     if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
       // The message window isn't displayed, and you're not dead

@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 11:18:56 AM EDT
+// Generated: Wednesday, June 18, 2025 at 11:26:51 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -118,7 +118,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         btnStartNormal.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeTitlescreen();
                 sessionStats.mode = 'normal';
@@ -132,7 +132,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         btnStartProcudural.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeTitlescreen();
                 sessionStats.mode = 'procedural';
@@ -242,7 +242,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             toggleCenterMode();
         });
         switchCameraBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 toggleCenterMode();
             }
@@ -251,7 +251,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             showGoal();
         });
         showGoalBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 showGoal();
             }
@@ -266,7 +266,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             grid.classList.remove('no-anim');
         });
         zoomUp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 grid.classList.add('no-anim');
                 sessionStats.zoomLevel++;
@@ -289,7 +289,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             }
         });
         zoomDown.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && sessionStats.zoomLevel > 1) {
+            if (e.key === 'Enter' || (e.key === ' ' && sessionStats.zoomLevel > 1)) {
                 e.preventDefault();
                 grid.classList.add('no-anim');
                 sessionStats.zoomLevel--;
@@ -659,7 +659,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         button.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeMessageWindow();
             }
@@ -761,7 +761,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         btnPlayAgain.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeMessageWindow();
                 if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
@@ -789,7 +789,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         btnNextLevel.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeMessageWindow();
                 setTimeout(() => {
@@ -882,7 +882,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
         // Add keyboard support for Enter key
         button.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 closeMessageWindow();
             }
@@ -944,7 +944,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
     document.addEventListener('touchmove', handleTouchMove, false);
     document.addEventListener('keydown', (e) => {
         var _a;
-        const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'Space', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+        const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', ' ', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
         if (!sessionStats.dead && !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
             // The message window isn't displayed, and you're not dead
             if (keyList.indexOf(e.key) > -1) {
