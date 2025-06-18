@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 01:04:17 PM EDT
+// Generated: Wednesday, June 18, 2025 at 01:16:14 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -121,6 +121,11 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
                 placeWall(y, x2 - 1);
                 placeWall(y, x2 + 1);
             }
+            // Add corner walls at the bend
+            placeWall(y1 - 1, x2 - 1); // Top-left corner
+            placeWall(y1 - 1, x2 + 1); // Top-right corner
+            placeWall(y1 + 1, x2 - 1); // Bottom-left corner
+            placeWall(y1 + 1, x2 + 1); // Bottom-right corner
         }
         else {
             // Vertical then horizontal corridor
@@ -134,6 +139,11 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
                 placeWall(y2 - 1, x);
                 placeWall(y2 + 1, x);
             }
+            // Add corner walls at the bend
+            placeWall(y2 - 1, x1 - 1); // Top-left corner
+            placeWall(y2 - 1, x1 + 1); // Top-right corner
+            placeWall(y2 + 1, x1 - 1); // Bottom-left corner
+            placeWall(y2 + 1, x1 + 1); // Bottom-right corner
         }
     };
     // Connect all rooms
@@ -249,6 +259,5 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     }
     // Convert grid to CSV
     const csvOutput = centeredGrid.map((row) => row.join(',')).join('\n');
-    console.log('GENERATED LEVEL:', csvOutput);
     return csvOutput;
 };

@@ -139,6 +139,12 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
         placeWall(y, x2 - 1);
         placeWall(y, x2 + 1);
       }
+      
+      // Add corner walls at the bend
+      placeWall(y1 - 1, x2 - 1); // Top-left corner
+      placeWall(y1 - 1, x2 + 1); // Top-right corner
+      placeWall(y1 + 1, x2 - 1); // Bottom-left corner
+      placeWall(y1 + 1, x2 + 1); // Bottom-right corner
     } else {
       // Vertical then horizontal corridor
       for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
@@ -151,6 +157,12 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
         placeWall(y2 - 1, x);
         placeWall(y2 + 1, x);
       }
+      
+      // Add corner walls at the bend
+      placeWall(y2 - 1, x1 - 1); // Top-left corner
+      placeWall(y2 - 1, x1 + 1); // Top-right corner
+      placeWall(y2 + 1, x1 - 1); // Bottom-left corner
+      placeWall(y2 + 1, x1 + 1); // Bottom-right corner
     }
   };
 
@@ -264,7 +276,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
 
   // Create a new centered grid
   const centeredGrid: string[][] = Array.from({ length: levelHeight }, () => new Array(levelWidth).fill('.'));
-  
+
   // Copy content to centered position
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
@@ -278,8 +290,6 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
 
   // Convert grid to CSV
   const csvOutput: string = centeredGrid.map((row) => row.join(',')).join('\n');
-
-  console.log('GENERATED LEVEL:', csvOutput);
 
   return csvOutput;
 };
