@@ -16,6 +16,12 @@ body {
   overflow: hidden;
   position: fixed;
   top: 0;
+  -webkit-touch-callout: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
+  user-select: none;
   width: 2000%;
   z-index: 10000000;
 
@@ -24,12 +30,12 @@ body {
 
     .titlescreen-container {
       align-items: center;
-      background: rgba(22, 21, 21, 0.88);
-      border-radius: 10px;
+      background: rgb(22 21 21 / 88%);
       border: #d5d5d5 solid 5px;
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
-      font-family: 'Rajdhani', sans-serif;
+      font-family: Rajdhani, sans-serif;
       justify-content: center;
       left: 50%;
       opacity: 0;
@@ -48,24 +54,24 @@ body {
 
       .title-header {
         color: #fff;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: Rajdhani, sans-serif;
         font-size: 4.5rem;
         font-weight: 900;
         letter-spacing: normal;
         line-height: 1.1;
-        margin: 0 0 1rem 0;
+        margin: 0 0 1rem;
       }
 
       .btn {
         background-color: #365067;
-        border-radius: 5px;
         border: 1.5px solid #000;
+        border-radius: 5px;
         box-shadow: 0 0 3px 0 #908c8c;
         color: #fff;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: Rajdhani, sans-serif;
         font-size: 1.3rem;
         font-weight: 700;
         justify-content: center;
@@ -78,7 +84,7 @@ body {
 
     #message {
       align-items: center;
-      background-color: rgba(11, 10, 10, 0.85);
+      background-color: rgb(11 10 10 / 85%);
       border: #ff6f6f solid 5px;
       display: flex;
       flex-direction: column;
@@ -96,7 +102,7 @@ body {
 
       p {
         color: #fff;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: Rajdhani, sans-serif;
         font-size: 1.3rem;
         font-weight: 700;
         letter-spacing: normal;
@@ -109,14 +115,14 @@ body {
 
       .btn {
         background-color: #364c67;
-        border-radius: 5px;
         border: 1.5px solid #000;
+        border-radius: 5px;
         box-shadow: 0 0 3px 0 #908c8c;
         color: #fff;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: Rajdhani, sans-serif;
         font-size: 1.3rem;
         font-weight: 700;
         justify-content: center;
@@ -138,63 +144,63 @@ body {
       &.inline-buttons {
         .button-wrapper {
           display: flex;
-          justify-content: center;
           gap: 1rem;
+          justify-content: center;
         }
       }
 
-      @media all and (max-width: 767px) {
+      @media all and (width <= 767px) {
         width: 75%;
       }
     }
 
     #level-indicator {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
       color: #fff;
-      font-family: 'Rajdhani', sans-serif;
+      font-family: Rajdhani, sans-serif;
       font-size: 1.3rem;
       font-weight: 700;
+      left: 50%;
+      position: fixed;
       text-shadow: 0 0 3px #000;
+      top: 10px;
+      transform: translateX(-50%);
+      z-index: 1000;
     }
 
     #back-button {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
       align-items: center;
       background-color: #fff;
-      border-radius: 2px;
-      border: 3px solid #888;
-      box-shadow: inset 0 0 3px 0 #00000059;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      padding-top: 1px;
-      height: 32px;
-      width: 32px;
       background-image: url('../imgs/arrow-left.svg');
       background-position: center;
       background-repeat: no-repeat;
       background-size: 70%;
+      border: 3px solid #888;
+      border-radius: 2px;
+      box-shadow: inset 0 0 3px 0 #00000059;
+      cursor: pointer;
+      display: flex;
+      height: 32px;
+      justify-content: center;
+      left: 10px;
+      padding-top: 1px;
+      position: fixed;
+      top: 10px;
+      width: 32px;
+      z-index: 1000;
     }
 
     #zoom-container {
-      display: block;
-      position: fixed;
       bottom: 0;
+      display: block;
       left: 0;
-      z-index: 1000;
+      position: fixed;
       -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-      -khtml-user-select: none; /* Konqueror HTML */
-      -moz-user-select: none; /* Old versions of Firefox */
-      -ms-user-select: none; /* Internet Explorer/Edge */
+      user-select: none; /* Safari */
+      user-select: none; /* Konqueror HTML */
+      user-select: none; /* Old versions of Firefox */
+      user-select: none; /* Internet Explorer/Edge */
       user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+      z-index: 1000;
 
       #zoom-up,
       #zoom-down,
@@ -202,18 +208,18 @@ body {
       #switch-camera {
         align-items: center;
         background-color: #fff;
-        border-radius: 2px;
         border: 3px solid #888;
+        border-radius: 2px;
         box-shadow: inset 0 0 3px 0 #00000059;
         cursor: pointer;
         display: flex;
-        font-family: 'Rajdhani', sans-serif;
+        font-family: Rajdhani, sans-serif;
         font-size: 2em;
         font-weight: 500;
+        height: 32px;
         justify-content: center;
         margin: 5px;
         padding-top: 1px;
-        height: 32px;
         width: 32px;
       }
 
@@ -259,9 +265,9 @@ body {
 
   #game-grid {
     display: table;
-    opacity: 0;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: Rajdhani, sans-serif;
     font-weight: 700;
+    opacity: 0;
     position: relative;
     transition:
       top 0.75s,
@@ -296,7 +302,7 @@ body {
       .cell {
         display: table-cell;
         height: 32px;
-        image-rendering: optimizeSpeed;
+        image-rendering: optimizespeed;
         image-rendering: pixelated;
         -ms-interpolation-mode: nearest-neighbor;
         width: 32px;
