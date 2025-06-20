@@ -1,4 +1,4 @@
-// Generated: Friday, June 20, 2025 at 10:08:08 AM EDT
+// Generated: Friday, June 20, 2025 at 10:25:22 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -293,7 +293,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             showMessageBox('Abandon the current game and return to the Title Screen?', [
                 { text: 'Confirm', action: () => backToTitleScreen() },
                 { text: 'Cancel', action: () => { } }
-            ]);
+            ], 'inline');
         });
         backButton.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -301,7 +301,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 showMessageBox('Abandon the current game and return to the Title Screen?', [
                     { text: 'Confirm', action: () => backToTitleScreen() },
                     { text: 'Cancel', action: () => { } }
-                ]);
+                ], 'inline');
             }
         });
         switchCameraBtn.addEventListener('click', () => {
@@ -729,15 +729,29 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawTitleScreen();
         }, 50);
     };
-    const showMessageBox = (messageText, buttons) => {
+    const showMessageBox = (messageText, buttons, layout = 'vertical') => {
         const messageBox = document.querySelector('#message');
         const message = document.createElement('p');
         const buttonElements = [];
         message.innerHTML = messageText;
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
+        // Add layout class to message box
+        if (layout === 'inline') {
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('inline-buttons');
+        }
+        else {
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('inline-buttons');
+        }
+        // Create button wrapper for inline layout
+        const buttonWrapper = layout === 'inline' ? document.createElement('div') : null;
+        if (buttonWrapper) {
+            buttonWrapper.classList.add('button-wrapper');
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(buttonWrapper);
+        }
         // Create buttons
         buttons.forEach((buttonConfig) => {
+            var _a;
             const button = document.createElement('a');
             button.classList.add('btn');
             button.textContent = buttonConfig.text;
@@ -759,7 +773,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 }
             });
             buttonElements.push(button);
-            messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
+            (_a = (buttonWrapper || messageBox)) === null || _a === void 0 ? void 0 : _a.appendChild(button);
         });
         const closeMessageWindow = () => {
             buttonElements.forEach((btn) => {
@@ -768,22 +782,30 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
             setTimeout(() => {
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('inline-buttons');
                 messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
-                buttonElements.forEach((btn) => {
-                    if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btn)) {
-                        messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btn);
-                    }
-                });
+                if (buttonWrapper && (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(buttonWrapper))) {
+                    messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(buttonWrapper);
+                }
+                else {
+                    buttonElements.forEach((btn) => {
+                        if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btn)) {
+                            messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btn);
+                        }
+                    });
+                }
             }, 360);
         };
         let currentFocusIndex = 0;
         const handleKeyNavigation = (e) => {
-            if (e.key === 'ArrowUp' || e.key === 'Up') {
+            const prevKeys = layout === 'inline' ? ['ArrowLeft', 'Left'] : ['ArrowUp', 'Up'];
+            const nextKeys = layout === 'inline' ? ['ArrowRight', 'Right'] : ['ArrowDown', 'Down'];
+            if (prevKeys.includes(e.key)) {
                 e.preventDefault();
                 currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
                 buttonElements[currentFocusIndex].focus();
             }
-            else if (e.key === 'ArrowDown' || e.key === 'Down') {
+            else if (nextKeys.includes(e.key)) {
                 e.preventDefault();
                 currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
                 buttonElements[currentFocusIndex].focus();
@@ -896,7 +918,6 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                         ' retries. Good job!';
             }
             btnPlayAgain.textContent = 'Start a new game';
-            // setCookie('highscores', '50-0', 1);
         }
         // Create "Back to Title Screen" button
         const btnBackToTitle = document.createElement('a');

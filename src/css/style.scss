@@ -135,6 +135,14 @@ body {
         z-index: 2000;
       }
 
+      &.inline-buttons {
+        .button-wrapper {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+        }
+      }
+
       @media all and (max-width: 767px) {
         width: 75%;
       }

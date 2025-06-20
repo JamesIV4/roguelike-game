@@ -367,18 +367,26 @@ type SessionStats = {
 
     // Button events
     backButton.addEventListener('click', () => {
-      showMessageBox('Abandon the current game and return to the Title Screen?', [
-        { text: 'Confirm', action: () => backToTitleScreen() },
-        { text: 'Cancel', action: () => {} }
-      ]);
+      showMessageBox(
+        'Abandon the current game and return to the Title Screen?',
+        [
+          { text: 'Confirm', action: () => backToTitleScreen() },
+          { text: 'Cancel', action: () => {} }
+        ],
+        'inline'
+      );
     });
     backButton.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        showMessageBox('Abandon the current game and return to the Title Screen?', [
-          { text: 'Confirm', action: () => backToTitleScreen() },
-          { text: 'Cancel', action: () => {} }
-        ]);
+        showMessageBox(
+          'Abandon the current game and return to the Title Screen?',
+          [
+            { text: 'Confirm', action: () => backToTitleScreen() },
+            { text: 'Cancel', action: () => {} }
+          ],
+          'inline'
+        );
       }
     });
 
@@ -889,7 +897,7 @@ type SessionStats = {
     }, 50);
   };
 
-  const showMessageBox = (messageText: string, buttons: Array<{ text: string; action: () => void }>) => {
+  const showMessageBox = (messageText: string, buttons: Array<{ text: string; action: () => void }>, layout: 'vertical' | 'inline' = 'vertical') => {
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const buttonElements: HTMLElement[] = [];
@@ -898,6 +906,20 @@ type SessionStats = {
 
     messageBox?.appendChild(message);
     messageBox?.classList.add('top');
+
+    // Add layout class to message box
+    if (layout === 'inline') {
+      messageBox?.classList.add('inline-buttons');
+    } else {
+      messageBox?.classList.remove('inline-buttons');
+    }
+
+    // Create button wrapper for inline layout
+    const buttonWrapper = layout === 'inline' ? document.createElement('div') : null;
+    if (buttonWrapper) {
+      buttonWrapper.classList.add('button-wrapper');
+      messageBox?.appendChild(buttonWrapper);
+    }
 
     // Create buttons
     buttons.forEach((buttonConfig) => {
@@ -926,7 +948,7 @@ type SessionStats = {
       });
 
       buttonElements.push(button);
-      messageBox?.appendChild(button);
+      (buttonWrapper || messageBox)?.appendChild(button);
     });
 
     const closeMessageWindow = () => {
@@ -936,23 +958,31 @@ type SessionStats = {
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
+        messageBox?.classList.remove('inline-buttons');
         messageBox?.removeChild(message);
-        buttonElements.forEach((btn) => {
-          if (messageBox?.contains(btn)) {
-            messageBox?.removeChild(btn);
-          }
-        });
+        if (buttonWrapper && messageBox?.contains(buttonWrapper)) {
+          messageBox?.removeChild(buttonWrapper);
+        } else {
+          buttonElements.forEach((btn) => {
+            if (messageBox?.contains(btn)) {
+              messageBox?.removeChild(btn);
+            }
+          });
+        }
       }, 360);
     };
 
     let currentFocusIndex = 0;
 
     const handleKeyNavigation = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'Up') {
+      const prevKeys = layout === 'inline' ? ['ArrowLeft', 'Left'] : ['ArrowUp', 'Up'];
+      const nextKeys = layout === 'inline' ? ['ArrowRight', 'Right'] : ['ArrowDown', 'Down'];
+      
+      if (prevKeys.includes(e.key)) {
         e.preventDefault();
         currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
         buttonElements[currentFocusIndex].focus();
-      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+      } else if (nextKeys.includes(e.key)) {
         e.preventDefault();
         currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
         buttonElements[currentFocusIndex].focus();

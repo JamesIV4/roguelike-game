@@ -126,6 +126,11 @@ body {
 #display-wrapper #ui-display #message.top {
   z-index: 2000;
 }
+#display-wrapper #ui-display #message.inline-buttons .button-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
 @media all and (max-width: 767px) {
   #display-wrapper #ui-display #message {
     width: 75%;
