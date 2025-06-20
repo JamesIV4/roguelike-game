@@ -1,3 +1,4 @@
+/* stylelint-disable property-no-vendor-prefix */
 body {
   background-color: #0b0b0b;
   height: 100%;
@@ -17,10 +18,10 @@ body {
   position: fixed;
   top: 0;
   -webkit-touch-callout: none;
-  user-select: none;
-  user-select: none;
-  user-select: none;
-  user-select: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   width: 2000%;
   z-index: 10000000;
@@ -194,12 +195,12 @@ body {
       display: block;
       left: 0;
       position: fixed;
-      -webkit-touch-callout: none; /* iOS Safari */
-      user-select: none; /* Safari */
-      user-select: none; /* Konqueror HTML */
-      user-select: none; /* Old versions of Firefox */
-      user-select: none; /* Internet Explorer/Edge */
-      user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
       z-index: 1000;
 
       #zoom-up,
@@ -269,10 +270,16 @@ body {
     font-weight: 700;
     opacity: 0;
     position: relative;
+    -webkit-touch-callout: none;
     transition:
       top 0.75s,
       left 0.75s,
       opacity 1s ease-out;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 
     &.show {
       opacity: 1;
