@@ -1,4 +1,4 @@
-// Generated: Wednesday, June 18, 2025 at 01:50:20 PM EDT
+// Generated: Friday, June 20, 2025 at 10:08:08 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -182,7 +182,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         });
     };
     const drawScreen = (selectedLevel) => {
-        const background = document.querySelector('#display-wrapper'), grid = document.createElement('div'), messageWindow = document.createElement('div'), uiElem = document.createElement('div'), zoomButtons = document.createElement('div'), zoomUp = document.createElement('div'), zoomDown = document.createElement('div'), showGoalBtn = document.createElement('div'), switchCameraBtn = document.createElement('div');
+        const background = document.querySelector('#display-wrapper'), grid = document.createElement('div'), messageWindow = document.createElement('div'), uiElem = document.createElement('div'), zoomButtons = document.createElement('div'), zoomUp = document.createElement('div'), zoomDown = document.createElement('div'), showGoalBtn = document.createElement('div'), switchCameraBtn = document.createElement('div'), backButton = document.createElement('div');
         let levelRows;
         grid.id = 'game-grid';
         uiElem.id = 'ui-display';
@@ -191,6 +191,10 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         const levelIndicator = document.createElement('div');
         levelIndicator.id = 'level-indicator';
         levelIndicator.textContent = `Level ${currentLevel + 1}`;
+        // Create back button
+        backButton.id = 'back-button';
+        backButton.setAttribute('tabindex', '0');
+        backButton.setAttribute('title', 'Return to Title Screen');
         zoomButtons.id = 'zoom-container';
         zoomUp.id = 'zoom-up';
         zoomUp.textContent = '+';
@@ -270,6 +274,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         }
         background === null || background === void 0 ? void 0 : background.appendChild(uiElem);
         uiElem.appendChild(levelIndicator);
+        uiElem.appendChild(backButton);
         uiElem.appendChild(zoomButtons);
         uiElem.appendChild(messageWindow);
         zoomButtons.appendChild(switchCameraBtn);
@@ -284,6 +289,21 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             grid.classList.add('show');
         }, 300);
         // Button events
+        backButton.addEventListener('click', () => {
+            showMessageBox('Abandon the current game and return to the Title Screen?', [
+                { text: 'Confirm', action: () => backToTitleScreen() },
+                { text: 'Cancel', action: () => { } }
+            ]);
+        });
+        backButton.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showMessageBox('Abandon the current game and return to the Title Screen?', [
+                    { text: 'Confirm', action: () => backToTitleScreen() },
+                    { text: 'Cancel', action: () => { } }
+                ]);
+            }
+        });
         switchCameraBtn.addEventListener('click', () => {
             toggleCenterMode();
         });
@@ -709,89 +729,75 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             drawTitleScreen();
         }, 50);
     };
-    // const displayMessageBox = (messageText: string, btnText: string, action: 'dismiss') => {
-    //   const messageBox = document.querySelector('#message');
-    //   const message = document.createElement('p');
-    //   const button = document.createElement('a');
-    //   message.textContent = messageText;
-    //   button.classList.add('btn');
-    //   button.textContent = btnText;
-    //   button.setAttribute('tabindex', '0');
-    //   button.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     switch (action) {
-    //       case 'dismiss':
-    //         closeMessageWindow();
-    //         break;
-    //     }
-    //   });
-    //   // Add keyboard support for Enter key
-    //   button.addEventListener('keydown', (e) => {
-    //     if (e.key === 'Enter' || e.key === ' ') {
-    //       e.preventDefault();
-    //       closeMessageWindow();
-    //     }
-    //   });
-    //   messageBox?.appendChild(message);
-    //   messageBox?.appendChild(button);
-    //   messageBox?.classList.add('top');
-    //   messageBox?.classList.add('show');
-    //   // Focus on the button
-    //   setTimeout(() => button.focus(), 100);
-    //   const closeMessageWindow = () => {
-    //     messageBox?.classList.remove('show');
-    //     setTimeout(() => {
-    //       messageBox?.classList.remove('top');
-    //       messageBox?.removeChild(message);
-    //       messageBox?.removeChild(button);
-    //     }, 360);
-    //   };
-    // };
-    // const setCookie = (cname: string, cvalue: string, exdays: number) => {
-    //   let d = new Date();
-    //   d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    //   let expires = 'expires=' + d.toUTCString();
-    //   let oldCookie = getCookie('highscores');
-    //   if (oldCookie !== '') {
-    //     cvalue = oldCookie + '|' + cvalue;
-    //   }
-    //   document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-    // };
-    // const getCookie = (cname: string) => {
-    //   let name = cname + '=';
-    //   let decodedCookie = decodeURIComponent(document.cookie);
-    //   let ca = decodedCookie.split(';');
-    //   for (let i = 0; i < ca.length; i++) {
-    //     let c = ca[i];
-    //     while (c.charAt(0) == ' ') {
-    //       c = c.substring(1);
-    //     }
-    //     if (c.indexOf(name) == 0) {
-    //       return c.substring(name.length, c.length);
-    //     }
-    //   }
-    //   return '';
-    // };
-    // const submitHighscore = () => {
-    //   setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
-    // };
-    // const getHighscoreList = () => {
-    //   let list: any[] = [];
-    //   let cookieOutput = getCookie('highscores');
-    //   list = cookieOutput.split('|');
-    //   // Split the turns and retires into another array, since the first
-    //   for (let i = 0; i < list.length; i++) {
-    //     list[i] = list[i].split('-');
-    //   }
-    //   // First sort by number of retries, then sort by number of turns
-    //   list.sort((a, b) => {
-    //     if (a[1] === b[1]) {
-    //       return a[0] - b[0];
-    //     }
-    //     return a[1] - b[1];
-    //   });
-    //   return list;
-    // };
+    const showMessageBox = (messageText, buttons) => {
+        const messageBox = document.querySelector('#message');
+        const message = document.createElement('p');
+        const buttonElements = [];
+        message.innerHTML = messageText;
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('top');
+        // Create buttons
+        buttons.forEach((buttonConfig) => {
+            const button = document.createElement('a');
+            button.classList.add('btn');
+            button.textContent = buttonConfig.text;
+            button.setAttribute('tabindex', '0');
+            const closeAndExecute = () => {
+                closeMessageWindow();
+                setTimeout(() => {
+                    buttonConfig.action();
+                }, 360);
+            };
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeAndExecute();
+            });
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    closeAndExecute();
+                }
+            });
+            buttonElements.push(button);
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
+        });
+        const closeMessageWindow = () => {
+            buttonElements.forEach((btn) => {
+                btn.removeEventListener('keydown', handleKeyNavigation);
+            });
+            messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('show');
+            setTimeout(() => {
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.remove('top');
+                messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(message);
+                buttonElements.forEach((btn) => {
+                    if (messageBox === null || messageBox === void 0 ? void 0 : messageBox.contains(btn)) {
+                        messageBox === null || messageBox === void 0 ? void 0 : messageBox.removeChild(btn);
+                    }
+                });
+            }, 360);
+        };
+        let currentFocusIndex = 0;
+        const handleKeyNavigation = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'Up') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
+                buttonElements[currentFocusIndex].focus();
+            }
+            else if (e.key === 'ArrowDown' || e.key === 'Down') {
+                e.preventDefault();
+                currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
+                buttonElements[currentFocusIndex].focus();
+            }
+        };
+        buttonElements.forEach((button) => {
+            button.addEventListener('keydown', handleKeyNavigation);
+        });
+        messageBox === null || messageBox === void 0 ? void 0 : messageBox.classList.add('show');
+        setTimeout(() => {
+            buttonElements[0].focus();
+            currentFocusIndex = 0;
+        }, 100);
+    };
     const displayVictoryMessage = () => {
         const messageBox = document.querySelector('#message');
         const message = document.createElement('p');

@@ -231,7 +231,8 @@ type SessionStats = {
       zoomUp = document.createElement('div'),
       zoomDown = document.createElement('div'),
       showGoalBtn = document.createElement('div'),
-      switchCameraBtn = document.createElement('div');
+      switchCameraBtn = document.createElement('div'),
+      backButton = document.createElement('div');
     let levelRows;
 
     grid.id = 'game-grid';
@@ -243,6 +244,11 @@ type SessionStats = {
     const levelIndicator = document.createElement('div');
     levelIndicator.id = 'level-indicator';
     levelIndicator.textContent = `Level ${currentLevel + 1}`;
+
+    // Create back button
+    backButton.id = 'back-button';
+    backButton.setAttribute('tabindex', '0');
+    backButton.setAttribute('title', 'Return to Title Screen');
 
     zoomButtons.id = 'zoom-container';
     zoomUp.id = 'zoom-up';
@@ -342,6 +348,7 @@ type SessionStats = {
 
     background?.appendChild(uiElem);
     uiElem.appendChild(levelIndicator);
+    uiElem.appendChild(backButton);
     uiElem.appendChild(zoomButtons);
     uiElem.appendChild(messageWindow);
     zoomButtons.appendChild(switchCameraBtn);
@@ -359,6 +366,22 @@ type SessionStats = {
     }, 300);
 
     // Button events
+    backButton.addEventListener('click', () => {
+      showMessageBox('Abandon the current game and return to the Title Screen?', [
+        { text: 'Confirm', action: () => backToTitleScreen() },
+        { text: 'Cancel', action: () => {} }
+      ]);
+    });
+    backButton.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showMessageBox('Abandon the current game and return to the Title Screen?', [
+          { text: 'Confirm', action: () => backToTitleScreen() },
+          { text: 'Cancel', action: () => {} }
+        ]);
+      }
+    });
+
     switchCameraBtn.addEventListener('click', () => {
       toggleCenterMode();
     });
@@ -866,110 +889,87 @@ type SessionStats = {
     }, 50);
   };
 
-  // const displayMessageBox = (messageText: string, btnText: string, action: 'dismiss') => {
-  //   const messageBox = document.querySelector('#message');
-  //   const message = document.createElement('p');
-  //   const button = document.createElement('a');
+  const showMessageBox = (messageText: string, buttons: Array<{ text: string; action: () => void }>) => {
+    const messageBox = document.querySelector('#message');
+    const message = document.createElement('p');
+    const buttonElements: HTMLElement[] = [];
 
-  //   message.textContent = messageText;
+    message.innerHTML = messageText;
 
-  //   button.classList.add('btn');
-  //   button.textContent = btnText;
-  //   button.setAttribute('tabindex', '0');
+    messageBox?.appendChild(message);
+    messageBox?.classList.add('top');
 
-  //   button.addEventListener('click', (e) => {
-  //     e.preventDefault();
+    // Create buttons
+    buttons.forEach((buttonConfig) => {
+      const button = document.createElement('a');
+      button.classList.add('btn');
+      button.textContent = buttonConfig.text;
+      button.setAttribute('tabindex', '0');
 
-  //     switch (action) {
-  //       case 'dismiss':
-  //         closeMessageWindow();
-  //         break;
-  //     }
-  //   });
+      const closeAndExecute = () => {
+        closeMessageWindow();
+        setTimeout(() => {
+          buttonConfig.action();
+        }, 360);
+      };
 
-  //   // Add keyboard support for Enter key
-  //   button.addEventListener('keydown', (e) => {
-  //     if (e.key === 'Enter' || e.key === ' ') {
-  //       e.preventDefault();
-  //       closeMessageWindow();
-  //     }
-  //   });
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeAndExecute();
+      });
 
-  //   messageBox?.appendChild(message);
-  //   messageBox?.appendChild(button);
+      button.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          closeAndExecute();
+        }
+      });
 
-  //   messageBox?.classList.add('top');
-  //   messageBox?.classList.add('show');
+      buttonElements.push(button);
+      messageBox?.appendChild(button);
+    });
 
-  //   // Focus on the button
-  //   setTimeout(() => button.focus(), 100);
+    const closeMessageWindow = () => {
+      buttonElements.forEach((btn) => {
+        btn.removeEventListener('keydown', handleKeyNavigation);
+      });
+      messageBox?.classList.remove('show');
+      setTimeout(() => {
+        messageBox?.classList.remove('top');
+        messageBox?.removeChild(message);
+        buttonElements.forEach((btn) => {
+          if (messageBox?.contains(btn)) {
+            messageBox?.removeChild(btn);
+          }
+        });
+      }, 360);
+    };
 
-  //   const closeMessageWindow = () => {
-  //     messageBox?.classList.remove('show');
+    let currentFocusIndex = 0;
 
-  //     setTimeout(() => {
-  //       messageBox?.classList.remove('top');
-  //       messageBox?.removeChild(message);
-  //       messageBox?.removeChild(button);
-  //     }, 360);
-  //   };
-  // };
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'Up') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
+        buttonElements[currentFocusIndex].focus();
+      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
+        buttonElements[currentFocusIndex].focus();
+      }
+    };
 
-  // const setCookie = (cname: string, cvalue: string, exdays: number) => {
-  //   let d = new Date();
-  //   d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-  //   let expires = 'expires=' + d.toUTCString();
+    buttonElements.forEach((button) => {
+      button.addEventListener('keydown', handleKeyNavigation);
+    });
 
-  //   let oldCookie = getCookie('highscores');
+    messageBox?.classList.add('show');
 
-  //   if (oldCookie !== '') {
-  //     cvalue = oldCookie + '|' + cvalue;
-  //   }
-
-  //   document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
-  // };
-
-  // const getCookie = (cname: string) => {
-  //   let name = cname + '=';
-  //   let decodedCookie = decodeURIComponent(document.cookie);
-  //   let ca = decodedCookie.split(';');
-  //   for (let i = 0; i < ca.length; i++) {
-  //     let c = ca[i];
-  //     while (c.charAt(0) == ' ') {
-  //       c = c.substring(1);
-  //     }
-  //     if (c.indexOf(name) == 0) {
-  //       return c.substring(name.length, c.length);
-  //     }
-  //   }
-  //   return '';
-  // };
-
-  // const submitHighscore = () => {
-  //   setCookie('highscores', sessionStats.turnsTotal + '-' + sessionStats.retries, 1000000);
-  // };
-
-  // const getHighscoreList = () => {
-  //   let list: any[] = [];
-  //   let cookieOutput = getCookie('highscores');
-
-  //   list = cookieOutput.split('|');
-
-  //   // Split the turns and retires into another array, since the first
-  //   for (let i = 0; i < list.length; i++) {
-  //     list[i] = list[i].split('-');
-  //   }
-
-  //   // First sort by number of retries, then sort by number of turns
-  //   list.sort((a, b) => {
-  //     if (a[1] === b[1]) {
-  //       return a[0] - b[0];
-  //     }
-  //     return a[1] - b[1];
-  //   });
-
-  //   return list;
-  // };
+    setTimeout(() => {
+      buttonElements[0].focus();
+      currentFocusIndex = 0;
+    }, 100);
+  };
 
   const displayVictoryMessage = () => {
     const messageBox = document.querySelector('#message');
@@ -1076,7 +1076,6 @@ type SessionStats = {
           ' retries. Good job!';
       }
       btnPlayAgain.textContent = 'Start a new game';
-      // setCookie('highscores', '50-0', 1);
     }
 
     // Create "Back to Title Screen" button
