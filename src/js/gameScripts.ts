@@ -410,70 +410,45 @@ type SessionStats = {
       }
     });
 
-    zoomUp.addEventListener('click', () => {
-      grid.classList.add('no-anim'); // Move characters instantly during zoom
+    const changeZoom = async (type: 'up' | 'down', e?: KeyboardEvent) => {
+      // Don't allow zoom below 1
+      if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
+        // Verify keys if we're consuming a keyboard event
+        if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
+          grid.classList.add('no-anim'); // Move characters instantly during zoom
+          grid.classList.add('instant-camera'); // Move game grid instantly during zoom
 
-      sessionStats.zoomLevel++;
-      zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-      renderPlayer(player.pos);
-      renderEnemies();
-      centerPlayerInScreen();
+          type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
+          zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+          renderPlayer(player.pos);
+          renderEnemies();
+          centerPlayerInScreen();
 
-      grid.classList.remove('no-anim');
-    });
-    zoomUp.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        grid.classList.add('no-anim');
-
-        sessionStats.zoomLevel++;
-        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-        renderPlayer(player.pos);
-        renderEnemies();
-        centerPlayerInScreen();
-
-        grid.classList.remove('no-anim');
+          setTimeout(() => {
+            grid.classList.remove('no-anim');
+            grid.classList.remove('instant-camera');
+          }, 20);
+        }
       }
-    });
+    };
 
-    zoomDown.addEventListener('click', () => {
-      if (sessionStats.zoomLevel > 1) {
-        grid.classList.add('no-anim'); // Move characters instantly during zoom
+    zoomUp.addEventListener('click', () => changeZoom('up'));
+    zoomUp.addEventListener('keydown', (e) => changeZoom('up', e));
+    zoomDown.addEventListener('click', () => changeZoom('down'));
+    zoomDown.addEventListener('keydown', (e) => changeZoom('down', e));
 
-        sessionStats.zoomLevel--;
-        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-        renderPlayer(player.pos);
-        renderEnemies();
-        centerPlayerInScreen();
-
-        grid.classList.remove('no-anim');
-      }
-    });
-    zoomDown.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || (e.key === ' ' && sessionStats.zoomLevel > 1)) {
-        e.preventDefault();
-        grid.classList.add('no-anim');
-
-        sessionStats.zoomLevel--;
-        zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-        renderPlayer(player.pos);
-        renderEnemies();
-        centerPlayerInScreen();
-
-        grid.classList.remove('no-anim');
-      }
-    });
-
-    // Slow pan across the level showing the goal and ending on the player when starting a new level
+    // Start with camera centered immediately at the goal
     grid.classList.add('instant-camera');
     showGoal();
 
+    // Slow pan across the level showing the goal and ending on the player when starting a new level
     setTimeout(() => {
       grid.classList.remove('instant-camera');
       grid.classList.add('slow-pan');
       centerPlayerInScreen();
     }, 20);
 
+    // After pan is finished, remove slow pan class
     setTimeout(() => {
       grid.classList.remove('slow-pan');
     }, 2500);
@@ -977,7 +952,7 @@ type SessionStats = {
     const handleKeyNavigation = (e: KeyboardEvent) => {
       const prevKeys = layout === 'inline' ? ['ArrowLeft', 'Left'] : ['ArrowUp', 'Up'];
       const nextKeys = layout === 'inline' ? ['ArrowRight', 'Right'] : ['ArrowDown', 'Down'];
-      
+
       if (prevKeys.includes(e.key)) {
         e.preventDefault();
         currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;

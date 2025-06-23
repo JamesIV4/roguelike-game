@@ -1,4 +1,13 @@
-// Generated: Friday, June 20, 2025 at 11:07:30 AM EDT
+// Generated: Monday, June 23, 2025 at 10:26:18 AM EDT
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -322,58 +331,39 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 showGoal();
             }
         });
-        zoomUp.addEventListener('click', () => {
-            grid.classList.add('no-anim'); // Move characters instantly during zoom
-            sessionStats.zoomLevel++;
-            zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-            renderPlayer(player.pos);
-            renderEnemies();
-            centerPlayerInScreen();
-            grid.classList.remove('no-anim');
-        });
-        zoomUp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                grid.classList.add('no-anim');
-                sessionStats.zoomLevel++;
-                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-                renderPlayer(player.pos);
-                renderEnemies();
-                centerPlayerInScreen();
-                grid.classList.remove('no-anim');
+        const changeZoom = (type, e) => __awaiter(void 0, void 0, void 0, function* () {
+            // Don't allow zoom below 1
+            if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
+                // Verify keys if we're consuming a keyboard event
+                if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
+                    grid.classList.add('no-anim'); // Move characters instantly during zoom
+                    grid.classList.add('instant-camera'); // Move game grid instantly during zoom
+                    type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
+                    zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+                    renderPlayer(player.pos);
+                    renderEnemies();
+                    centerPlayerInScreen();
+                    setTimeout(() => {
+                        grid.classList.remove('no-anim');
+                        grid.classList.remove('instant-camera');
+                    }, 20);
+                }
             }
         });
-        zoomDown.addEventListener('click', () => {
-            if (sessionStats.zoomLevel > 1) {
-                grid.classList.add('no-anim'); // Move characters instantly during zoom
-                sessionStats.zoomLevel--;
-                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-                renderPlayer(player.pos);
-                renderEnemies();
-                centerPlayerInScreen();
-                grid.classList.remove('no-anim');
-            }
-        });
-        zoomDown.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || (e.key === ' ' && sessionStats.zoomLevel > 1)) {
-                e.preventDefault();
-                grid.classList.add('no-anim');
-                sessionStats.zoomLevel--;
-                zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
-                renderPlayer(player.pos);
-                renderEnemies();
-                centerPlayerInScreen();
-                grid.classList.remove('no-anim');
-            }
-        });
-        // Slow pan across the level showing the goal and ending on the player when starting a new level
+        zoomUp.addEventListener('click', () => changeZoom('up'));
+        zoomUp.addEventListener('keydown', (e) => changeZoom('up', e));
+        zoomDown.addEventListener('click', () => changeZoom('down'));
+        zoomDown.addEventListener('keydown', (e) => changeZoom('down', e));
+        // Start with camera centered immediately at the goal
         grid.classList.add('instant-camera');
         showGoal();
+        // Slow pan across the level showing the goal and ending on the player when starting a new level
         setTimeout(() => {
             grid.classList.remove('instant-camera');
             grid.classList.add('slow-pan');
             centerPlayerInScreen();
         }, 20);
+        // After pan is finished, remove slow pan class
         setTimeout(() => {
             grid.classList.remove('slow-pan');
         }, 2500);
