@@ -11,6 +11,10 @@ type SessionStats = {
 };
 
 (() => {
+  const isMobileScreen = () => {
+    return window.matchMedia('(max-width: 767px)').matches;
+  };
+
   let currentLevel = 0;
   let levelStore: any[] = [];
   let enemies: any[] = [];
@@ -24,7 +28,7 @@ type SessionStats = {
     turnsTotal: 0,
     turnsLevel: 0,
     retries: 0,
-    zoomLevel: 4,
+    zoomLevel: isMobileScreen() ? 2 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
     dead: false,
     mode: 'normal'
   };
@@ -592,10 +596,7 @@ type SessionStats = {
     if (options.centerMode === false) {
       // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
       top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
-
       left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
-
-      //console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
     } else {
       // Follow centered only
       top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;

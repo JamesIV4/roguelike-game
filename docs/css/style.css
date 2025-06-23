@@ -280,6 +280,12 @@ body {
   -ms-interpolation-mode: nearest-neighbor;
   width: 32px;
 }
+@media all and (width <= 767px) {
+  #display-wrapper #game-grid .row .cell {
+    height: 16px;
+    width: 16px;
+  }
+}
 #display-wrapper #game-grid .row .cell:not(.empty) {
   background-size: cover;
 }

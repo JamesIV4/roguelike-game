@@ -1,8 +1,11 @@
-// Generated: Monday, June 23, 2025 at 10:41:39 AM EDT
+// Generated: Monday, June 23, 2025 at 10:58:27 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
     var _a, _b, _c;
+    const isMobileScreen = () => {
+        return window.matchMedia('(max-width: 767px)').matches;
+    };
     let currentLevel = 0;
     let levelStore = [];
     let enemies = [];
@@ -16,7 +19,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         turnsTotal: 0,
         turnsLevel: 0,
         retries: 0,
-        zoomLevel: 4,
+        zoomLevel: isMobileScreen() ? 2 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
         dead: false,
         mode: 'normal'
     };
@@ -482,7 +485,6 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
             top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
             left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
-            //console.log ('Top: ' + top + ', Left: ' + left + ', Max height: ' + (window.innerHeight - (window.innerHeight / 3)) + ', Max Width: ' + (window.innerWidth - (window.innerWidth / 3)) + '\nWindow height: ' + window.innerHeight + ', Window width: ' + window.innerWidth);
         }
         else {
             // Follow centered only
