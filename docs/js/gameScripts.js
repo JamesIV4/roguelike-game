@@ -1,4 +1,4 @@
-// Generated: Monday, June 23, 2025 at 10:26:18 AM EDT
+// Generated: Monday, June 23, 2025 at 10:33:48 AM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -342,7 +342,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                     zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
                     renderPlayer(player.pos);
                     renderEnemies();
-                    centerPlayerInScreen();
+                    viewingGoal ? centerOnGoal() : centerPlayerInScreen();
                     setTimeout(() => {
                         grid.classList.remove('no-anim');
                         grid.classList.remove('instant-camera');
@@ -506,17 +506,20 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             viewingGoal = false;
         }
     };
-    const showGoal = () => {
+    const centerOnGoal = () => {
         let top, left, goal = document.querySelector('.goal');
+        top = (goal === null || goal === void 0 ? void 0 : goal.offsetTop) * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+        left = (goal === null || goal === void 0 ? void 0 : goal.offsetLeft) * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
+        overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+        viewingGoal = true;
+    };
+    const showGoal = () => {
         if (viewingGoal) {
             centerPlayerInScreen();
             viewingGoal = false;
         }
         else {
-            top = (goal === null || goal === void 0 ? void 0 : goal.offsetTop) * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
-            left = (goal === null || goal === void 0 ? void 0 : goal.offsetLeft) * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
-            overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
-            viewingGoal = true;
+            centerOnGoal();
         }
     };
     const enemyAITurn = () => {

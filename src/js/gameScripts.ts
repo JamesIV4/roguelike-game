@@ -422,7 +422,7 @@ type SessionStats = {
           zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
           renderPlayer(player.pos);
           renderEnemies();
-          centerPlayerInScreen();
+          viewingGoal ? centerOnGoal() : centerPlayerInScreen();
 
           setTimeout(() => {
             grid.classList.remove('no-anim');
@@ -612,20 +612,24 @@ type SessionStats = {
     }
   };
 
-  const showGoal = () => {
+  const centerOnGoal = () => {
     let top,
       left,
       goal: HTMLElement = document.querySelector('.goal')!;
 
+    top = goal?.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+    left = goal?.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
+
+    overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+    viewingGoal = true;
+  };
+
+  const showGoal = () => {
     if (viewingGoal) {
       centerPlayerInScreen();
       viewingGoal = false;
     } else {
-      top = goal?.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
-      left = goal?.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
-
-      overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
-      viewingGoal = true;
+      centerOnGoal();
     }
   };
 
