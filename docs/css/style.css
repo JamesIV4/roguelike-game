@@ -187,6 +187,11 @@ body {
   width: 32px;
   z-index: 1000;
 }
+@media all and (width <= 767px) {
+  #display-wrapper #ui-display #back-button {
+    top: calc(env(safe-area-inset-top) + 10px);
+  }
+}
 #display-wrapper #ui-display #zoom-container {
   bottom: 0;
   display: block;

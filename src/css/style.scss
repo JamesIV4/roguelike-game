@@ -198,6 +198,10 @@ body {
       top: 10px;
       width: 32px;
       z-index: 1000;
+
+      @media all and (width <= 767px) {
+        top: calc(env(safe-area-inset-top) + 10px);
+      }
     }
 
     #zoom-container {
