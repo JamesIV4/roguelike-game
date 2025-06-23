@@ -1,11 +1,14 @@
-// Generated: Monday, June 23, 2025 at 11:05:02 AM EDT
+// Generated: Monday, June 23, 2025 at 11:42:40 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
     var _a, _b, _c;
+    // Helper functions
     const isMobileScreen = () => {
         return window.matchMedia('(max-width: 767px)').matches;
     };
+    const handleKeyboardConfirm = (e) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
+    // Game variables
     let currentLevel = 0;
     let levelStore = [];
     let enemies = [];
@@ -155,34 +158,17 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 background === null || background === void 0 ? void 0 : background.removeChild(uiElem);
             }, 1000);
         };
-        btnStartNormal.addEventListener('click', () => {
-            closeTitlescreen();
-            sessionStats.mode = 'normal';
-            beginGame();
-        });
-        // Add keyboard support for Enter key
-        btnStartNormal.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleStartButton = (gameMode, e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeTitlescreen();
-                sessionStats.mode = 'normal';
+                sessionStats.mode = gameMode;
                 beginGame();
             }
-        });
-        btnStartProcudural.addEventListener('click', () => {
-            closeTitlescreen();
-            sessionStats.mode = 'procedural';
-            beginGame();
-        });
-        // Add keyboard support for Enter key
-        btnStartProcudural.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                closeTitlescreen();
-                sessionStats.mode = 'procedural';
-                beginGame();
-            }
-        });
+        };
+        btnStartNormal.addEventListener('click', () => handleStartButton('normal'));
+        btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e));
+        btnStartProcudural.addEventListener('click', () => handleStartButton('procedural'));
+        btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e));
     };
     const drawScreen = (selectedLevel) => {
         const background = document.querySelector('#display-wrapper'), grid = document.createElement('div'), messageWindow = document.createElement('div'), uiElem = document.createElement('div'), zoomButtons = document.createElement('div'), zoomUp = document.createElement('div'), zoomDown = document.createElement('div'), showGoalBtn = document.createElement('div'), switchCameraBtn = document.createElement('div'), backButton = document.createElement('div');
@@ -291,45 +277,36 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         setTimeout(() => {
             grid.classList.add('show');
         }, 300);
-        // Button events
-        backButton.addEventListener('click', () => {
-            showMessageBox('Abandon the current game and return to the Title Screen?', [
-                { text: 'Confirm', action: () => backToTitleScreen() },
-                { text: 'Cancel', action: () => { } }
-            ], 'inline');
-        });
-        backButton.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleBackBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 showMessageBox('Abandon the current game and return to the Title Screen?', [
                     { text: 'Confirm', action: () => backToTitleScreen() },
                     { text: 'Cancel', action: () => { } }
                 ], 'inline');
             }
-        });
-        switchCameraBtn.addEventListener('click', () => {
-            toggleCenterMode();
-        });
-        switchCameraBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        };
+        // Button events
+        backButton.addEventListener('click', () => handleBackBtn());
+        backButton.addEventListener('keydown', (e) => handleBackBtn(e));
+        const handleSwitchCameraBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 toggleCenterMode();
             }
-        });
-        showGoalBtn.addEventListener('click', () => {
-            showGoal();
-        });
-        showGoalBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        };
+        switchCameraBtn.addEventListener('click', () => handleSwitchCameraBtn());
+        switchCameraBtn.addEventListener('keydown', (e) => handleSwitchCameraBtn(e));
+        const handleShowGoalBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 showGoal();
             }
-        });
+        };
+        showGoalBtn.addEventListener('click', () => handleShowGoalBtn());
+        showGoalBtn.addEventListener('keydown', (e) => handleShowGoalBtn(e));
         const changeZoom = (type, e) => {
             // Don't allow zoom below 1
             if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
                 // Verify keys if we're consuming a keyboard event
-                if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
+                if (handleKeyboardConfirm(e)) {
                     grid.classList.add('instant-camera'); // Move characters and game grid instantly during zoom
                     type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
                     zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
@@ -740,22 +717,16 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             button.classList.add('btn');
             button.textContent = buttonConfig.text;
             button.setAttribute('tabindex', '0');
-            const closeAndExecute = () => {
-                closeMessageWindow();
-                setTimeout(() => {
-                    buttonConfig.action();
-                }, 360);
-            };
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                closeAndExecute();
-            });
-            button.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    closeAndExecute();
+            const closeAndExecute = (e) => {
+                if (handleKeyboardConfirm(e)) {
+                    closeMessageWindow();
+                    setTimeout(() => {
+                        buttonConfig.action();
+                    }, 360);
                 }
-            });
+            };
+            button.addEventListener('click', () => closeAndExecute());
+            button.addEventListener('keydown', (e) => closeAndExecute(e));
             buttonElements.push(button);
             (_a = (buttonWrapper || messageBox)) === null || _a === void 0 ? void 0 : _a.appendChild(button);
         });
@@ -858,23 +829,16 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         btnNextLevel.classList.add('btn');
         btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
         btnNextLevel.setAttribute('tabindex', '0');
-        btnNextLevel.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            setTimeout(() => {
-                goToNewLevel(currentLevel + 1);
-            }, 360);
-        });
-        // Add keyboard support for Enter key
-        btnNextLevel.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleNextLevelBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeMessageWindow();
                 setTimeout(() => {
                     goToNewLevel(currentLevel + 1);
                 }, 360);
             }
-        });
+        };
+        btnNextLevel.addEventListener('click', () => handleNextLevelBtn());
+        btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
         // Set the main message text.
         message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
         // Special message for the final level of normal mode.
@@ -908,23 +872,16 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         btnBackToTitle.classList.add('btn');
         btnBackToTitle.textContent = 'Back to Title Screen';
         btnBackToTitle.setAttribute('tabindex', '0');
-        btnBackToTitle.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            setTimeout(() => {
-                backToTitleScreen();
-            }, 360);
-        });
-        // Add keyboard support for Enter key
-        btnBackToTitle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleBackToTitleScreen = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeMessageWindow();
                 setTimeout(() => {
                     backToTitleScreen();
                 }, 360);
             }
-        });
+        };
+        btnBackToTitle.addEventListener('click', () => handleBackToTitleScreen());
+        btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
         // Add the elements to the message box
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnPlayAgain);
@@ -1014,39 +971,28 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 retryLevel();
             }, 360);
         };
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-        });
-        // Add keyboard support for Enter key
-        button.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleCloseBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeMessageWindow();
             }
-        });
+        };
+        button.addEventListener('click', () => handleCloseBtn());
+        button.addEventListener('keydown', (e) => handleCloseBtn(e));
         // Create "Back to Title Screen" button
         const btnBackToTitle = document.createElement('a');
         btnBackToTitle.classList.add('btn');
         btnBackToTitle.textContent = 'Back to Title Screen';
         btnBackToTitle.setAttribute('tabindex', '0');
-        btnBackToTitle.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            setTimeout(() => {
-                backToTitleScreen();
-            }, 360);
-        });
-        // Add keyboard support for Enter key
-        btnBackToTitle.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleBackToTitleBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeMessageWindow();
                 setTimeout(() => {
                     backToTitleScreen();
                 }, 360);
             }
-        });
+        };
+        btnBackToTitle.addEventListener('click', () => handleBackToTitleBtn());
+        btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleBtn(e));
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(message);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(button);
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnBackToTitle);

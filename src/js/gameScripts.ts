@@ -11,10 +11,13 @@ type SessionStats = {
 };
 
 (() => {
+  // Helper functions
   const isMobileScreen = () => {
     return window.matchMedia('(max-width: 767px)').matches;
   };
+  const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
+  // Game variables
   let currentLevel = 0;
   let levelStore: any[] = [];
   let enemies: any[] = [];
@@ -193,37 +196,18 @@ type SessionStats = {
       }, 1000);
     };
 
-    btnStartNormal.addEventListener('click', () => {
-      closeTitlescreen();
-      sessionStats.mode = 'normal';
-      beginGame();
-    });
-
-    // Add keyboard support for Enter key
-    btnStartNormal.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleStartButton = (gameMode: 'normal' | 'procedural', e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeTitlescreen();
-        sessionStats.mode = 'normal';
+        sessionStats.mode = gameMode;
         beginGame();
       }
-    });
+    };
 
-    btnStartProcudural.addEventListener('click', () => {
-      closeTitlescreen();
-      sessionStats.mode = 'procedural';
-      beginGame();
-    });
-
-    // Add keyboard support for Enter key
-    btnStartProcudural.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        closeTitlescreen();
-        sessionStats.mode = 'procedural';
-        beginGame();
-      }
-    });
+    btnStartNormal.addEventListener('click', () => handleStartButton('normal'));
+    btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e));
+    btnStartProcudural.addEventListener('click', () => handleStartButton('procedural'));
+    btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e));
   };
 
   const drawScreen = (selectedLevel: any) => {
@@ -369,20 +353,8 @@ type SessionStats = {
       grid.classList.add('show');
     }, 300);
 
-    // Button events
-    backButton.addEventListener('click', () => {
-      showMessageBox(
-        'Abandon the current game and return to the Title Screen?',
-        [
-          { text: 'Confirm', action: () => backToTitleScreen() },
-          { text: 'Cancel', action: () => {} }
-        ],
-        'inline'
-      );
-    });
-    backButton.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleBackBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         showMessageBox(
           'Abandon the current game and return to the Title Screen?',
           [
@@ -392,33 +364,35 @@ type SessionStats = {
           'inline'
         );
       }
-    });
+    };
 
-    switchCameraBtn.addEventListener('click', () => {
-      toggleCenterMode();
-    });
-    switchCameraBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    // Button events
+    backButton.addEventListener('click', () => handleBackBtn());
+    backButton.addEventListener('keydown', (e) => handleBackBtn(e));
+
+    const handleSwitchCameraBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         toggleCenterMode();
       }
-    });
+    };
 
-    showGoalBtn.addEventListener('click', () => {
-      showGoal();
-    });
-    showGoalBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    switchCameraBtn.addEventListener('click', () => handleSwitchCameraBtn());
+    switchCameraBtn.addEventListener('keydown', (e) => handleSwitchCameraBtn(e));
+
+    const handleShowGoalBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         showGoal();
       }
-    });
+    };
+
+    showGoalBtn.addEventListener('click', () => handleShowGoalBtn());
+    showGoalBtn.addEventListener('keydown', (e) => handleShowGoalBtn(e));
 
     const changeZoom = (type: 'up' | 'down', e?: KeyboardEvent) => {
       // Don't allow zoom below 1
       if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
         // Verify keys if we're consuming a keyboard event
-        if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
+        if (handleKeyboardConfirm(e)) {
           grid.classList.add('instant-camera'); // Move characters and game grid instantly during zoom
 
           type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
@@ -906,24 +880,17 @@ type SessionStats = {
       button.textContent = buttonConfig.text;
       button.setAttribute('tabindex', '0');
 
-      const closeAndExecute = () => {
-        closeMessageWindow();
-        setTimeout(() => {
-          buttonConfig.action();
-        }, 360);
+      const closeAndExecute = (e?: KeyboardEvent) => {
+        if (handleKeyboardConfirm(e)) {
+          closeMessageWindow();
+          setTimeout(() => {
+            buttonConfig.action();
+          }, 360);
+        }
       };
 
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeAndExecute();
-      });
-
-      button.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          closeAndExecute();
-        }
-      });
+      button.addEventListener('click', () => closeAndExecute());
+      button.addEventListener('keydown', (e) => closeAndExecute(e));
 
       buttonElements.push(button);
       (buttonWrapper || messageBox)?.appendChild(button);
@@ -1038,24 +1005,17 @@ type SessionStats = {
     btnNextLevel.classList.add('btn');
     btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
     btnNextLevel.setAttribute('tabindex', '0');
-    btnNextLevel.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
-      setTimeout(() => {
-        goToNewLevel(currentLevel + 1);
-      }, 360);
-    });
 
-    // Add keyboard support for Enter key
-    btnNextLevel.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleNextLevelBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
         setTimeout(() => {
           goToNewLevel(currentLevel + 1);
         }, 360);
       }
-    });
+    };
+    btnNextLevel.addEventListener('click', () => handleNextLevelBtn());
+    btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
 
     // Set the main message text.
     message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
@@ -1091,24 +1051,17 @@ type SessionStats = {
     btnBackToTitle.classList.add('btn');
     btnBackToTitle.textContent = 'Back to Title Screen';
     btnBackToTitle.setAttribute('tabindex', '0');
-    btnBackToTitle.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
-      setTimeout(() => {
-        backToTitleScreen();
-      }, 360);
-    });
 
-    // Add keyboard support for Enter key
-    btnBackToTitle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleBackToTitleScreen = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
         setTimeout(() => {
           backToTitleScreen();
         }, 360);
       }
-    });
+    };
+    btnBackToTitle.addEventListener('click', () => handleBackToTitleScreen());
+    btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
 
     // Add the elements to the message box
     messageBox?.appendChild(message);
@@ -1214,42 +1167,30 @@ type SessionStats = {
       }, 360);
     };
 
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
-    });
-
-    // Add keyboard support for Enter key
-    button.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleCloseBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
       }
-    });
+    };
+    button.addEventListener('click', () => handleCloseBtn());
+    button.addEventListener('keydown', (e) => handleCloseBtn(e));
 
     // Create "Back to Title Screen" button
     const btnBackToTitle = document.createElement('a');
     btnBackToTitle.classList.add('btn');
     btnBackToTitle.textContent = 'Back to Title Screen';
     btnBackToTitle.setAttribute('tabindex', '0');
-    btnBackToTitle.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
-      setTimeout(() => {
-        backToTitleScreen();
-      }, 360);
-    });
 
-    // Add keyboard support for Enter key
-    btnBackToTitle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleBackToTitleBtn = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
         setTimeout(() => {
           backToTitleScreen();
         }, 360);
       }
-    });
+    };
+    btnBackToTitle.addEventListener('click', () => handleBackToTitleBtn());
+    btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleBtn(e));
 
     messageBox?.appendChild(message);
     messageBox?.appendChild(button);
