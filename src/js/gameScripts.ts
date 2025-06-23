@@ -28,7 +28,7 @@ type SessionStats = {
     turnsTotal: 0,
     turnsLevel: 0,
     retries: 0,
-    zoomLevel: isMobileScreen() ? 2 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
+    zoomLevel: isMobileScreen() ? 3 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
     dead: false,
     mode: 'normal'
   };

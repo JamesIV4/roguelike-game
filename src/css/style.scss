@@ -324,8 +324,8 @@ body {
         width: 32px;
 
         @media all and (width <= 767px) {
-          height: 16px;
-          width: 16px;
+          height: 24px;
+          width: 24px;
         }
 
         &:not(.empty) {

@@ -1,4 +1,4 @@
-// Generated: Monday, June 23, 2025 at 10:58:27 AM EDT
+// Generated: Monday, June 23, 2025 at 11:05:02 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -19,7 +19,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         turnsTotal: 0,
         turnsLevel: 0,
         retries: 0,
-        zoomLevel: isMobileScreen() ? 2 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
+        zoomLevel: isMobileScreen() ? 3 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
         dead: false,
         mode: 'normal'
     };

@@ -282,8 +282,8 @@ body {
 }
 @media all and (width <= 767px) {
   #display-wrapper #game-grid .row .cell {
-    height: 16px;
-    width: 16px;
+    height: 24px;
+    width: 24px;
   }
 }
 #display-wrapper #game-grid .row .cell:not(.empty) {
