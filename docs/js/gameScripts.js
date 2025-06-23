@@ -1,4 +1,4 @@
-// Generated: Monday, June 23, 2025 at 11:42:40 AM EDT
+// Generated: Monday, June 23, 2025 at 11:48:42 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -812,19 +812,14 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
         btnPlayAgain.classList.add('btn');
         btnPlayAgain.textContent = 'Play again';
         btnPlayAgain.setAttribute('tabindex', '0');
-        btnPlayAgain.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMessageWindow();
-            playAgainOrNewGame();
-        });
-        // Add keyboard support for Enter key
-        btnPlayAgain.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
+        const handleBtnPlayAgain = (e) => {
+            if (handleKeyboardConfirm(e)) {
                 closeMessageWindow();
                 playAgainOrNewGame();
             }
-        });
+        };
+        btnPlayAgain.addEventListener('click', () => handleBtnPlayAgain());
+        btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
         // Configure the "Next Level" button
         btnNextLevel.classList.add('btn');
         btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
