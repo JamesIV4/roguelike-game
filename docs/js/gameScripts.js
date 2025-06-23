@@ -1,13 +1,4 @@
-// Generated: Monday, June 23, 2025 at 10:38:49 AM EDT
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+// Generated: Monday, June 23, 2025 at 10:41:39 AM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 (() => {
@@ -331,7 +322,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                 showGoal();
             }
         });
-        const changeZoom = (type, e) => __awaiter(void 0, void 0, void 0, function* () {
+        const changeZoom = (type, e) => {
             // Don't allow zoom below 1
             if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
                 // Verify keys if we're consuming a keyboard event
@@ -347,7 +338,7 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
                     }, 20);
                 }
             }
-        });
+        };
         zoomUp.addEventListener('click', () => changeZoom('up'));
         zoomUp.addEventListener('keydown', (e) => changeZoom('up', e));
         zoomDown.addEventListener('click', () => changeZoom('down'));

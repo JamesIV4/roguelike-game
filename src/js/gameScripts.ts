@@ -410,7 +410,7 @@ type SessionStats = {
       }
     });
 
-    const changeZoom = async (type: 'up' | 'down', e?: KeyboardEvent) => {
+    const changeZoom = (type: 'up' | 'down', e?: KeyboardEvent) => {
       // Don't allow zoom below 1
       if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
         // Verify keys if we're consuming a keyboard event
