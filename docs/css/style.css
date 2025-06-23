@@ -163,7 +163,7 @@ body {
 }
 @media all and (width <= 767px) {
   #display-wrapper #ui-display #level-indicator {
-    top: calc(env(safe-area-inset-top) + 10px);
+    top: env(safe-area-inset-top);
   }
 }
 #display-wrapper #ui-display #back-button {
@@ -189,7 +189,7 @@ body {
 }
 @media all and (width <= 767px) {
   #display-wrapper #ui-display #back-button {
-    top: calc(env(safe-area-inset-top) + 10px);
+    top: env(safe-area-inset-top);
   }
 }
 #display-wrapper #ui-display #zoom-container {
@@ -207,7 +207,7 @@ body {
 }
 @media all and (width <= 767px) {
   #display-wrapper #ui-display #zoom-container {
-    bottom: calc(env(safe-area-inset-bottom) + 10px);
+    bottom: env(safe-area-inset-bottom);
   }
 }
 #display-wrapper #ui-display #zoom-container #zoom-up,

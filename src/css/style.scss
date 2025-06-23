@@ -174,7 +174,7 @@ body {
       z-index: 1000;
 
       @media all and (width <= 767px) {
-        top: calc(env(safe-area-inset-top) + 10px);
+        top: env(safe-area-inset-top);
       }
     }
 
@@ -200,7 +200,7 @@ body {
       z-index: 1000;
 
       @media all and (width <= 767px) {
-        top: calc(env(safe-area-inset-top) + 10px);
+        top: env(safe-area-inset-top);
       }
     }
 
@@ -218,7 +218,7 @@ body {
       z-index: 1000;
 
       @media all and (width <= 767px) {
-        bottom: calc(env(safe-area-inset-bottom) + 10px);
+        bottom: env(safe-area-inset-bottom);
       }
 
       #zoom-up,
