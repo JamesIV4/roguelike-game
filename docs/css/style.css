@@ -1,4 +1,10 @@
 /* stylelint-disable property-no-vendor-prefix */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {
   background-color: #0b0b0b;
   height: 100%;
@@ -155,6 +161,11 @@ body {
   transform: translateX(-50%);
   z-index: 1000;
 }
+@media all and (width <= 767px) {
+  #display-wrapper #ui-display #level-indicator {
+    top: calc(env(safe-area-inset-top) + 10px);
+  }
+}
 #display-wrapper #ui-display #back-button {
   align-items: center;
   background-color: #fff;
@@ -188,6 +199,11 @@ body {
   -ms-user-select: none;
   user-select: none;
   z-index: 1000;
+}
+@media all and (width <= 767px) {
+  #display-wrapper #ui-display #zoom-container {
+    bottom: calc(env(safe-area-inset-bottom) + 10px);
+  }
 }
 #display-wrapper #ui-display #zoom-container #zoom-up,
 #display-wrapper #ui-display #zoom-container #zoom-down,
