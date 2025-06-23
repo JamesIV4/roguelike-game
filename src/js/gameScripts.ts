@@ -986,20 +986,15 @@ type SessionStats = {
     btnPlayAgain.classList.add('btn');
     btnPlayAgain.textContent = 'Play again';
     btnPlayAgain.setAttribute('tabindex', '0');
-    btnPlayAgain.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeMessageWindow();
-      playAgainOrNewGame();
-    });
 
-    // Add keyboard support for Enter key
-    btnPlayAgain.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+    const handleBtnPlayAgain = (e?: KeyboardEvent) => {
+      if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
         playAgainOrNewGame();
       }
-    });
+    };
+    btnPlayAgain.addEventListener('click', () => handleBtnPlayAgain());
+    btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
 
     // Configure the "Next Level" button
     btnNextLevel.classList.add('btn');
