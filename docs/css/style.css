@@ -266,6 +266,9 @@ body {
   transition: top 0s, left 0s;
   transition-timing-function: unset;
 }
+#display-wrapper #game-grid.instant-camera .row .cell.enemy::after, #display-wrapper #game-grid.instant-camera .row .cell.player::after {
+  transition: none !important;
+}
 #display-wrapper #game-grid .row {
   display: table-row;
 }
@@ -354,7 +357,4 @@ body {
 }
 #display-wrapper #game-grid .row .cell.floor.goal {
   background-image: none !important;
-}
-#display-wrapper #game-grid.no-anim .row .cell.enemy::after, #display-wrapper #game-grid.no-anim .row .cell.player::after {
-  transition: none !important;
 }

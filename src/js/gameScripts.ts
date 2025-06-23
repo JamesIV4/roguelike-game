@@ -415,8 +415,7 @@ type SessionStats = {
       if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
         // Verify keys if we're consuming a keyboard event
         if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
-          grid.classList.add('no-anim'); // Move characters instantly during zoom
-          grid.classList.add('instant-camera'); // Move game grid instantly during zoom
+          grid.classList.add('instant-camera'); // Move characters and game grid instantly during zoom
 
           type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
           zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
@@ -425,7 +424,6 @@ type SessionStats = {
           viewingGoal ? centerOnGoal() : centerPlayerInScreen();
 
           setTimeout(() => {
-            grid.classList.remove('no-anim');
             grid.classList.remove('instant-camera');
           }, 20);
         }

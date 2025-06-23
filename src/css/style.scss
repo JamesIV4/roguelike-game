@@ -301,6 +301,15 @@ body {
         top 0s,
         left 0s;
       transition-timing-function: unset;
+
+      .row {
+        .cell {
+          &.enemy::after,
+          &.player::after {
+            transition: none !important;
+          }
+        }
+      }
     }
 
     .row {
@@ -428,17 +437,6 @@ body {
 
           &.goal {
             background-image: none !important;
-          }
-        }
-      }
-    }
-
-    &.no-anim {
-      .row {
-        .cell {
-          &.enemy::after,
-          &.player::after {
-            transition: none !important;
           }
         }
       }

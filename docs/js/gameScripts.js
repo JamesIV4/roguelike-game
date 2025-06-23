@@ -1,4 +1,4 @@
-// Generated: Monday, June 23, 2025 at 10:33:48 AM EDT
+// Generated: Monday, June 23, 2025 at 10:38:49 AM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -336,15 +336,13 @@ import { generateRandomLevel } from './randomLevelGenerator.js';
             if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
                 // Verify keys if we're consuming a keyboard event
                 if ((e && (e.key === 'Enter' || e.key === ' ')) || !e) {
-                    grid.classList.add('no-anim'); // Move characters instantly during zoom
-                    grid.classList.add('instant-camera'); // Move game grid instantly during zoom
+                    grid.classList.add('instant-camera'); // Move characters and game grid instantly during zoom
                     type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
                     zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
                     renderPlayer(player.pos);
                     renderEnemies();
                     viewingGoal ? centerOnGoal() : centerPlayerInScreen();
                     setTimeout(() => {
-                        grid.classList.remove('no-anim');
                         grid.classList.remove('instant-camera');
                     }, 20);
                 }
