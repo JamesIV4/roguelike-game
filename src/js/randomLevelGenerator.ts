@@ -264,11 +264,13 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
   };
 
   // Place gold randomly in rooms and corridors
-  const placeGold = () => {
+  const placeGold = (playerStartRoom: Room) => {
     const goldTypes = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9', 'g10'];
     const goldCount = Math.floor(Math.random() * 8) + 5 + Math.floor(currentLevel * 1.5); // 5-12 + level scaling
     let placed = 0;
     let tries = 0;
+    
+    const [playerY, playerX] = playerStartRoom.getCenter();
     
     while (placed < goldCount && tries < 1000) {
       const y = Math.floor(Math.random() * levelHeight);
@@ -276,19 +278,23 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
       
       // Place gold on empty floor tiles
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
-        // Weight gold types based on level - higher levels get better gold
-        const levelFactor = Math.min(currentLevel / 10, 0.8); // Cap at 80% chance for high-tier gold
+        // Calculate distance from player start position
+        const distance = Math.sqrt(Math.pow(x - playerX, 2) + Math.pow(y - playerY, 2));
+        const maxDistance = Math.sqrt(Math.pow(levelWidth, 2) + Math.pow(levelHeight, 2));
+        const distanceFactor = Math.min(distance / maxDistance, 1);
+        
+        // Weight gold types based on distance from player start
         const randomValue = Math.random();
         
         let goldType;
-        if (randomValue < 0.4 - levelFactor * 0.2) {
-          // Low-tier gold (g1-g3)
+        if (randomValue < 0.6 - distanceFactor * 0.4) {
+          // Low-tier gold (g1-g3) - more likely near start
           goldType = goldTypes[Math.floor(Math.random() * 3)];
-        } else if (randomValue < 0.8 - levelFactor * 0.1) {
+        } else if (randomValue < 0.9 - distanceFactor * 0.2) {
           // Mid-tier gold (g4-g7)
           goldType = goldTypes[3 + Math.floor(Math.random() * 4)];
         } else {
-          // High-tier gold (g8-g10)
+          // High-tier gold (g8-g10) - more likely far from start
           goldType = goldTypes[7 + Math.floor(Math.random() * 3)];
         }
         
@@ -304,9 +310,9 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     const playerRoom = placePlayer();
     if (playerRoom) {
       placeGoal(playerRoom);
+      placeGold(playerRoom);
     }
     placeEnemies(enemies);
-    placeGold();
   }
 
   // Find the bounds of the actual content
