@@ -432,20 +432,11 @@ body {
   z-index: 100;
 }
 #display-wrapper #game-grid .row .cell.floor.gold::after {
-  background-image: url("../imgs/gold-coin.png");
   background-size: cover;
   content: "";
   display: block;
-  height: 32px;
   position: absolute;
-  width: 32px;
   z-index: 99;
-}
-@media all and (width <= 767px) {
-  #display-wrapper #game-grid .row .cell.floor.gold::after {
-    height: 24px;
-    width: 24px;
-  }
 }
 #display-wrapper #game-grid .row .cell.floor.goal {
   background-image: none !important;

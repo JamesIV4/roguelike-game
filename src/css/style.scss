@@ -512,19 +512,11 @@ body {
 
           &.gold {
             &::after {
-              background-image: url('../imgs/gold-coin.png');
               background-size: cover;
               content: '';
               display: block;
-              height: 32px;
               position: absolute;
-              width: 32px;
               z-index: 99;
-
-              @media all and (width <= 767px) {
-                height: 24px;
-                width: 24px;
-              }
             }
           }
 

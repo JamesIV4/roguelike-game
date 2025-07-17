@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 06:59:05 PM EDT
+// Generated: Thursday, July 17, 2025 at 07:19:49 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -1145,10 +1145,6 @@ const goldTypes = [
                 'background-image: url("../imgs/' +
                 ((goldType === null || goldType === void 0 ? void 0 : goldType.image) || 'gold-1.png') +
                 '");' +
-                'background-size: cover;' +
-                'content: "";' +
-                'display: block;' +
-                'position: absolute;' +
                 'top: ' +
                 pos[0] * sessionStats.zoomLevel * 8 +
                 'px;' +
@@ -1161,7 +1157,6 @@ const goldTypes = [
                 'width: ' +
                 sessionStats.zoomLevel * 8 +
                 'px;' +
-                'z-index: 50;' +
                 '}';
     };
     const renderGoldPieces = () => {

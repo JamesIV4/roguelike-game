@@ -1371,10 +1371,6 @@ const goldTypes: GoldType[] = [
       'background-image: url("../imgs/' +
       (goldType?.image || 'gold-1.png') +
       '");' +
-      'background-size: cover;' +
-      'content: "";' +
-      'display: block;' +
-      'position: absolute;' +
       'top: ' +
       pos[0] * sessionStats.zoomLevel * 8 +
       'px;' +
@@ -1387,7 +1383,6 @@ const goldTypes: GoldType[] = [
       'width: ' +
       sessionStats.zoomLevel * 8 +
       'px;' +
-      'z-index: 50;' +
       '}';
   };
 
