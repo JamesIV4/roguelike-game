@@ -1,3 +1,4 @@
+/* stylelint-disable keyframes-name-pattern */
 /* stylelint-disable property-no-vendor-prefix */
 html {
   -webkit-tap-highlight-color: transparent;
@@ -401,4 +402,27 @@ body {
 }
 #display-wrapper #game-grid .row .cell.floor.goal {
   background-image: none !important;
+}
+
+@keyframes goldTextFloat {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+@media all and (width <= 767px) {
+  @keyframes goldTextFloat {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-24px);
+    }
+  }
 }

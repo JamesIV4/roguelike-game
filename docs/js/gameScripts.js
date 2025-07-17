@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 05:08:55 PM EDT
+// Generated: Thursday, July 17, 2025 at 05:29:18 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -692,6 +692,8 @@ const goldTypes = [
         }
     };
     const retryLevel = () => {
+        // Subtract current level gold from total gold
+        sessionStats.goldTotal -= sessionStats.goldLevel;
         // Reset player
         player.reset();
         // Clean up enemies and gold
@@ -1141,12 +1143,57 @@ const goldTypes = [
             renderGold(goldObj, goldObj.pos);
         }
     };
+    const showGoldCollectionText = (pos, value) => {
+        var _a, _b;
+        const textElement = document.createElement('div');
+        const uniqueId = Date.now() + Math.random();
+        textElement.classList.add('gold-text-animation');
+        textElement.setAttribute('data-gold-value', `+${value}`);
+        textElement.setAttribute('data-unique-id', uniqueId.toString());
+        const styleElement = document.createElement('style');
+        const tileSize = sessionStats.zoomLevel * 8;
+        styleElement.innerHTML = `
+      .gold-text-animation[data-unique-id="${uniqueId}"] {
+        position: absolute;
+        top: ${pos[0] * tileSize}px;
+        left: ${pos[1] * tileSize}px;
+        width: ${tileSize}px;
+        height: ${tileSize}px;
+        pointer-events: none;
+        z-index: 200;
+      }
+      .gold-text-animation[data-unique-id="${uniqueId}"]::after {
+        content: "+${value}";
+        position: absolute;
+        color: #ffd700;
+        font-family: Rajdhani, sans-serif;
+        font-size: ${Math.max(sessionStats.zoomLevel * 4, 24)}px;
+        font-weight: 700;
+        text-shadow: 0 0 3px #000;
+        animation: goldTextFloat 1s ease-out forwards;
+        display: block;
+        text-align: center;
+        width: 100%;
+      }
+    `;
+        (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(styleElement);
+        (_b = document.querySelector('#game-grid')) === null || _b === void 0 ? void 0 : _b.appendChild(textElement);
+        setTimeout(() => {
+            if (textElement.parentNode) {
+                textElement.parentNode.removeChild(textElement);
+            }
+            if (styleElement.parentNode) {
+                styleElement.parentNode.removeChild(styleElement);
+            }
+        }, 1000);
+    };
     const collectGoldAt = (pos) => {
         var _a;
         const cell = levelStore[currentLevel][pos[0]][pos[1]];
         for (let i = 0; i < goldPieces[currentLevel].length; i++) {
             const goldObj = goldPieces[currentLevel][i];
             if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
+                showGoldCollectionText(pos, goldObj.value);
                 sessionStats.goldLevel += goldObj.value;
                 sessionStats.goldTotal += goldObj.value;
                 const goldCounterElem = document.querySelector('#gold-counter');
