@@ -178,6 +178,23 @@ body {
       }
     }
 
+    #gold-counter {
+      color: #ffd700;
+      font-family: Rajdhani, sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      left: 50%;
+      position: fixed;
+      text-shadow: 0 0 3px #000;
+      top: 35px;
+      transform: translateX(-50%);
+      z-index: 1000;
+
+      @media all and (width <= 767px) {
+        top: calc(env(safe-area-inset-top) + 25px);
+      }
+    }
+
     #back-button {
       align-items: center;
       background-color: #fff;
@@ -461,6 +478,8 @@ body {
           &.goal {
             background-image: none !important;
           }
+
+
         }
       }
     }

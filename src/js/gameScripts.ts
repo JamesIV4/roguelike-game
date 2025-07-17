@@ -8,7 +8,29 @@ type SessionStats = {
   zoomLevel: number;
   dead: boolean;
   mode: 'normal' | 'procedural';
+  goldTotal: number;
+  goldLevel: number;
 };
+
+type GoldType = {
+  id: string;
+  minValue: number;
+  maxValue: number;
+  image: string;
+};
+
+const goldTypes: GoldType[] = [
+  { id: 'g1', minValue: 1, maxValue: 1, image: 'gold-1.png' },
+  { id: 'g2', minValue: 2, maxValue: 5, image: 'gold-2.png' },
+  { id: 'g3', minValue: 5, maxValue: 15, image: 'gold-3.png' },
+  { id: 'g4', minValue: 10, maxValue: 25, image: 'gold-4.png' },
+  { id: 'g5', minValue: 20, maxValue: 35, image: 'gold-5.png' },
+  { id: 'g6', minValue: 30, maxValue: 50, image: 'gold-6.png' },
+  { id: 'g7', minValue: 40, maxValue: 65, image: 'gold-7.png' },
+  { id: 'g8', minValue: 55, maxValue: 80, image: 'gold-8.png' },
+  { id: 'g9', minValue: 70, maxValue: 90, image: 'gold-9.png' },
+  { id: 'g10', minValue: 85, maxValue: 100, image: 'gold-10.png' }
+];
 
 (() => {
   // Helper functions
@@ -22,6 +44,8 @@ type SessionStats = {
   let levelStore: any[] = [];
   let enemies: any[] = [];
   let enemyCounter = 0;
+  let goldPieces: any[] = [];
+  let goldCounter = 0;
   let player: Player;
   let viewingGoal = false;
   let options = {
@@ -33,7 +57,9 @@ type SessionStats = {
     retries: 0,
     zoomLevel: isMobileScreen() ? 3 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
     dead: false,
-    mode: 'normal'
+    mode: 'normal',
+    goldTotal: 0,
+    goldLevel: 0
   };
 
   // Touch controls variables
@@ -58,6 +84,20 @@ type SessionStats = {
       public health: number,
       public stylePos: HTMLStyleElement = document.createElement('style'),
       public moveTries: number = 0
+    ) {
+      // Append style element to the head
+      document.querySelector('head')?.appendChild(this.stylePos);
+    }
+  }
+
+  class Gold {
+    constructor(
+      public elem: HTMLElement,
+      public id: number,
+      public pos: number[],
+      public type: string,
+      public value: number,
+      public stylePos: HTMLStyleElement = document.createElement('style')
     ) {
       // Append style element to the head
       document.querySelector('head')?.appendChild(this.stylePos);
@@ -96,14 +136,18 @@ type SessionStats = {
     // Reset game state before starting a new game
     levelStore = [];
     enemies = [];
+    goldPieces = [];
     currentLevel = 0;
     enemyCounter = 0;
+    goldCounter = 0;
 
     // Reset session stats
     sessionStats.turnsTotal = 0;
     sessionStats.turnsLevel = 0;
     sessionStats.retries = 0;
     sessionStats.dead = false;
+    sessionStats.goldTotal = 0;
+    sessionStats.goldLevel = 0;
 
     // Reset player object if it exists
     if (player) {
@@ -233,6 +277,11 @@ type SessionStats = {
     levelIndicator.id = 'level-indicator';
     levelIndicator.textContent = `Level ${currentLevel + 1}`;
 
+    // Create gold counter
+    const goldCounterElement = document.createElement('div');
+    goldCounterElement.id = 'gold-counter';
+    goldCounterElement.textContent = `Gold: ${sessionStats.goldTotal}`;
+
     // Create back button
     backButton.id = 'back-button';
     backButton.setAttribute('tabindex', '0');
@@ -258,6 +307,7 @@ type SessionStats = {
       // If we're in a NEW level, add new arrays
       levelStore.splice(currentLevel, 0, [new Array()]); // Create new array in the appropriate place.. may not work right, have to revisit
       enemies.splice(currentLevel, 0, new Array());
+      goldPieces.splice(currentLevel, 0, new Array());
     }
 
     // Read level data
@@ -330,12 +380,32 @@ type SessionStats = {
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
             break;
+          default:
+            const goldType = goldTypes.find((g) => g.id === cell);
+            if (goldType) {
+              goldCounter++;
+              const goldValue = Math.floor(Math.random() * (goldType.maxValue - goldType.minValue + 1)) + goldType.minValue;
+              goldPieces[currentLevel].push(new Gold(elemCell, goldCounter, [rowIndex, cellIndex], goldType.id, goldValue));
+
+              elemCell.classList.add('floor');
+              elemCell.classList.add('gold');
+              elemCell.classList.add('gold-' + goldCounter);
+              renderGold(goldPieces[currentLevel][goldPieces[currentLevel].length - 1], [rowIndex, cellIndex]);
+
+              levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
+              levelStore[currentLevel][rowIndex][cellIndex].inside.push('gold');
+            } else {
+              elemCell.classList.add('floor');
+              levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
+            }
+            break;
         }
       }
     }
 
     background?.appendChild(uiElem);
     uiElem.appendChild(levelIndicator);
+    uiElem.appendChild(goldCounterElement);
     uiElem.appendChild(backButton);
     uiElem.appendChild(zoomButtons);
     uiElem.appendChild(messageWindow);
@@ -346,6 +416,7 @@ type SessionStats = {
     background?.appendChild(grid);
 
     renderPlayer(player.pos);
+    renderGoldPieces();
     drawDecorations();
     centerPlayerInScreen();
 
@@ -399,6 +470,7 @@ type SessionStats = {
           zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
           renderPlayer(player.pos);
           renderEnemies();
+          renderGoldPieces();
           viewingGoal ? centerOnGoal() : centerPlayerInScreen();
 
           setTimeout(() => {
@@ -696,6 +768,11 @@ type SessionStats = {
     }
 
     if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
+      // Check for gold collection
+      if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('gold') > -1) {
+        collectGoldAt(newPos);
+      }
+
       // Update the visuals
       renderPlayer(newPos);
 
@@ -755,6 +832,13 @@ type SessionStats = {
     }
   };
 
+  const cleanupGoldStyles = (level: number) => {
+    for (let goldIndex = 0; goldIndex < goldPieces[level].length; goldIndex++) {
+      let goldObj = goldPieces[level][goldIndex];
+      goldObj.stylePos.parentNode.removeChild(goldObj.stylePos);
+    }
+  };
+
   const checkVictory = () => {
     if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
       return true;
@@ -767,10 +851,13 @@ type SessionStats = {
     // Reset player
     player.reset();
 
-    // Clean up enemies
+    // Clean up enemies and gold
     cleanupEnemyStyles(currentLevel);
+    cleanupGoldStyles(currentLevel);
     enemies.splice(currentLevel, 1);
+    goldPieces.splice(currentLevel, 1);
     enemyCounter = 0;
+    goldCounter = 0;
 
     // Reset level store
     levelStore.splice(currentLevel, 1);
@@ -778,6 +865,7 @@ type SessionStats = {
     // Redraw and fix up level values
     refreshScreen();
     sessionStats.turnsLevel = 0;
+    sessionStats.goldLevel = 0;
     sessionStats.dead = false;
     sessionStats.retries += 1;
   };
@@ -804,16 +892,19 @@ type SessionStats = {
 
   const goToNewLevel = (newLevel: number) => {
     sessionStats.turnsLevel = 0;
+    sessionStats.goldLevel = 0;
     enemyCounter = 0;
+    goldCounter = 0;
 
     // Erase screen
     eraseScreen();
 
-    // Clean up enemy style elements in head
+    // Clean up enemy and gold style elements in head
     try {
       cleanupEnemyStyles(currentLevel);
+      cleanupGoldStyles(currentLevel);
     } catch (error) {
-      // Error happens when using newGame since the enemy array is already deleted. Revisit.
+      // Error happens when using newGame since arrays are already deleted. Revisit.
     }
 
     currentLevel = newLevel;
@@ -831,14 +922,18 @@ type SessionStats = {
     levelStore.length = 0; // Wipe out the levelStore
 
     cleanupEnemyStyles(currentLevel);
+    cleanupGoldStyles(currentLevel);
     enemies.length = 0; // Erase all the enemies
+    goldPieces.length = 0; // Erase all the gold
 
     sessionStats.turnsTotal = 0; // Reset total turns
+    sessionStats.goldTotal = 0; // Reset total gold
     goToNewLevel(0); // Go to level 1
   };
 
   const backToTitleScreen = () => {
     cleanupEnemyStyles(currentLevel);
+    cleanupGoldStyles(currentLevel);
 
     // Erase the screen
     eraseScreen();
@@ -1013,7 +1108,7 @@ type SessionStats = {
     btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
 
     // Set the main message text.
-    message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
+    message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns and collected ' + sessionStats.goldLevel + ' gold. Good job!';
 
     // Special message for the final level of normal mode.
     if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
@@ -1023,18 +1118,26 @@ type SessionStats = {
           (currentLevel + 1) +
           ' in ' +
           sessionStats.turnsLevel +
-          ' turns, and beat the game in ' +
+          ' turns, collected ' +
+          sessionStats.goldLevel +
+          ' gold this level, and beat the game in ' +
           sessionStats.turnsTotal +
-          ' turns. Good job!';
+          ' turns with ' +
+          sessionStats.goldTotal +
+          ' total gold. Good job!';
       } else {
         message.innerHTML =
           'You win! You beat the game.<br /><br />You completed level ' +
           (currentLevel + 1) +
           ' in ' +
           sessionStats.turnsLevel +
-          ' turns, and beat the game in ' +
+          ' turns, collected ' +
+          sessionStats.goldLevel +
+          ' gold this level, and beat the game in ' +
           sessionStats.turnsTotal +
-          ' turns, with ' +
+          ' turns with ' +
+          sessionStats.goldTotal +
+          ' total gold, with ' +
           sessionStats.retries +
           ' retries. Good job!';
       }
@@ -1221,6 +1324,67 @@ type SessionStats = {
       button.focus();
       currentFocusIndex = 0;
     }, 100);
+  };
+
+  const renderGold = (goldObj: Gold, pos: number[]) => {
+    const goldType = goldTypes.find((g) => g.id === goldObj.type);
+    goldObj.stylePos.innerHTML =
+      '#display-wrapper #game-grid .row .cell.floor.gold-' +
+      goldObj.id +
+      '::after {' +
+      'background-image: url("../imgs/' +
+      (goldType?.image || 'gold-1.png') +
+      '");' +
+      'background-size: cover;' +
+      'content: "";' +
+      'display: block;' +
+      'position: absolute;' +
+      'top: ' +
+      pos[0] * sessionStats.zoomLevel * 8 +
+      'px;' +
+      'left: ' +
+      pos[1] * sessionStats.zoomLevel * 8 +
+      'px;' +
+      'height: ' +
+      sessionStats.zoomLevel * 8 +
+      'px;' +
+      'width: ' +
+      sessionStats.zoomLevel * 8 +
+      'px;' +
+      'z-index: 50;' +
+      '}';
+  };
+
+  const renderGoldPieces = () => {
+    for (let goldIndex = 0; goldIndex < goldPieces[currentLevel].length; goldIndex++) {
+      let goldObj = goldPieces[currentLevel][goldIndex];
+      renderGold(goldObj, goldObj.pos);
+    }
+  };
+
+  const collectGoldAt = (pos: number[]) => {
+    const cell = levelStore[currentLevel][pos[0]][pos[1]];
+
+    for (let i = 0; i < goldPieces[currentLevel].length; i++) {
+      const goldObj = goldPieces[currentLevel][i];
+      if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
+        sessionStats.goldLevel += goldObj.value;
+        sessionStats.goldTotal += goldObj.value;
+
+        const goldCounterElem = document.querySelector('#gold-counter');
+        if (goldCounterElem) {
+          goldCounterElem.textContent = `Gold: ${sessionStats.goldTotal}`;
+        }
+
+        cell.inside.splice(cell.inside.indexOf('gold'), 1);
+        cell.elem.classList.remove('gold');
+        cell.elem.classList.remove('gold-' + goldObj.id);
+
+        goldObj.stylePos.parentNode?.removeChild(goldObj.stylePos);
+        goldPieces[currentLevel].splice(i, 1);
+        break;
+      }
+    }
   };
 
   const handleTouchStart = (evt: TouchEvent) => {
