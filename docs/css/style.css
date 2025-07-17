@@ -172,6 +172,11 @@ body {
   width: 24px;
 }
 @media all and (width <= 767px) {
+  #display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece {
+    background-size: cover;
+  }
+}
+@media all and (width <= 767px) {
   #display-wrapper #ui-display #message {
     width: 75%;
   }
@@ -425,6 +430,22 @@ body {
   transition: top 0.2s, left 0.2s;
   transition-timing-function: ease-out;
   z-index: 100;
+}
+#display-wrapper #game-grid .row .cell.floor.gold::after {
+  background-image: url("../imgs/gold-coin.png");
+  background-size: cover;
+  content: "";
+  display: block;
+  height: 32px;
+  position: absolute;
+  width: 32px;
+  z-index: 99;
+}
+@media all and (width <= 767px) {
+  #display-wrapper #game-grid .row .cell.floor.gold::after {
+    height: 24px;
+    width: 24px;
+  }
 }
 #display-wrapper #game-grid .row .cell.floor.goal {
   background-image: none !important;
