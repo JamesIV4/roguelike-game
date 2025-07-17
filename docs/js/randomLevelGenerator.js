@@ -1,4 +1,4 @@
-// Generated: Monday, June 23, 2025 at 01:39:20 PM EDT
+// Generated: Thursday, July 17, 2025 at 02:50:58 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -8,7 +8,7 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     // Initialize a 2D array filled with empty spaces
     const levelGrid = Array.from({ length: levelHeight }, () => new Array(levelWidth).fill('.'));
     class Room {
-        constructor(id, extraSize, height = Math.floor(Math.random() * 10 + 4) + extraSize, width = Math.floor(Math.random() * 10 + 4) + extraSize, centerPos = [Math.floor(Math.random() * 30 + 1), Math.floor(Math.random() * 30 + 1)]) {
+        constructor(id, extraSize, height = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), width = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), centerPos = [Math.floor(Math.random() * 30 + 1), Math.floor(Math.random() * 30 + 1)]) {
             this.id = id;
             this.extraSize = extraSize;
             this.height = height;
@@ -159,8 +159,8 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
         const startRoom = rooms[Math.floor(Math.random() * rooms.length)];
         let placed = false;
         while (!placed) {
-            const y = startRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (startRoom.height - 2));
-            const x = startRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (startRoom.width - 2));
+            const y = startRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, startRoom.height - 2));
+            const x = startRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, startRoom.width - 2));
             if (y < levelHeight && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = '@';
                 placed = true;
@@ -194,8 +194,8 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
         }
         let placed = false;
         while (!placed) {
-            const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (furthestRoom.height - 2));
-            const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (furthestRoom.width - 2));
+            const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, furthestRoom.height - 2));
+            const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, furthestRoom.width - 2));
             if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = 'C';
                 placed = true;
@@ -211,8 +211,8 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
             // Select a random room
             const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
             // Get a random position within the room (avoiding walls)
-            const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (randomRoom.height - 2));
-            const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (randomRoom.width - 2));
+            const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.height - 2));
+            const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.width - 2));
             // Check if the position is valid and empty
             if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = 'F'; // Place an enemy

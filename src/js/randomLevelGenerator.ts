@@ -14,8 +14,8 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     constructor(
       public id: number,
       public extraSize: number,
-      public height: number = Math.floor(Math.random() * 10 + 4) + extraSize,
-      public width: number = Math.floor(Math.random() * 10 + 4) + extraSize,
+      public height: number = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize),
+      public width: number = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize),
       public centerPos: number[] = [Math.floor(Math.random() * 30 + 1), Math.floor(Math.random() * 30 + 1)]
     ) {
       this.corners = { topLeft: [], bottomRight: [] };
@@ -179,8 +179,8 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     const startRoom = rooms[Math.floor(Math.random() * rooms.length)];
     let placed = false;
     while (!placed) {
-      const y = startRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (startRoom.height - 2));
-      const x = startRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (startRoom.width - 2));
+      const y = startRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, startRoom.height - 2));
+      const x = startRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, startRoom.width - 2));
       if (y < levelHeight && x < levelWidth && levelGrid[y][x] === '') {
         levelGrid[y][x] = '@';
         placed = true;
@@ -217,8 +217,8 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
 
     let placed = false;
     while (!placed) {
-      const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (furthestRoom.height - 2));
-      const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (furthestRoom.width - 2));
+      const y = furthestRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, furthestRoom.height - 2));
+      const x = furthestRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, furthestRoom.width - 2));
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
         levelGrid[y][x] = 'C';
         placed = true;
@@ -237,8 +237,8 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
       const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
       
       // Get a random position within the room (avoiding walls)
-      const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * (randomRoom.height - 2));
-      const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * (randomRoom.width - 2));
+      const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.height - 2));
+      const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.width - 2));
       
       // Check if the position is valid and empty
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
