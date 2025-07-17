@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 06:00:01 PM EDT
+// Generated: Thursday, July 17, 2025 at 06:10:01 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -872,7 +872,7 @@ const goldTypes = [
         // Setup gold display
         goldDisplay.className = 'gold-display';
         goldText.className = 'gold-text';
-        goldText.textContent = `Gold found: ${sessionStats.goldLevel}`;
+        goldText.textContent = `Gold found: 0`;
         goldVisual.className = 'gold-visual';
         goldDisplay.appendChild(goldText);
         goldDisplay.appendChild(goldVisual);
@@ -984,15 +984,17 @@ const goldTypes = [
         messageBox === null || messageBox === void 0 ? void 0 : messageBox.appendChild(btnPlayAgain);
         // Animate gold pieces
         const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
+        let runningTotal = 0;
         sortedGold.forEach((gold, index) => {
             setTimeout(() => {
-                setTimeout(() => { }, 300); // Wait 300 ms to start the animation
+                runningTotal += gold.value;
+                goldText.textContent = `Gold found: ${runningTotal}`;
                 const goldPiece = document.createElement('div');
                 const goldType = goldTypes.find((g) => g.id === gold.type);
                 goldPiece.className = 'gold-piece';
                 goldPiece.style.cssText = `background-image: url('../imgs/${(goldType === null || goldType === void 0 ? void 0 : goldType.image) || 'gold-1.png'}'); margin-left: ${index > 0 ? '-12px' : '0px'}; z-index: ${100 + index};`;
                 goldVisual.appendChild(goldPiece);
-            }, index * 250);
+            }, 300 + index * 200);
         });
         // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
         if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {

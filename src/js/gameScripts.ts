@@ -1060,7 +1060,7 @@ const goldTypes: GoldType[] = [
     // Setup gold display
     goldDisplay.className = 'gold-display';
     goldText.className = 'gold-text';
-    goldText.textContent = `Gold found: ${sessionStats.goldLevel}`;
+    goldText.textContent = `Gold found: 0`;
     goldVisual.className = 'gold-visual';
 
     goldDisplay.appendChild(goldText);
@@ -1184,15 +1184,20 @@ const goldTypes: GoldType[] = [
 
     // Animate gold pieces
     const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
+    let runningTotal = 0;
     sortedGold.forEach((gold, index) => {
-      setTimeout(() => {
-        setTimeout(() => {}, 300); // Wait 300 ms to start the animation
-        const goldPiece = document.createElement('div');
-        const goldType = goldTypes.find((g) => g.id === gold.type);
-        goldPiece.className = 'gold-piece';
-        goldPiece.style.cssText = `background-image: url('../imgs/${goldType?.image || 'gold-1.png'}'); margin-left: ${index > 0 ? '-12px' : '0px'}; z-index: ${100 + index};`;
-        goldVisual.appendChild(goldPiece);
-      }, index * 250);
+      setTimeout(
+        () => {
+          runningTotal += gold.value;
+          goldText.textContent = `Gold found: ${runningTotal}`;
+          const goldPiece = document.createElement('div');
+          const goldType = goldTypes.find((g) => g.id === gold.type);
+          goldPiece.className = 'gold-piece';
+          goldPiece.style.cssText = `background-image: url('../imgs/${goldType?.image || 'gold-1.png'}'); margin-left: ${index > 0 ? '-12px' : '0px'}; z-index: ${100 + index};`;
+          goldVisual.appendChild(goldPiece);
+        },
+        300 + index * 200
+      );
     });
 
     // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
