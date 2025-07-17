@@ -46,6 +46,7 @@ const goldTypes: GoldType[] = [
   let enemyCounter = 0;
   let goldPieces: any[] = [];
   let goldCounter = 0;
+  let collectedGold: { value: number; type: string }[] = [];
   let player: Player;
   let viewingGoal = false;
   let options = {
@@ -148,6 +149,7 @@ const goldTypes: GoldType[] = [
     sessionStats.dead = false;
     sessionStats.goldTotal = 0;
     sessionStats.goldLevel = 0;
+    collectedGold = [];
 
     // Reset player object if it exists
     if (player) {
@@ -871,6 +873,7 @@ const goldTypes: GoldType[] = [
     sessionStats.goldLevel = 0;
     sessionStats.dead = false;
     sessionStats.retries += 1;
+    collectedGold = [];
   };
 
   const refreshScreen = () => {
@@ -898,6 +901,7 @@ const goldTypes: GoldType[] = [
     sessionStats.goldLevel = 0;
     enemyCounter = 0;
     goldCounter = 0;
+    collectedGold = [];
 
     // Erase screen
     eraseScreen();
@@ -1046,9 +1050,21 @@ const goldTypes: GoldType[] = [
 
   const displayVictoryMessage = () => {
     const messageBox = document.querySelector('#message');
+    const goldDisplay = document.createElement('div');
+    const goldText = document.createElement('div');
+    const goldVisual = document.createElement('div');
     const message = document.createElement('p');
     const btnPlayAgain = document.createElement('a');
     const btnNextLevel = document.createElement('a');
+
+    // Setup gold display
+    goldDisplay.className = 'gold-display';
+    goldText.className = 'gold-text';
+    goldText.textContent = `Gold found: ${sessionStats.goldLevel}`;
+    goldVisual.className = 'gold-visual';
+
+    goldDisplay.appendChild(goldText);
+    goldDisplay.appendChild(goldVisual);
 
     // This function closes the message window and removes the buttons.
     const closeMessageWindow = () => {
@@ -1060,6 +1076,7 @@ const goldTypes: GoldType[] = [
       messageBox?.classList.remove('show');
       setTimeout(() => {
         messageBox?.classList.remove('top');
+        messageBox?.removeChild(goldDisplay);
         messageBox?.removeChild(message);
         messageBox?.removeChild(btnPlayAgain);
         if (messageBox?.contains(btnNextLevel)) {
@@ -1111,7 +1128,7 @@ const goldTypes: GoldType[] = [
     btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
 
     // Set the main message text.
-    message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns and collected ' + sessionStats.goldLevel + ' gold. Good job!';
+    message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
 
     // Special message for the final level of normal mode.
     if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
@@ -1121,9 +1138,7 @@ const goldTypes: GoldType[] = [
           (currentLevel + 1) +
           ' in ' +
           sessionStats.turnsLevel +
-          ' turns, collected ' +
-          sessionStats.goldLevel +
-          ' gold this level, and beat the game in ' +
+          ' turns and beat the game in ' +
           sessionStats.turnsTotal +
           ' turns with ' +
           sessionStats.goldTotal +
@@ -1134,9 +1149,7 @@ const goldTypes: GoldType[] = [
           (currentLevel + 1) +
           ' in ' +
           sessionStats.turnsLevel +
-          ' turns, collected ' +
-          sessionStats.goldLevel +
-          ' gold this level, and beat the game in ' +
+          ' turns and beat the game in ' +
           sessionStats.turnsTotal +
           ' turns with ' +
           sessionStats.goldTotal +
@@ -1165,8 +1178,22 @@ const goldTypes: GoldType[] = [
     btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
 
     // Add the elements to the message box
+    messageBox?.appendChild(goldDisplay);
     messageBox?.appendChild(message);
     messageBox?.appendChild(btnPlayAgain);
+
+    // Animate gold pieces
+    const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
+    sortedGold.forEach((gold, index) => {
+      setTimeout(() => {
+        setTimeout(() => {}, 300); // Wait 300 ms to start the animation
+        const goldPiece = document.createElement('div');
+        const goldType = goldTypes.find((g) => g.id === gold.type);
+        goldPiece.className = 'gold-piece';
+        goldPiece.style.cssText = `background-image: url('../imgs/${goldType?.image || 'gold-1.png'}'); margin-left: ${index > 0 ? '-12px' : '0px'}; z-index: ${100 + index};`;
+        goldVisual.appendChild(goldPiece);
+      }, index * 250);
+    });
 
     // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
     if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
@@ -1208,16 +1235,17 @@ const goldTypes: GoldType[] = [
     messageBox?.classList.add('show');
 
     // Focus on the Next Level button if it exists, otherwise focus on Play Again button
+    const focusDelay = Math.max(100, sortedGold.length * 100 + 200);
     if (messageBox?.contains(btnNextLevel)) {
       setTimeout(() => {
         btnNextLevel.focus();
         currentFocusIndex = buttons.indexOf(btnNextLevel);
-      }, 100);
+      }, focusDelay);
     } else {
       setTimeout(() => {
         btnPlayAgain.focus();
         currentFocusIndex = 0;
-      }, 100);
+      }, focusDelay);
     }
   };
 
@@ -1371,7 +1399,7 @@ const goldTypes: GoldType[] = [
     textElement.classList.add('gold-text-animation');
     textElement.setAttribute('data-gold-value', `+${value}`);
     textElement.setAttribute('data-unique-id', uniqueId.toString());
-    
+
     const styleElement = document.createElement('style');
     const tileSize = sessionStats.zoomLevel * 8;
     styleElement.innerHTML = `
@@ -1398,10 +1426,10 @@ const goldTypes: GoldType[] = [
         width: 100%;
       }
     `;
-    
+
     document.querySelector('head')?.appendChild(styleElement);
     document.querySelector('#game-grid')?.appendChild(textElement);
-    
+
     setTimeout(() => {
       if (textElement.parentNode) {
         textElement.parentNode.removeChild(textElement);
@@ -1419,7 +1447,8 @@ const goldTypes: GoldType[] = [
       const goldObj = goldPieces[currentLevel][i];
       if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
         showGoldCollectionText(pos, goldObj.value);
-        
+
+        collectedGold.push({ value: goldObj.value, type: goldObj.type });
         sessionStats.goldLevel += goldObj.value;
         sessionStats.goldTotal += goldObj.value;
 
