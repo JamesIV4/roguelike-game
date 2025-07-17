@@ -16,7 +16,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
       public extraSize: number,
       public height: number = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize),
       public width: number = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize),
-      public centerPos: number[] = [Math.floor(Math.random() * 30 + 1), Math.floor(Math.random() * 30 + 1)]
+      public centerPos: number[] = [Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 25 + 5)]
     ) {
       this.corners = { topLeft: [], bottomRight: [] };
       this.calculateCorners();
@@ -231,14 +231,28 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     let placed: number = 0;
     let tries = 0;
     
+    // Calculate room weights based on walkable area
+    const roomWeights = rooms.map(room => (room.height - 2) * (room.width - 2));
+    const totalWeight = roomWeights.reduce((sum, weight) => sum + weight, 0);
+    
     // Distribute enemies among rooms
     while (placed < numEnemies && tries < 1000) {
-      // Select a random room
-      const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+      // Select a weighted random room
+      const randomValue = Math.random() * totalWeight;
+      let cumulativeWeight = 0;
+      let selectedRoom = rooms[0];
       
-      // Get a random position within the room (avoiding walls)
-      const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.height - 2));
-      const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.width - 2));
+      for (let i = 0; i < rooms.length; i++) {
+        cumulativeWeight += roomWeights[i];
+        if (randomValue <= cumulativeWeight) {
+          selectedRoom = rooms[i];
+          break;
+        }
+      }
+      
+      // Get a random position within the selected room (avoiding walls)
+      const y = selectedRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.height - 2));
+      const x = selectedRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.width - 2));
       
       // Check if the position is valid and empty
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {

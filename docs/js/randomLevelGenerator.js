@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 02:50:58 PM EDT
+// Generated: Thursday, July 17, 2025 at 04:15:23 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -8,7 +8,7 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     // Initialize a 2D array filled with empty spaces
     const levelGrid = Array.from({ length: levelHeight }, () => new Array(levelWidth).fill('.'));
     class Room {
-        constructor(id, extraSize, height = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), width = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), centerPos = [Math.floor(Math.random() * 30 + 1), Math.floor(Math.random() * 30 + 1)]) {
+        constructor(id, extraSize, height = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), width = Math.max(5, Math.floor(Math.random() * 10 + 4) + extraSize), centerPos = [Math.floor(Math.random() * 25 + 5), Math.floor(Math.random() * 25 + 5)]) {
             this.id = id;
             this.extraSize = extraSize;
             this.height = height;
@@ -206,13 +206,25 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     const placeEnemies = (numEnemies) => {
         let placed = 0;
         let tries = 0;
+        // Calculate room weights based on walkable area
+        const roomWeights = rooms.map(room => (room.height - 2) * (room.width - 2));
+        const totalWeight = roomWeights.reduce((sum, weight) => sum + weight, 0);
         // Distribute enemies among rooms
         while (placed < numEnemies && tries < 1000) {
-            // Select a random room
-            const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
-            // Get a random position within the room (avoiding walls)
-            const y = randomRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.height - 2));
-            const x = randomRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, randomRoom.width - 2));
+            // Select a weighted random room
+            const randomValue = Math.random() * totalWeight;
+            let cumulativeWeight = 0;
+            let selectedRoom = rooms[0];
+            for (let i = 0; i < rooms.length; i++) {
+                cumulativeWeight += roomWeights[i];
+                if (randomValue <= cumulativeWeight) {
+                    selectedRoom = rooms[i];
+                    break;
+                }
+            }
+            // Get a random position within the selected room (avoiding walls)
+            const y = selectedRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.height - 2));
+            const x = selectedRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.width - 2));
             // Check if the position is valid and empty
             if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
                 levelGrid[y][x] = 'F'; // Place an enemy
