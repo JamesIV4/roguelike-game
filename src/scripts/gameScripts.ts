@@ -322,6 +322,8 @@ const goldTypes: GoldType[] = [
 
     buttons.forEach((button) => {
       button.addEventListener('keydown', handleKeyNavigation);
+      // Add mouseover to focus the button for visual feedback
+      button.addEventListener('mouseenter', () => button.focus());
     });
 
     setTimeout(() => {
@@ -811,7 +813,7 @@ const goldTypes: GoldType[] = [
 
     const buttonElements: HTMLElement[] = [];
     buttons.forEach((buttonConfig) => {
-      const button = document.createElement('button');
+      const button = document.createElement('a');
       button.className = 'btn';
       button.textContent = buttonConfig.text;
       button.tabIndex = 0;
