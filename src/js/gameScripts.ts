@@ -1373,48 +1373,26 @@ const goldTypes: GoldType[] = [
 
   const showGoldCollectionText = (pos: number[], value: number) => {
     const textElement = document.createElement('div');
-    const uniqueId = Date.now() + Math.random();
+    const tileSize = sessionStats.zoomLevel * 8;
+
+    // Add the class and the data-attribute that the CSS will use.
     textElement.classList.add('gold-text-animation');
     textElement.setAttribute('data-gold-value', `+${value}`);
-    textElement.setAttribute('data-unique-id', uniqueId.toString());
 
-    const styleElement = document.createElement('style');
-    const tileSize = sessionStats.zoomLevel * 8;
-    styleElement.innerHTML = `
-      .gold-text-animation[data-unique-id="${uniqueId}"] {
-        position: absolute;
-        top: ${pos[0] * tileSize}px;
-        left: ${pos[1] * tileSize}px;
-        width: ${tileSize}px;
-        height: ${tileSize}px;
-        pointer-events: none;
-        z-index: 200;
-      }
-      .gold-text-animation[data-unique-id="${uniqueId}"]::after {
-        content: "+${value}";
-        position: absolute;
-        color: #ffd700;
-        font-family: Rajdhani, sans-serif;
-        font-size: ${Math.max(sessionStats.zoomLevel * 4, 24)}px;
-        font-weight: 700;
-        text-shadow: 0 0 3px #000;
-        animation: goldTextFloat 1s ease-out forwards;
-        display: block;
-        text-align: center;
-        width: 100%;
-      }
-    `;
+    // Apply dynamic styles directly to the element.
+    // The animation and other static styles should be in your main CSS file.
+    textElement.style.top = `${pos[0] * tileSize}px`;
+    textElement.style.left = `${pos[1] * tileSize}px`;
+    textElement.style.width = `${tileSize}px`;
+    textElement.style.height = `${tileSize}px`;
+    textElement.style.fontSize = `${Math.max(sessionStats.zoomLevel * 4, 24)}px`;
 
-    document.querySelector('head')?.appendChild(styleElement);
+    // Add the new element to the grid.
     document.querySelector('#game-grid')?.appendChild(textElement);
 
+    // Remove the element after the animation finishes.
     setTimeout(() => {
-      if (textElement.parentNode) {
-        textElement.parentNode.removeChild(textElement);
-      }
-      if (styleElement.parentNode) {
-        styleElement.parentNode.removeChild(styleElement);
-      }
+      textElement.parentNode?.removeChild(textElement);
     }, 1000);
   };
 

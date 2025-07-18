@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 08:11:35 PM EDT
+// Generated: Thursday, July 17, 2025 at 08:22:35 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -1146,47 +1146,25 @@ const goldTypes = [
         goldStyles.innerHTML = allGoldStyles;
     };
     const showGoldCollectionText = (pos, value) => {
-        var _a, _b;
+        var _a;
         const textElement = document.createElement('div');
-        const uniqueId = Date.now() + Math.random();
+        const tileSize = sessionStats.zoomLevel * 8;
+        // Add the class and the data-attribute that the CSS will use.
         textElement.classList.add('gold-text-animation');
         textElement.setAttribute('data-gold-value', `+${value}`);
-        textElement.setAttribute('data-unique-id', uniqueId.toString());
-        const styleElement = document.createElement('style');
-        const tileSize = sessionStats.zoomLevel * 8;
-        styleElement.innerHTML = `
-      .gold-text-animation[data-unique-id="${uniqueId}"] {
-        position: absolute;
-        top: ${pos[0] * tileSize}px;
-        left: ${pos[1] * tileSize}px;
-        width: ${tileSize}px;
-        height: ${tileSize}px;
-        pointer-events: none;
-        z-index: 200;
-      }
-      .gold-text-animation[data-unique-id="${uniqueId}"]::after {
-        content: "+${value}";
-        position: absolute;
-        color: #ffd700;
-        font-family: Rajdhani, sans-serif;
-        font-size: ${Math.max(sessionStats.zoomLevel * 4, 24)}px;
-        font-weight: 700;
-        text-shadow: 0 0 3px #000;
-        animation: goldTextFloat 1s ease-out forwards;
-        display: block;
-        text-align: center;
-        width: 100%;
-      }
-    `;
-        (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(styleElement);
-        (_b = document.querySelector('#game-grid')) === null || _b === void 0 ? void 0 : _b.appendChild(textElement);
+        // Apply dynamic styles directly to the element.
+        // The animation and other static styles should be in your main CSS file.
+        textElement.style.top = `${pos[0] * tileSize}px`;
+        textElement.style.left = `${pos[1] * tileSize}px`;
+        textElement.style.width = `${tileSize}px`;
+        textElement.style.height = `${tileSize}px`;
+        textElement.style.fontSize = `${Math.max(sessionStats.zoomLevel * 4, 24)}px`;
+        // Add the new element to the grid.
+        (_a = document.querySelector('#game-grid')) === null || _a === void 0 ? void 0 : _a.appendChild(textElement);
+        // Remove the element after the animation finishes.
         setTimeout(() => {
-            if (textElement.parentNode) {
-                textElement.parentNode.removeChild(textElement);
-            }
-            if (styleElement.parentNode) {
-                styleElement.parentNode.removeChild(styleElement);
-            }
+            var _a;
+            (_a = textElement.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(textElement);
         }, 1000);
     };
     const collectGoldAt = (pos) => {

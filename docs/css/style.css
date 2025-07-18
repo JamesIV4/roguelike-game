@@ -339,6 +339,23 @@ body {
 #display-wrapper #game-grid.instant-camera .row .cell.enemy::after, #display-wrapper #game-grid.instant-camera .row .cell.player::after {
   transition: none !important;
 }
+#display-wrapper #game-grid .gold-text-animation {
+  pointer-events: none;
+  position: absolute;
+  z-index: 200;
+}
+#display-wrapper #game-grid .gold-text-animation::after {
+  animation: goldTextFloat 1s ease-out forwards;
+  color: #ffd700;
+  content: attr(data-gold-value);
+  display: block;
+  font-family: Rajdhani, sans-serif;
+  font-weight: 700;
+  position: absolute;
+  text-align: center;
+  text-shadow: 0 0 3px #000;
+  width: 100%;
+}
 #display-wrapper #game-grid .row {
   display: table-row;
 }

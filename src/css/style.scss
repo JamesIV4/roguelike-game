@@ -382,6 +382,26 @@ body {
       }
     }
 
+    .gold-text-animation {
+      pointer-events: none;
+      position: absolute;
+      z-index: 200;
+
+      &::after {
+        // Use the data-attribute to set the text content
+        animation: goldTextFloat 1s ease-out forwards;
+        color: #ffd700;
+        content: attr(data-gold-value);
+        display: block;
+        font-family: Rajdhani, sans-serif;
+        font-weight: 700;
+        position: absolute;
+        text-align: center;
+        text-shadow: 0 0 3px #000;
+        width: 100%;
+      }
+    }
+
     .row {
       display: table-row;
 
