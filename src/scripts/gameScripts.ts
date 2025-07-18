@@ -1571,7 +1571,8 @@ const goldTypes: GoldType[] = [
     yDown = evt.touches[0].clientY;
   };
 
-  const handleTouchMove = (evt: TouchEvent) => {
+  // Replaced 'handleTouchMove' with 'handleTouchEnd'.
+  const handleTouchEnd = (evt: TouchEvent) => {
     if (!xDown || !yDown) {
       return;
     }
@@ -1580,11 +1581,22 @@ const goldTypes: GoldType[] = [
       return;
     }
 
-    let xUp = evt.touches[0].clientX;
-    let yUp = evt.touches[0].clientY;
+    // Use changedTouches which is correct for touchend events
+    const xUp = evt.changedTouches[0].clientX;
+    const yUp = evt.changedTouches[0].clientY;
 
-    let xDiff = xDown - xUp;
-    let yDiff = yDown - yUp;
+    const xDiff = xDown - xUp;
+    const yDiff = yDown - yUp;
+
+    // Add a threshold to prevent accidental moves on small taps
+    const swipeThreshold = 10; // pixels
+
+    // Check if the swipe is significant enough to be considered a move
+    if (Math.abs(xDiff) < swipeThreshold && Math.abs(yDiff) < swipeThreshold) {
+      xDown = null;
+      yDown = null;
+      return; // It's a tap, not a swipe, so we do nothing.
+    }
 
     /* Determine touch direction */
     if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
@@ -1605,19 +1617,19 @@ const goldTypes: GoldType[] = [
           movePlayer(3); // Down
         }
       }
-
-      /* reset values */
-      xDown = null;
-      yDown = null;
-
       newTurn();
     }
+
+    /* reset values */
+    xDown = null;
+    yDown = null;
   };
   // End touch controls
 
   // Start touch controls
   document.addEventListener('touchstart', handleTouchStart, false);
-  document.addEventListener('touchmove', handleTouchMove, false);
+  // MODIFIED: Changed 'touchmove' to 'touchend' and linked it to the new handleTouchEnd function.
+  document.addEventListener('touchend', handleTouchEnd, false);
 
   document.addEventListener('keydown', (e) => {
     const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', '.', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];

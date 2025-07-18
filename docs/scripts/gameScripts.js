@@ -1,4 +1,4 @@
-// Generated: Friday, July 18, 2025 at 05:28:56 PM EDT
+// Generated: Friday, July 18, 2025 at 05:43:48 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -1314,7 +1314,8 @@ const goldTypes = [
         xDown = evt.touches[0].clientX;
         yDown = evt.touches[0].clientY;
     };
-    const handleTouchMove = (evt) => {
+    // Replaced 'handleTouchMove' with 'handleTouchEnd'.
+    const handleTouchEnd = (evt) => {
         var _a;
         if (!xDown || !yDown) {
             return;
@@ -1322,10 +1323,19 @@ const goldTypes = [
         if (sessionStats.dead) {
             return;
         }
-        let xUp = evt.touches[0].clientX;
-        let yUp = evt.touches[0].clientY;
-        let xDiff = xDown - xUp;
-        let yDiff = yDown - yUp;
+        // Use changedTouches which is correct for touchend events
+        const xUp = evt.changedTouches[0].clientX;
+        const yUp = evt.changedTouches[0].clientY;
+        const xDiff = xDown - xUp;
+        const yDiff = yDown - yUp;
+        // Add a threshold to prevent accidental moves on small taps
+        const swipeThreshold = 10; // pixels
+        // Check if the swipe is significant enough to be considered a move
+        if (Math.abs(xDiff) < swipeThreshold && Math.abs(yDiff) < swipeThreshold) {
+            xDown = null;
+            yDown = null;
+            return; // It's a tap, not a swipe, so we do nothing.
+        }
         /* Determine touch direction */
         if (!sessionStats.dead && !((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show'))) {
             if (Math.abs(xDiff) > Math.abs(yDiff)) {
@@ -1348,16 +1358,17 @@ const goldTypes = [
                     movePlayer(3); // Down
                 }
             }
-            /* reset values */
-            xDown = null;
-            yDown = null;
             newTurn();
         }
+        /* reset values */
+        xDown = null;
+        yDown = null;
     };
     // End touch controls
     // Start touch controls
     document.addEventListener('touchstart', handleTouchStart, false);
-    document.addEventListener('touchmove', handleTouchMove, false);
+    // MODIFIED: Changed 'touchmove' to 'touchend' and linked it to the new handleTouchEnd function.
+    document.addEventListener('touchend', handleTouchEnd, false);
     document.addEventListener('keydown', (e) => {
         var _a;
         const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', '.', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
