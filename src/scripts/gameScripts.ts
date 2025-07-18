@@ -39,16 +39,72 @@ const goldTypes: GoldType[] = [
   };
   const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
-  // --- Gold Pickup Sound Effect Helper ---
-  const playGoldPickupSound = (goldType: string) => {
-    let audio: HTMLAudioElement;
-    if (['g8', 'g9', 'g10'].includes(goldType)) {
-      audio = new Audio('sfx/pickup-2.mp3');
-    } else {
-      audio = new Audio('sfx/pickup-1.mp3');
-    }
+  // --- Gold Pickup, Success, and Gold Summary Sound Effect Helpers (with audio pool for mobile reliability) ---
+  const goldPickupAudioPool = {
+    'pickup-1': Array.from({ length: 4 }, () => new Audio('sfx/pickup-1.mp3')),
+    'pickup-2': Array.from({ length: 2 }, () => new Audio('sfx/pickup-2.mp3'))
+  };
+  let goldPickupAudioIndex = { 'pickup-1': 0, 'pickup-2': 0 };
+
+  const successAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/success-1.mp3'));
+  let successAudioIndex = 0;
+
+  const goldSummaryAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/gold-summary.mp3'));
+  let goldSummaryAudioIndex = 0;
+
+  const dieAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/die.mp3'));
+  let dieAudioIndex = 0;
+
+  // --- Walk Sound Effect Helper (with audio pool for mobile reliability) ---
+  const walkAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/walk.mp3'));
+  let walkAudioIndex = 0;
+  const playWalkSound = () => {
+    const audio = walkAudioPool[walkAudioIndex];
+    audio.currentTime = 0;
     audio.volume = 0.7;
-    audio.play();
+    audio.play().catch(() => {});
+    walkAudioIndex = (walkAudioIndex + 1) % walkAudioPool.length;
+  };
+
+  const playGoldPickupSound = (goldType: string) => {
+    const soundKey: 'pickup-1' | 'pickup-2' = ['g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
+    const pool = goldPickupAudioPool[soundKey];
+    let idx = goldPickupAudioIndex[soundKey];
+    const audio = pool[idx];
+    // Reset audio if needed
+    audio.currentTime = 0;
+    audio.volume = 0.7;
+    audio.play().catch(() => {}); // Ignore play errors
+    goldPickupAudioIndex[soundKey] = (idx + 1) % pool.length;
+  };
+
+  const playSuccessSound = () => {
+    const audio = successAudioPool[successAudioIndex];
+    audio.currentTime = 0;
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+    successAudioIndex = (successAudioIndex + 1) % successAudioPool.length;
+  };
+
+  const playGoldSummarySound = () => {
+    const audio = goldSummaryAudioPool[goldSummaryAudioIndex];
+    audio.currentTime = 0;
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+    goldSummaryAudioIndex = (goldSummaryAudioIndex + 1) % goldSummaryAudioPool.length;
+    return audio;
+  };
+  const stopGoldSummarySound = (audio: HTMLAudioElement) => {
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const playDieSound = () => {
+    const audio = dieAudioPool[dieAudioIndex];
+    audio.currentTime = 0;
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+    dieAudioIndex = (dieAudioIndex + 1) % dieAudioPool.length;
   };
 
   // Game variables
@@ -784,6 +840,9 @@ const goldTypes: GoldType[] = [
         collectGoldAt(newPos);
       }
 
+      // Play walk sound effect
+      playWalkSound();
+
       // Update the visuals
       renderPlayer(newPos);
 
@@ -1047,6 +1106,7 @@ const goldTypes: GoldType[] = [
   };
 
   const displayVictoryMessage = () => {
+    playSuccessSound();
     const messageBox = document.querySelector('#message');
     const goldDisplay = document.createElement('div');
     const goldText = document.createElement('div');
@@ -1183,6 +1243,8 @@ const goldTypes: GoldType[] = [
     // Animate gold pieces
     const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
     let runningTotal = 0;
+    // Play gold summary sound effect while animating gold
+    const goldSummaryAudio = playGoldSummarySound();
     sortedGold.forEach((gold, index) => {
       setTimeout(
         () => {
@@ -1196,6 +1258,19 @@ const goldTypes: GoldType[] = [
         300 + index * 200
       );
     });
+    // Stop gold summary sound after animation finishes
+    if (sortedGold.length > 0) {
+      setTimeout(
+        () => {
+          stopGoldSummarySound(goldSummaryAudio);
+        },
+        300 + (sortedGold.length - 1) * 200 + 400
+      );
+    } else {
+      setTimeout(() => {
+        stopGoldSummarySound(goldSummaryAudio);
+      }, 700);
+    }
 
     // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
     if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
@@ -1263,6 +1338,8 @@ const goldTypes: GoldType[] = [
   };
 
   const death = () => {
+    playDieSound();
+
     const messageBox = document.querySelector('#message');
     const message = document.createElement('p');
     const button = document.createElement('a');
