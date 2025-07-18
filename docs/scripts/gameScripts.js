@@ -1,4 +1,4 @@
-// Generated: Friday, July 18, 2025 at 05:25:28 PM EDT
+// Generated: Friday, July 18, 2025 at 05:28:56 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -38,7 +38,7 @@ const goldTypes = [
     const playWalkSound = () => {
         const audio = walkAudioPool[walkAudioIndex];
         audio.currentTime = 0;
-        audio.volume = 0.7;
+        audio.volume = 0.5;
         audio.play().catch(() => { });
         walkAudioIndex = (walkAudioIndex + 1) % walkAudioPool.length;
     };
@@ -56,14 +56,14 @@ const goldTypes = [
     const playSuccessSound = () => {
         const audio = successAudioPool[successAudioIndex];
         audio.currentTime = 0;
-        audio.volume = 0.8;
+        audio.volume = 1;
         audio.play().catch(() => { });
         successAudioIndex = (successAudioIndex + 1) % successAudioPool.length;
     };
     const playGoldSummarySound = () => {
         const audio = goldSummaryAudioPool[goldSummaryAudioIndex];
         audio.currentTime = 0;
-        audio.volume = 0.6;
+        audio.volume = 0.5;
         audio.play().catch(() => { });
         goldSummaryAudioIndex = (goldSummaryAudioIndex + 1) % goldSummaryAudioPool.length;
         return audio;
