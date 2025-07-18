@@ -89,7 +89,7 @@ const goldTypes: GoldType[] = [
   const playGoldSummarySound = () => {
     const audio = goldSummaryAudioPool[goldSummaryAudioIndex];
     audio.currentTime = 0;
-    audio.volume = 0.8;
+    audio.volume = 0.6;
     audio.play().catch(() => {});
     goldSummaryAudioIndex = (goldSummaryAudioIndex + 1) % goldSummaryAudioPool.length;
     return audio;
@@ -106,6 +106,57 @@ const goldTypes: GoldType[] = [
     audio.play().catch(() => {});
     dieAudioIndex = (dieAudioIndex + 1) % dieAudioPool.length;
   };
+
+  // --- UI Button Sound Effects (with audio pool for mobile reliability) ---
+  const buttonClickAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/button-click.mp3'));
+  let buttonClickAudioIndex = 0;
+  const playButtonClickSound = () => {
+    const audio = buttonClickAudioPool[buttonClickAudioIndex];
+    audio.currentTime = 0;
+    audio.volume = 0.7;
+    audio.play().catch(() => {});
+    buttonClickAudioIndex = (buttonClickAudioIndex + 1) % buttonClickAudioPool.length;
+  };
+
+  const uiHoverAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/ui-hover.mp3'));
+  let uiHoverAudioIndex = 0;
+  const playUIHoverSound = () => {
+    const audio = uiHoverAudioPool[uiHoverAudioIndex];
+    audio.currentTime = 0;
+    audio.volume = 0.7;
+    audio.play().catch(() => {});
+    uiHoverAudioIndex = (uiHoverAudioIndex + 1) % uiHoverAudioPool.length;
+  };
+
+  // Attach global event listeners for button click and hover sounds
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target as HTMLElement;
+    if (target && target.classList.contains('btn')) {
+      playButtonClickSound();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    // Play click sound for keyboard activation (Enter/Space) on .btn
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.classList.contains('btn')) {
+      playButtonClickSound();
+    }
+  });
+  document.addEventListener(
+    'pointerenter',
+    (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.classList.contains('btn')) {
+        playUIHoverSound();
+      }
+    },
+    true
+  );
+  document.addEventListener('focusin', (e) => {
+    const target = e.target as HTMLElement;
+    if (target && target.classList.contains('btn')) {
+      playUIHoverSound();
+    }
+  });
 
   // Game variables
   let currentLevel = 0;
