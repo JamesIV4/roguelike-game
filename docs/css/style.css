@@ -171,6 +171,36 @@ body {
   position: relative;
   width: 24px;
 }
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g1 {
+  background-image: url("../imgs/gold-1.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g2 {
+  background-image: url("../imgs/gold-2.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g3 {
+  background-image: url("../imgs/gold-3.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g4 {
+  background-image: url("../imgs/gold-4.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g5 {
+  background-image: url("../imgs/gold-5.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g6 {
+  background-image: url("../imgs/gold-6.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g7 {
+  background-image: url("../imgs/gold-7.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g8 {
+  background-image: url("../imgs/gold-8.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g9 {
+  background-image: url("../imgs/gold-9.png");
+}
+#display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece.g10 {
+  background-image: url("../imgs/gold-10.png");
+}
 @media all and (width <= 767px) {
   #display-wrapper #ui-display #message .gold-display .gold-visual .gold-piece {
     background-size: cover;

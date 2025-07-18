@@ -184,6 +184,46 @@ body {
             position: relative;
             width: 24px;
 
+            &.g1 {
+              background-image: url('../imgs/gold-1.png');
+            }
+
+            &.g2 {
+              background-image: url('../imgs/gold-2.png');
+            }
+
+            &.g3 {
+              background-image: url('../imgs/gold-3.png');
+            }
+
+            &.g4 {
+              background-image: url('../imgs/gold-4.png');
+            }
+
+            &.g5 {
+              background-image: url('../imgs/gold-5.png');
+            }
+
+            &.g6 {
+              background-image: url('../imgs/gold-6.png');
+            }
+
+            &.g7 {
+              background-image: url('../imgs/gold-7.png');
+            }
+
+            &.g8 {
+              background-image: url('../imgs/gold-8.png');
+            }
+
+            &.g9 {
+              background-image: url('../imgs/gold-9.png');
+            }
+
+            &.g10 {
+              background-image: url('../imgs/gold-10.png');
+            }
+
             @media all and (width <= 767px) {
               background-size: cover;
             }
