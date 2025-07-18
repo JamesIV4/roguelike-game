@@ -20,10 +20,7 @@ const typescript = () => {
 
 // Compile SASS files
 const compileSass = () => {
-  return gulp
-    .src('src/css/**/*.scss')
-    .pipe(sassCompiler().on('error', sassCompiler.logError))
-    .pipe(gulp.dest('docs/css'));
+  return gulp.src('src/css/**/*.scss').pipe(sassCompiler().on('error', sassCompiler.logError)).pipe(gulp.dest('docs/css'));
 };
 
 // Copy HTML files
@@ -33,9 +30,12 @@ const html = () => {
 
 // Copy image files
 const images = () => {
-  return gulp
-    .src('src/imgs/**/*', { encoding: false })
-    .pipe(gulp.dest('docs/imgs'));
+  return gulp.src('src/imgs/**/*', { encoding: false }).pipe(gulp.dest('docs/imgs'));
+};
+
+// Copy sound files
+const sounds = () => {
+  return gulp.src('src/sfx/**/*', { encoding: false }).pipe(gulp.dest('docs/sfx'));
 };
 
 // Add timestamp to JS files
@@ -58,14 +58,7 @@ const addTimestamp = () => {
 };
 
 // Build task
-const build = gulp.series(
-  clean,
-  typescript,
-  compileSass,
-  html,
-  images,
-  addTimestamp
-);
+const build = gulp.series(clean, typescript, compileSass, html, images, sounds, addTimestamp);
 
 // Watch task
 const watch = () => {
@@ -73,6 +66,7 @@ const watch = () => {
   gulp.watch('src/css/**/*.scss', compileSass);
   gulp.watch('src/**/*.html', html);
   gulp.watch('src/imgs/**/*', images);
+  gulp.watch('src/sfx/**/*', sounds);
 };
 
 // Serve task
@@ -87,6 +81,7 @@ const serve = gulp.series(build, () => {
   gulp.watch('src/css/**/*.scss', gulp.series(compileSass, bs.reload));
   gulp.watch('src/**/*.html', gulp.series(html, bs.reload));
   gulp.watch('src/imgs/**/*', gulp.series(images, bs.reload));
+  gulp.watch('src/sfx/**/*', gulp.series(sounds, bs.reload));
 });
 
 export { build, watch, serve };

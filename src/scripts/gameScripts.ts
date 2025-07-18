@@ -39,6 +39,18 @@ const goldTypes: GoldType[] = [
   };
   const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
+  // --- Gold Pickup Sound Effect Helper ---
+  const playGoldPickupSound = (goldType: string) => {
+    let audio: HTMLAudioElement;
+    if (['g8', 'g9', 'g10'].includes(goldType)) {
+      audio = new Audio('sfx/pickup-2.mp3');
+    } else {
+      audio = new Audio('sfx/pickup-1.mp3');
+    }
+    audio.volume = 0.7;
+    audio.play();
+  };
+
   // Game variables
   let currentLevel = 0;
   let levelStore: any[] = [];
@@ -373,7 +385,6 @@ const goldTypes: GoldType[] = [
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
             break;
           case 'C':
-            elemCell.style.backgroundColor = '#fff700';
             elemCell.classList.add('floor');
             elemCell.classList.add('goal');
 
@@ -1402,6 +1413,9 @@ const goldTypes: GoldType[] = [
       const goldObj = goldPieces[currentLevel][i];
       if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
         showGoldCollectionText(pos, goldObj.value);
+
+        // Play gold pickup sound effect
+        playGoldPickupSound(goldObj.type);
 
         collectedGold.push({ value: goldObj.value, type: goldObj.type });
         sessionStats.goldLevel += goldObj.value;

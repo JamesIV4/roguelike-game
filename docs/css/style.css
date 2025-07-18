@@ -412,6 +412,9 @@ body {
 #display-wrapper #game-grid .row .cell.floor {
   background-image: url("../imgs/floor-empty-1px.gif");
 }
+#display-wrapper #game-grid .row .cell.floor.goal {
+  background-image: url("../imgs/stairs-down-11.png") !important;
+}
 #display-wrapper #game-grid .row .cell.floor.sidewall.top {
   background-image: url("../imgs/floor-edge-top.png");
 }
@@ -514,9 +517,6 @@ body {
 }
 #display-wrapper #game-grid .row .cell.floor.gold.g10::after {
   background-image: url("../imgs/gold-10.png");
-}
-#display-wrapper #game-grid .row .cell.floor.goal {
-  background-image: none !important;
 }
 
 @keyframes goldTextFloat {

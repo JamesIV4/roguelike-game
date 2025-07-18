@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 08:29:32 PM EDT
+// Generated: Friday, July 18, 2025 at 04:05:31 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -20,6 +20,18 @@ const goldTypes = [
         return window.matchMedia('(max-width: 767px)').matches;
     };
     const handleKeyboardConfirm = (e) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
+    // --- Gold Pickup Sound Effect Helper ---
+    const playGoldPickupSound = (goldType) => {
+        let audio;
+        if (['g8', 'g9', 'g10'].includes(goldType)) {
+            audio = new Audio('sfx/pickup-2.mp3');
+        }
+        else {
+            audio = new Audio('sfx/pickup-1.mp3');
+        }
+        audio.volume = 0.7;
+        audio.play();
+    };
     // Game variables
     let currentLevel = 0;
     let levelStore = [];
@@ -290,7 +302,6 @@ const goldTypes = [
                         levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
                         break;
                     case 'C':
-                        elemCell.style.backgroundColor = '#fff700';
                         elemCell.classList.add('floor');
                         elemCell.classList.add('goal');
                         levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
@@ -1172,6 +1183,8 @@ const goldTypes = [
             const goldObj = goldPieces[currentLevel][i];
             if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
                 showGoldCollectionText(pos, goldObj.value);
+                // Play gold pickup sound effect
+                playGoldPickupSound(goldObj.type);
                 collectedGold.push({ value: goldObj.value, type: goldObj.type });
                 sessionStats.goldLevel += goldObj.value;
                 sessionStats.goldTotal += goldObj.value;
