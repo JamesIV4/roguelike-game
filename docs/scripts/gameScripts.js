@@ -1,4 +1,4 @@
-// Generated: Friday, July 18, 2025 at 06:18:50 PM EDT
+// Generated: Friday, July 18, 2025 at 06:40:48 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -292,12 +292,8 @@ const goldTypes = [
             }, 1000);
         };
         const handleStartButton = (gameMode, e) => __awaiter(void 0, void 0, void 0, function* () {
-            if (handleKeyboardConfirm(e)) {
-                const btn = e === null || e === void 0 ? void 0 : e.currentTarget;
-                const originalText = btn.textContent;
-                btn.textContent = 'Loading...';
-                yield initAudioSystem();
-                btn.textContent = originalText;
+            // Allow both mouse clicks and keyboard (Enter/Space) to trigger
+            if (!e || e.type === 'click' || handleKeyboardConfirm(e)) {
                 closeTitlescreen();
                 sessionStats.mode = gameMode;
                 beginGame();
@@ -708,7 +704,7 @@ const goldTypes = [
         }
         const buttonElements = [];
         buttons.forEach((buttonConfig) => {
-            const button = document.createElement('a');
+            const button = document.createElement('button');
             button.className = 'btn';
             button.textContent = buttonConfig.text;
             button.tabIndex = 0;
@@ -775,9 +771,9 @@ const goldTypes = [
         const goldText = document.createElement('div');
         const goldVisual = document.createElement('div');
         const message = document.createElement('p');
-        const btnPlayAgain = document.createElement('a');
-        const btnNextLevel = document.createElement('a');
-        const btnBackToTitle = document.createElement('a');
+        const btnPlayAgain = document.createElement('button');
+        const btnNextLevel = document.createElement('button');
+        const btnBackToTitle = document.createElement('button');
         // Setup gold display
         goldDisplay.className = 'gold-display';
         goldText.className = 'gold-text';
@@ -812,25 +808,29 @@ const goldTypes = [
         btnPlayAgain.textContent = 'Play again';
         btnPlayAgain.setAttribute('tabindex', '0');
         const handleBtnPlayAgain = (e) => {
-            if (handleKeyboardConfirm(e)) {
+            var _a;
+            if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
                 closeMessageWindow();
                 playAgainOrNewGame();
             }
         };
-        btnPlayAgain.addEventListener('click', () => handleBtnPlayAgain());
+        btnPlayAgain.addEventListener('click', handleBtnPlayAgain);
         btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
         btnNextLevel.classList.add('btn');
         btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
         btnNextLevel.setAttribute('tabindex', '0');
         const handleNextLevelBtn = (e) => {
-            if (handleKeyboardConfirm(e)) {
+            var _a;
+            if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
                 closeMessageWindow();
                 setTimeout(() => {
                     goToNewLevel(currentLevel + 1);
                 }, 360);
             }
         };
-        btnNextLevel.addEventListener('click', () => handleNextLevelBtn());
+        btnNextLevel.addEventListener('click', handleNextLevelBtn);
         btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
         message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
         if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
@@ -866,14 +866,16 @@ const goldTypes = [
         btnBackToTitle.textContent = 'Back to Title Screen';
         btnBackToTitle.setAttribute('tabindex', '0');
         const handleBackToTitleScreen = (e) => {
-            if (handleKeyboardConfirm(e)) {
+            var _a;
+            if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
                 closeMessageWindow();
                 setTimeout(() => {
                     backToTitleScreen();
                 }, 360);
             }
         };
-        btnBackToTitle.addEventListener('click', () => handleBackToTitleScreen());
+        btnBackToTitle.addEventListener('click', handleBackToTitleScreen);
         btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
         messageBox.appendChild(goldDisplay);
         messageBox.appendChild(message);
@@ -1067,4 +1069,5 @@ const goldTypes = [
     });
     window.addEventListener('resize', centerPlayerInScreen);
     drawTitleScreen();
+    initAudioSystem();
 })();

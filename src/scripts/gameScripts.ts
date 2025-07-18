@@ -343,14 +343,8 @@ const goldTypes: GoldType[] = [
     };
 
     const handleStartButton = async (gameMode: 'normal' | 'procedural', e?: KeyboardEvent | MouseEvent) => {
-      if (handleKeyboardConfirm(e as KeyboardEvent)) {
-        const btn = e?.currentTarget as HTMLElement;
-        const originalText = btn.textContent;
-        btn.textContent = 'Loading...';
-
-        await initAudioSystem();
-
-        btn.textContent = originalText;
+      // Allow both mouse clicks and keyboard (Enter/Space) to trigger
+      if (!e || e.type === 'click' || handleKeyboardConfirm(e as KeyboardEvent)) {
         closeTitlescreen();
         sessionStats.mode = gameMode;
         beginGame();
@@ -817,7 +811,7 @@ const goldTypes: GoldType[] = [
 
     const buttonElements: HTMLElement[] = [];
     buttons.forEach((buttonConfig) => {
-      const button = document.createElement('a');
+      const button = document.createElement('button');
       button.className = 'btn';
       button.textContent = buttonConfig.text;
       button.tabIndex = 0;
@@ -891,9 +885,9 @@ const goldTypes: GoldType[] = [
     const goldText = document.createElement('div');
     const goldVisual = document.createElement('div');
     const message = document.createElement('p');
-    const btnPlayAgain = document.createElement('a');
-    const btnNextLevel = document.createElement('a');
-    const btnBackToTitle = document.createElement('a');
+    const btnPlayAgain = document.createElement('button');
+    const btnNextLevel = document.createElement('button');
+    const btnBackToTitle = document.createElement('button');
 
     // Setup gold display
     goldDisplay.className = 'gold-display';
@@ -933,27 +927,29 @@ const goldTypes: GoldType[] = [
     btnPlayAgain.classList.add('btn');
     btnPlayAgain.textContent = 'Play again';
     btnPlayAgain.setAttribute('tabindex', '0');
-    const handleBtnPlayAgain = (e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
+    const handleBtnPlayAgain = (e?: Event) => {
+      if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+        e?.preventDefault?.();
         closeMessageWindow();
         playAgainOrNewGame();
       }
     };
-    btnPlayAgain.addEventListener('click', () => handleBtnPlayAgain());
+    btnPlayAgain.addEventListener('click', handleBtnPlayAgain);
     btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
 
     btnNextLevel.classList.add('btn');
     btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
     btnNextLevel.setAttribute('tabindex', '0');
-    const handleNextLevelBtn = (e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
+    const handleNextLevelBtn = (e?: Event) => {
+      if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+        e?.preventDefault?.();
         closeMessageWindow();
         setTimeout(() => {
           goToNewLevel(currentLevel + 1);
         }, 360);
       }
     };
-    btnNextLevel.addEventListener('click', () => handleNextLevelBtn());
+    btnNextLevel.addEventListener('click', handleNextLevelBtn);
     btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
 
     message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
@@ -989,15 +985,16 @@ const goldTypes: GoldType[] = [
     btnBackToTitle.classList.add('btn');
     btnBackToTitle.textContent = 'Back to Title Screen';
     btnBackToTitle.setAttribute('tabindex', '0');
-    const handleBackToTitleScreen = (e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
+    const handleBackToTitleScreen = (e?: Event) => {
+      if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
+        e?.preventDefault?.();
         closeMessageWindow();
         setTimeout(() => {
           backToTitleScreen();
         }, 360);
       }
     };
-    btnBackToTitle.addEventListener('click', () => handleBackToTitleScreen());
+    btnBackToTitle.addEventListener('click', handleBackToTitleScreen);
     btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
 
     messageBox.appendChild(goldDisplay);
@@ -1215,4 +1212,5 @@ const goldTypes: GoldType[] = [
   window.addEventListener('resize', centerPlayerInScreen);
 
   drawTitleScreen();
+  initAudioSystem();
 })();
