@@ -39,99 +39,90 @@ const goldTypes: GoldType[] = [
   };
   const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
-  // --- Audio Performance Note ---
-  // The audio implementation below uses pooling, which is a highly performant pattern for games.
-  // It creates a small number of Audio objects upfront and cycles through them.
-  // This prevents the overhead of creating/destroying objects during gameplay and avoids issues
-  // with sounds cutting each other off on mobile browsers. It's already well-optimized.
+  // --- Web Audio API Setup for High-Performance Sound ---
+  // This new system replaces the old HTML5 Audio pools. It offers low-latency playback
+  // crucial for responsive game audio on all devices, especially mobile.
+  let audioContext: AudioContext;
+  const audioBuffers: Map<string, AudioBuffer> = new Map();
+  let soundsLoaded = false;
 
-  // --- Gold Pickup, Success, and Gold Summary Sound Effect Helpers (with audio pool for mobile reliability) ---
-  const goldPickupAudioPool = {
-    'pickup-1': Array.from({ length: 4 }, () => new Audio('sfx/pickup-1.mp3')),
-    'pickup-2': Array.from({ length: 2 }, () => new Audio('sfx/pickup-2.mp3'))
+  // List of all sound assets to be loaded
+  const soundAssets = [
+    { name: 'pickup-1', url: 'sfx/pickup-1.mp3' },
+    { name: 'pickup-2', url: 'sfx/pickup-2.mp3' },
+    { name: 'success', url: 'sfx/success-1.mp3' },
+    { name: 'gold-summary', url: 'sfx/gold-summary.mp3' },
+    { name: 'die', url: 'sfx/die.mp3' },
+    { name: 'walk', url: 'sfx/walk.mp3' },
+    { name: 'button-click', url: 'sfx/button-click.mp3' },
+    { name: 'ui-hover', url: 'sfx/ui-hover.mp3' }
+  ];
+
+  // Initialize AudioContext on the first user gesture to comply with browser autoplay policies.
+  const initAudioSystem = async () => {
+    if (audioContext) return; // Already initialized
+
+    try {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Load all sounds in parallel
+      await Promise.all(
+        soundAssets.map(async (asset) => {
+          const response = await fetch(asset.url);
+          const arrayBuffer = await response.arrayBuffer();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          audioBuffers.set(asset.name, audioBuffer);
+        })
+      );
+      soundsLoaded = true;
+    } catch (error) {
+      console.error('Audio system failed to initialize:', error);
+      // Game can continue without sound
+      soundsLoaded = false;
+    }
   };
-  let goldPickupAudioIndex = { 'pickup-1': 0, 'pickup-2': 0 };
 
-  const successAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/success-1.mp3'));
-  let successAudioIndex = 0;
+  // Generic function to play any pre-loaded sound from its buffer.
+  const playSound = (soundName: string, volume: number = 1): AudioBufferSourceNode | null => {
+    if (!soundsLoaded || !audioBuffers.has(soundName) || !audioContext) return null;
 
-  const goldSummaryAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/gold-summary.mp3'));
-  let goldSummaryAudioIndex = 0;
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffers.get(soundName)!;
 
-  const dieAudioPool = Array.from({ length: 2 }, () => new Audio('sfx/die.mp3'));
-  let dieAudioIndex = 0;
+    const gainNode = audioContext.createGain();
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
 
-  // --- Walk Sound Effect Helper (with audio pool for mobile reliability) ---
-  const walkAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/walk.mp3'));
-  let walkAudioIndex = 0;
-  const playWalkSound = () => {
-    const audio = walkAudioPool[walkAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.5;
-    audio.play().catch(() => {});
-    walkAudioIndex = (walkAudioIndex + 1) % walkAudioPool.length;
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    source.start(0);
+    return source;
   };
 
+  // --- Sound Effect Wrappers ---
+  // These functions now use the high-performance playSound function.
+  const playWalkSound = () => playSound('walk', 0.5);
   const playGoldPickupSound = (goldType: string) => {
-    const soundKey: 'pickup-1' | 'pickup-2' = ['g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
-    const pool = goldPickupAudioPool[soundKey];
-    let idx = goldPickupAudioIndex[soundKey];
-    const audio = pool[idx];
-    // Reset audio if needed
-    audio.currentTime = 0;
-    audio.volume = 0.7;
-    audio.play().catch(() => {}); // Ignore play errors
-    goldPickupAudioIndex[soundKey] = (idx + 1) % pool.length;
+    const soundKey = ['g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
+    playSound(soundKey, 0.7);
   };
+  const playSuccessSound = () => playSound('success', 1);
+  const playDieSound = () => playSound('die', 0.8);
+  const playButtonClickSound = () => playSound('button-click', 0.7);
+  const playUIHoverSound = () => playSound('ui-hover', 0.7);
 
-  const playSuccessSound = () => {
-    const audio = successAudioPool[successAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 1;
-    audio.play().catch(() => {});
-    successAudioIndex = (successAudioIndex + 1) % successAudioPool.length;
-  };
-
+  // Special handling for the summary sound which needs to be stoppable.
+  let goldSummaryAudioSource: AudioBufferSourceNode | null = null;
   const playGoldSummarySound = () => {
-    const audio = goldSummaryAudioPool[goldSummaryAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.5;
-    audio.play().catch(() => {});
-    goldSummaryAudioIndex = (goldSummaryAudioIndex + 1) % goldSummaryAudioPool.length;
-    return audio;
+    goldSummaryAudioSource = playSound('gold-summary', 0.5);
   };
-  const stopGoldSummarySound = (audio: HTMLAudioElement) => {
-    audio.pause();
-    audio.currentTime = 0;
-  };
-
-  const playDieSound = () => {
-    const audio = dieAudioPool[dieAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.8;
-    audio.play().catch(() => {});
-    dieAudioIndex = (dieAudioIndex + 1) % dieAudioPool.length;
-  };
-
-  // --- UI Button Sound Effects (with audio pool for mobile reliability) ---
-  const buttonClickAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/button-click.mp3'));
-  let buttonClickAudioIndex = 0;
-  const playButtonClickSound = () => {
-    const audio = buttonClickAudioPool[buttonClickAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.7;
-    audio.play().catch(() => {});
-    buttonClickAudioIndex = (buttonClickAudioIndex + 1) % buttonClickAudioPool.length;
-  };
-
-  const uiHoverAudioPool = Array.from({ length: 3 }, () => new Audio('sfx/ui-hover.mp3'));
-  let uiHoverAudioIndex = 0;
-  const playUIHoverSound = () => {
-    const audio = uiHoverAudioPool[uiHoverAudioIndex];
-    audio.currentTime = 0;
-    audio.volume = 0.7;
-    audio.play().catch(() => {});
-    uiHoverAudioIndex = (uiHoverAudioIndex + 1) % uiHoverAudioPool.length;
+  const stopGoldSummarySound = () => {
+    if (goldSummaryAudioSource) {
+      try {
+        goldSummaryAudioSource.stop();
+      } catch (e) {
+        // Can error if already stopped
+      }
+      goldSummaryAudioSource = null;
+    }
   };
 
   // Attach global event listeners for button click and hover sounds
@@ -142,7 +133,6 @@ const goldTypes: GoldType[] = [
     }
   });
   document.addEventListener('keydown', (e) => {
-    // Play click sound for keyboard activation (Enter/Space) on .btn
     if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.classList.contains('btn')) {
       playButtonClickSound();
     }
@@ -181,7 +171,7 @@ const goldTypes: GoldType[] = [
     turnsTotal: 0,
     turnsLevel: 0,
     retries: 0,
-    zoomLevel: isMobileScreen() ? 3 : 4, // Start zoomed out more on mobile, to help fit more of the level on-screen
+    zoomLevel: isMobileScreen() ? 3 : 4,
     dead: false,
     mode: 'normal',
     goldTotal: 0,
@@ -196,8 +186,8 @@ const goldTypes: GoldType[] = [
   const overrides = document.createElement('style');
   const zoomLevelStyle = document.createElement('style');
   const stylePlayer = document.createElement('style');
-  const goldStyles = document.createElement('style'); // A single style element for all gold
-  const enemyStyles = document.createElement('style'); // A single style element for all enemies
+  const goldStyles = document.createElement('style');
+  const enemyStyles = document.createElement('style');
   document.querySelector('head')?.appendChild(overrides);
   document.querySelector('head')?.appendChild(zoomLevelStyle);
   document.querySelector('head')?.appendChild(stylePlayer);
@@ -236,10 +226,9 @@ const goldTypes: GoldType[] = [
     ) {}
 
     reset() {
-      // Reset to default values
       this.pos = [];
       this.health = 100;
-      this.elem = null as any; // Clear element reference
+      this.elem = null as any;
     }
   }
 
@@ -255,7 +244,6 @@ const goldTypes: GoldType[] = [
 
   // Game code functions
   const beginGame = () => {
-    // Reset game state before starting a new game
     levelStore = [];
     enemies = [];
     goldPieces = [];
@@ -263,7 +251,6 @@ const goldTypes: GoldType[] = [
     enemyCounter = 0;
     goldCounter = 0;
 
-    // Reset session stats
     sessionStats.turnsTotal = 0;
     sessionStats.turnsLevel = 0;
     sessionStats.retries = 0;
@@ -272,7 +259,6 @@ const goldTypes: GoldType[] = [
     sessionStats.goldLevel = 0;
     collectedGold = [];
 
-    // Reset player object if it exists
     if (player) {
       player.reset();
     }
@@ -302,7 +288,6 @@ const goldTypes: GoldType[] = [
     btnStartNormal.classList.add('btn');
     btnStartProcudural.classList.add('btn');
 
-    // Add tabindex for keyboard navigation
     btnStartNormal.setAttribute('tabindex', '0');
     btnStartProcudural.setAttribute('tabindex', '0');
 
@@ -320,11 +305,9 @@ const goldTypes: GoldType[] = [
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    // Store buttons in an array for keyboard navigation
     const buttons = [btnStartNormal, btnStartProcudural];
     let currentFocusIndex = 0;
 
-    // Add keyboard navigation between buttons
     const handleKeyNavigation = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'Up') {
         e.preventDefault();
@@ -337,44 +320,47 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    // Add keyboard navigation event listeners to each button
     buttons.forEach((button) => {
       button.addEventListener('keydown', handleKeyNavigation);
     });
 
     setTimeout(() => {
       titleContainer.classList.add('show');
-      // Focus on the Normal Game button
       btnStartNormal.focus();
     }, 150);
 
     const closeTitlescreen = () => {
-      // Remove keyboard navigation event listeners
       buttons.forEach((button) => {
         button.removeEventListener('keydown', handleKeyNavigation);
       });
-
       background?.classList.remove('titlescreen');
       titleContainer.classList.remove('show');
-
       setTimeout(() => {
-        uiElem.removeChild(titleContainer);
-        background?.removeChild(uiElem);
+        if (uiElem.parentNode) {
+          uiElem.parentNode.removeChild(uiElem);
+        }
       }, 1000);
     };
 
-    const handleStartButton = (gameMode: 'normal' | 'procedural', e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
+    const handleStartButton = async (gameMode: 'normal' | 'procedural', e?: KeyboardEvent | MouseEvent) => {
+      if (handleKeyboardConfirm(e as KeyboardEvent)) {
+        const btn = e?.currentTarget as HTMLElement;
+        const originalText = btn.textContent;
+        btn.textContent = 'Loading...';
+
+        await initAudioSystem();
+
+        btn.textContent = originalText;
         closeTitlescreen();
         sessionStats.mode = gameMode;
         beginGame();
       }
     };
 
-    btnStartNormal.addEventListener('click', () => handleStartButton('normal'));
-    btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e));
-    btnStartProcudural.addEventListener('click', () => handleStartButton('procedural'));
-    btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e));
+    btnStartNormal.addEventListener('click', (e) => handleStartButton('normal', e), { once: true });
+    btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e), { once: true });
+    btnStartProcudural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
+    btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
   };
 
   const drawScreen = (selectedLevel: any) => {
@@ -395,17 +381,14 @@ const goldTypes: GoldType[] = [
     uiElem.id = 'ui-display';
     messageWindow.id = 'message';
 
-    // Create level indicator
     const levelIndicator = document.createElement('div');
     levelIndicator.id = 'level-indicator';
     levelIndicator.textContent = `Level ${currentLevel + 1}`;
 
-    // Create gold counter
     const goldCounterElement = document.createElement('div');
     goldCounterElement.id = 'gold-counter';
     goldCounterElement.textContent = `Gold: ${sessionStats.goldTotal}`;
 
-    // Create back button
     backButton.id = 'back-button';
     backButton.setAttribute('tabindex', '0');
     backButton.setAttribute('title', 'Return to Title Screen');
@@ -425,18 +408,14 @@ const goldTypes: GoldType[] = [
     switchCameraBtn.id = 'switch-camera';
     switchCameraBtn.setAttribute('tabindex', '0');
 
-    // Initialize level storage
     if (levelStore.length === currentLevel) {
-      // If we're in a NEW level, add new arrays
-      levelStore.splice(currentLevel, 0, [new Array()]); // Create new array in the appropriate place.. may not work right, have to revisit
+      levelStore.splice(currentLevel, 0, [new Array()]);
       enemies.splice(currentLevel, 0, new Array());
       goldPieces.splice(currentLevel, 0, new Array());
     }
 
-    // Read level data
     levelRows = selectedLevel.split('\n');
 
-    // Row creation logic
     for (let rowIndex = 0; rowIndex < levelRows.length; rowIndex++) {
       let levelCells = levelRows[rowIndex].split(','),
         elemRow = document.createElement('div');
@@ -444,10 +423,8 @@ const goldTypes: GoldType[] = [
       elemRow.classList.add('row');
       grid.appendChild(elemRow);
 
-      // Level store row creation
       levelStore[currentLevel].push(new Array());
 
-      // Cell creation logic
       for (let cellIndex = 0; cellIndex < levelCells.length; cellIndex++) {
         let cell = levelCells[cellIndex],
           elemCell = document.createElement('div');
@@ -456,7 +433,6 @@ const goldTypes: GoldType[] = [
         elemCell.id = rowIndex + '-' + cellIndex;
         elemRow.appendChild(elemCell);
 
-        // Add to level store tracking
         levelStore[currentLevel][rowIndex].push(new Cell(elemCell, rowIndex + '-' + cellIndex));
 
         switch (cell) {
@@ -474,30 +450,19 @@ const goldTypes: GoldType[] = [
             break;
           case '@':
             player = new Player(elemCell, 1, [rowIndex, cellIndex], 'player', 100);
-
-            elemCell.classList.add('floor');
-            elemCell.classList.add('player');
+            elemCell.classList.add('floor', 'player');
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('player');
-            break;
-          case 'D':
-            // elemCell.style.backgroundColor = '#641903';
             break;
           case 'F':
             enemyCounter++;
             enemies[currentLevel].push(new Enemy(elemCell, enemyCounter, [rowIndex, cellIndex], 'fire-vortex', 100));
-
-            elemCell.classList.add('floor');
-            elemCell.classList.add('enemy');
-            elemCell.classList.add('enemy-' + enemyCounter);
-
+            elemCell.classList.add('floor', 'enemy', 'enemy-' + enemyCounter);
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
             break;
           case 'C':
-            elemCell.classList.add('floor');
-            elemCell.classList.add('goal');
-
+            elemCell.classList.add('floor', 'goal');
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('stairsDown');
             break;
@@ -507,12 +472,7 @@ const goldTypes: GoldType[] = [
               goldCounter++;
               const goldValue = Math.floor(Math.random() * (goldType.maxValue - goldType.minValue + 1)) + goldType.minValue;
               goldPieces[currentLevel].push(new Gold(elemCell, goldCounter, [rowIndex, cellIndex], goldType.id, goldValue));
-
-              elemCell.classList.add('floor');
-              elemCell.classList.add('gold');
-              elemCell.classList.add('gold-' + goldCounter);
-              elemCell.classList.add(goldType.id); // Add the specific gold type class (e.g., 'g1', 'g2')
-
+              elemCell.classList.add('floor', 'gold', 'gold-' + goldCounter, goldType.id);
               levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
               levelStore[currentLevel][rowIndex][cellIndex].inside.push('gold');
             } else {
@@ -559,7 +519,6 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    // Button events
     backButton.addEventListener('click', () => handleBackBtn());
     backButton.addEventListener('keydown', (e) => handleBackBtn(e));
 
@@ -582,22 +541,16 @@ const goldTypes: GoldType[] = [
     showGoalBtn.addEventListener('keydown', (e) => handleShowGoalBtn(e));
 
     const changeZoom = (type: 'up' | 'down', e?: KeyboardEvent) => {
-      // Don't allow zoom below 1
       if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
-        // Verify keys if we're consuming a keyboard event
         if (handleKeyboardConfirm(e)) {
-          grid.classList.add('instant-camera'); // Move characters and game grid instantly during zoom
-
+          grid.classList.add('instant-camera');
           type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
-          zoomLevelStyle.innerHTML = '#display-wrapper #game-grid .row .cell {height: ' + sessionStats.zoomLevel * 8 + 'px !important; width: ' + sessionStats.zoomLevel * 8 + 'px !important;}';
+          zoomLevelStyle.innerHTML = `#display-wrapper #game-grid .row .cell {height: ${sessionStats.zoomLevel * 8}px !important; width: ${sessionStats.zoomLevel * 8}px !important;}`;
           renderPlayer(player.pos);
           renderEnemies();
           renderGoldPieces();
           viewingGoal ? centerOnGoal() : centerPlayerInScreen();
-
-          setTimeout(() => {
-            grid.classList.remove('instant-camera');
-          }, 20);
+          setTimeout(() => grid.classList.remove('instant-camera'), 20);
         }
       }
     };
@@ -607,391 +560,217 @@ const goldTypes: GoldType[] = [
     zoomDown.addEventListener('click', () => changeZoom('down'));
     zoomDown.addEventListener('keydown', (e) => changeZoom('down', e));
 
-    // Start with camera centered immediately at the goal
     grid.classList.add('instant-camera');
     showGoal();
 
-    // Slow pan across the level showing the goal and ending on the player when starting a new level
     setTimeout(() => {
       grid.classList.remove('instant-camera');
       grid.classList.add('slow-pan');
       centerPlayerInScreen();
     }, 20);
 
-    // After pan is finished, remove slow pan class
-    setTimeout(() => {
-      grid.classList.remove('slow-pan');
-    }, 2500);
+    setTimeout(() => grid.classList.remove('slow-pan'), 2500);
   };
 
   const drawDecorations = () => {
-    // After the levelStore is initialized, go over it again and add the floor and wall decorations
     for (let rowStore = 0; rowStore < levelStore[currentLevel].length; rowStore++) {
       for (let cellStore = 0; cellStore < levelStore[currentLevel][rowStore].length; cellStore++) {
         let cell = levelStore[currentLevel][rowStore][cellStore];
-        if (cell === '' || cell === undefined) continue; // Skip if cell is empty or undefined
+        if (!cell || cell.type !== 'floor') continue;
 
-        // Ensure cell is valid and has a 'type'
-        if (cell.type === 'floor') {
-          // Safeguard against out-of-bounds access
-          const wallTop = (rowStore > 0 && levelStore[currentLevel][rowStore - 1][cellStore]?.type === 'wall') || false;
-          const wallRight = (cellStore < levelStore[currentLevel][rowStore].length - 1 && levelStore[currentLevel][rowStore][cellStore + 1]?.type === 'wall') || false;
-          const wallBottom = (rowStore < levelStore[currentLevel].length - 1 && levelStore[currentLevel][rowStore + 1][cellStore]?.type === 'wall') || false;
-          const wallLeft = (cellStore > 0 && levelStore[currentLevel][rowStore][cellStore - 1]?.type === 'wall') || false;
+        const wallTop = rowStore > 0 && levelStore[currentLevel][rowStore - 1][cellStore]?.type === 'wall';
+        const wallRight = cellStore < levelStore[currentLevel][rowStore].length - 1 && levelStore[currentLevel][rowStore][cellStore + 1]?.type === 'wall';
+        const wallBottom = rowStore < levelStore[currentLevel].length - 1 && levelStore[currentLevel][rowStore + 1][cellStore]?.type === 'wall';
+        const wallLeft = cellStore > 0 && levelStore[currentLevel][rowStore][cellStore - 1]?.type === 'wall';
 
-          // Sidewall top
-          if (wallTop && !wallRight && !wallBottom && !wallLeft) {
-            cell.elem.classList.add('sidewall');
-            cell.elem.classList.add('top');
-            continue;
-          }
-
-          // Sidewall right
-          if (!wallTop && wallRight && !wallBottom && !wallLeft) {
-            cell.elem.classList.add('sidewall');
-            cell.elem.classList.add('right');
-            continue;
-          }
-
-          // Sidewall bottom
-          if (!wallTop && !wallRight && wallBottom && !wallLeft) {
-            cell.elem.classList.add('sidewall');
-            cell.elem.classList.add('bottom');
-            continue;
-          }
-
-          // Sidewall left
-          if (!wallTop && !wallRight && !wallBottom && wallLeft) {
-            cell.elem.classList.add('sidewall');
-            cell.elem.classList.add('left');
-            continue;
-          }
-
-          // Corner hall sideways
-          if (wallTop && !wallRight && wallBottom && !wallLeft) {
-            cell.elem.classList.add('hall');
-            cell.elem.classList.add('side');
-            continue;
-          }
-
-          // Corner hall vertical
-          if (!wallTop && wallRight && !wallBottom && wallLeft) {
-            cell.elem.classList.add('hall');
-            cell.elem.classList.add('up');
-            continue;
-          }
-
-          // Corner top left
-          if (wallTop && !wallRight && !wallBottom && wallLeft) {
-            cell.elem.classList.add('corner');
-            cell.elem.classList.add('top-left');
-            continue;
-          }
-
-          // Corner top right
-          if (wallTop && wallRight && !wallBottom && !wallLeft) {
-            cell.elem.classList.add('corner');
-            cell.elem.classList.add('top-right');
-            continue;
-          }
-
-          // Corner bottom left
-          if (!wallTop && !wallRight && wallBottom && wallLeft) {
-            cell.elem.classList.add('corner');
-            cell.elem.classList.add('bottom-left');
-            continue;
-          }
-
-          // Corner bottom right
-          if (!wallTop && wallRight && wallBottom && !wallLeft) {
-            cell.elem.classList.add('corner');
-            cell.elem.classList.add('bottom-right');
-            continue;
-          }
-
-          // Corner cap top
-          if (!wallTop && wallRight && wallBottom && wallLeft) {
-            cell.elem.classList.add('cap');
-            cell.elem.classList.add('top');
-            continue;
-          }
-
-          // Corner cap right
-          if (wallTop && !wallRight && wallBottom && wallLeft) {
-            cell.elem.classList.add('cap');
-            cell.elem.classList.add('right');
-            continue;
-          }
-
-          // Corner cap bottom
-          if (wallTop && wallRight && !wallBottom && wallLeft) {
-            cell.elem.classList.add('cap');
-            cell.elem.classList.add('bottom');
-            continue;
-          }
-
-          // Corner cap left
-          if (wallTop && wallRight && wallBottom && !wallLeft) {
-            cell.elem.classList.add('cap');
-            cell.elem.classList.add('left');
-            continue;
-          }
-        }
+        if (wallTop && !wallRight && !wallBottom && !wallLeft) cell.elem.classList.add('sidewall', 'top');
+        else if (!wallTop && wallRight && !wallBottom && !wallLeft) cell.elem.classList.add('sidewall', 'right');
+        else if (!wallTop && !wallRight && wallBottom && !wallLeft) cell.elem.classList.add('sidewall', 'bottom');
+        else if (!wallTop && !wallRight && !wallBottom && wallLeft) cell.elem.classList.add('sidewall', 'left');
+        else if (wallTop && !wallRight && wallBottom && !wallLeft) cell.elem.classList.add('hall', 'side');
+        else if (!wallTop && wallRight && !wallBottom && wallLeft) cell.elem.classList.add('hall', 'up');
+        else if (wallTop && !wallRight && !wallBottom && wallLeft) cell.elem.classList.add('corner', 'top-left');
+        else if (wallTop && wallRight && !wallBottom && !wallLeft) cell.elem.classList.add('corner', 'top-right');
+        else if (!wallTop && !wallRight && wallBottom && wallLeft) cell.elem.classList.add('corner', 'bottom-left');
+        else if (!wallTop && wallRight && wallBottom && !wallLeft) cell.elem.classList.add('corner', 'bottom-right');
+        else if (!wallTop && wallRight && wallBottom && wallLeft) cell.elem.classList.add('cap', 'top');
+        else if (wallTop && !wallRight && wallBottom && wallLeft) cell.elem.classList.add('cap', 'right');
+        else if (wallTop && wallRight && !wallBottom && wallLeft) cell.elem.classList.add('cap', 'bottom');
+        else if (wallTop && wallRight && wallBottom && !wallLeft) cell.elem.classList.add('cap', 'left');
       }
     }
   };
 
   const toggleCenterMode = () => {
-    if (options.centerMode === false) {
-      options.centerMode = true;
-      centerPlayerInScreen();
-    } else {
-      options.centerMode = false;
-      centerPlayerInScreen();
-    }
+    options.centerMode = !options.centerMode;
+    centerPlayerInScreen();
   };
 
   const centerPlayerInScreen = () => {
-    let topLevelOffset;
-    let leftLevelOffset;
-    let top;
-    let left;
+    let top, left;
+    const topLevelOffset = (levelStore[currentLevel].length / 2 - player.pos[0]) * sessionStats.zoomLevel * 4;
+    const leftLevelOffset = (levelStore[currentLevel][0].length / 2 - player.pos[1]) * sessionStats.zoomLevel * 4;
 
-    // Take the player's distance from the center of the level and multiply it by the half the zoom formula to give a lower weight
-    topLevelOffset = (levelStore[currentLevel].length / 2 - player.pos[0]) * sessionStats.zoomLevel * 4;
-    leftLevelOffset = (levelStore[currentLevel][0].length / 2 - player.pos[1]) * sessionStats.zoomLevel * 4;
-
-    if (options.centerMode === false) {
-      // Player position less the half the screen dimensions and half a tile (centered), modified by a weighted value that pulls to the middle of the level with a screen dimensions min/max
-      top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, (window.innerHeight / 3) * -1), window.innerHeight / 3);
-      left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, (window.innerWidth / 3) * -1), window.innerWidth / 3);
+    if (!options.centerMode) {
+      top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2 - Math.min(Math.max(topLevelOffset * 0.75, -window.innerHeight / 3), window.innerHeight / 3);
+      left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2 - Math.min(Math.max(leftLevelOffset * 0.75, -window.innerWidth / 3), window.innerWidth / 3);
     } else {
-      // Follow centered only
       top = player.elem.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
       left = player.elem.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
     }
 
-    overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
-
-    // Center mode will return the camera to the player. This can de-sync the viewing goal state, so reset it here
-    if (viewingGoal) {
-      viewingGoal = false;
-    }
+    overrides.innerHTML = `#display-wrapper #game-grid {top: ${top}px; left: ${left}px;}`;
+    if (viewingGoal) viewingGoal = false;
   };
 
   const centerOnGoal = () => {
-    let top,
-      left,
-      goal: HTMLElement = document.querySelector('.goal')!;
-
-    top = goal?.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
-    left = goal?.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
-
-    overrides.innerHTML = '#display-wrapper #game-grid {top: ' + top + 'px; left: ' + left + 'px;}';
+    const goal: HTMLElement = document.querySelector('.goal')!;
+    if (!goal) return;
+    const top = goal.offsetTop * -1 - sessionStats.zoomLevel * 4 + window.innerHeight / 2;
+    const left = goal.offsetLeft * -1 - sessionStats.zoomLevel * 4 + window.innerWidth / 2;
+    overrides.innerHTML = `#display-wrapper #game-grid {top: ${top}px; left: ${left}px;}`;
     viewingGoal = true;
   };
 
   const showGoal = () => {
-    if (viewingGoal) {
-      centerPlayerInScreen();
-      viewingGoal = false;
-    } else {
-      centerOnGoal();
-    }
+    viewingGoal ? centerPlayerInScreen() : centerOnGoal();
   };
 
   const enemyAITurn = () => {
-    // Iterate on each enemy
-    for (let i = 0; i < enemies[currentLevel].length; i++) {
-      moveEnemy(enemies[currentLevel][i], randomDirection());
-    }
+    enemies[currentLevel].forEach((enemy: Enemy) => moveEnemy(enemy, randomDirection()));
   };
 
   const moveEnemy = (enemyObject: Enemy, direction: number) => {
-    if (sessionStats.dead) {
-      return;
-    }
-
-    let newCell,
-      newPos: number[] = [];
-
+    if (sessionStats.dead) return;
+    let newPos: number[] = [...enemyObject.pos];
     switch (direction) {
-      case 1: // Up
-        newPos = [enemyObject.pos[0] - 1, enemyObject.pos[1]];
+      case 1:
+        newPos[0]--;
         break;
-      case 2: // Right
-        newPos = [enemyObject.pos[0], enemyObject.pos[1] + 1];
+      case 2:
+        newPos[1]++;
         break;
-      case 3: // Down
-        newPos = [enemyObject.pos[0] + 1, enemyObject.pos[1]];
+      case 3:
+        newPos[0]++;
         break;
-      case 4: // Left
-        newPos = [enemyObject.pos[0], enemyObject.pos[1] - 1];
+      case 4:
+        newPos[1]--;
         break;
     }
 
-    newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
-
-    // Do not allow movement onto a wall or another enemy
-    if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall' && levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') === -1) {
-      if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('player') > -1) {
+    const newCellData = levelStore[currentLevel][newPos[0]]?.[newPos[1]];
+    if (newCellData && newCellData.type !== 'wall' && !newCellData.inside.includes('enemy')) {
+      if (newCellData.inside.includes('player')) {
         death();
+        return;
       }
-
-      // Update the level database
-      levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
-      levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
-
-      // Update enemy object
+      const oldCellInside = levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside;
+      oldCellInside.splice(oldCellInside.indexOf('enemy'), 1);
+      newCellData.inside.push('enemy');
       enemyObject.pos = newPos;
-      enemyObject.elem = newCell;
+      enemyObject.elem = newCellData.elem;
       enemyObject.moveTries = 0;
-    } else {
+    } else if (enemyObject.moveTries < 3) {
       enemyObject.moveTries++;
-      if (enemyObject.moveTries < 3) {
-        moveEnemy(enemyObject, randomDirection());
-      }
+      moveEnemy(enemyObject, randomDirection());
     }
   };
 
-  const randomDirection = () => {
-    // Returns 1 - 4, where 1 = Up, 2 = Right, 3 = Down, and 4 = Left
-    return Math.floor(Math.random() * 4 + 1);
-  };
+  const randomDirection = () => Math.floor(Math.random() * 4 + 1);
 
   const movePlayer = (direction: number) => {
-    let newCell,
-      newPos: number[] = [];
-
+    let newPos: number[] = [...player.pos];
     switch (direction) {
-      case 1: // Up
-        newPos = [player.pos[0] - 1, player.pos[1]];
+      case 1:
+        newPos[0]--;
         break;
-      case 2: // Right
-        newPos = [player.pos[0], player.pos[1] + 1];
+      case 2:
+        newPos[1]++;
         break;
-      case 3: // Down
-        newPos = [player.pos[0] + 1, player.pos[1]];
+      case 3:
+        newPos[0]++;
         break;
-      case 4: // Left
-        newPos = [player.pos[0], player.pos[1] - 1];
+      case 4:
+        newPos[1]--;
         break;
     }
 
-    newCell = levelStore[currentLevel][newPos[0]][newPos[1]].elem;
+    const newCellData = levelStore[currentLevel][newPos[0]]?.[newPos[1]];
+    if (!newCellData || newCellData.type === 'wall') return;
 
-    // Ran into an enemy
-    if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('enemy') > -1) {
+    if (newCellData.inside.includes('enemy')) {
       death();
       return;
     }
 
-    if (levelStore[currentLevel][newPos[0]][newPos[1]].type != 'wall') {
-      // Check for gold collection
-      if (levelStore[currentLevel][newPos[0]][newPos[1]].inside.indexOf('gold') > -1) {
-        collectGoldAt(newPos);
-      }
-
-      // Play walk sound effect
-      playWalkSound();
-
-      // Update the visuals
-      renderPlayer(newPos);
-
-      // Update the levelStore
-      levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.splice(levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('player'), 1);
-      levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('player');
-
-      // Update player object
-      player.pos = newPos;
-      player.elem = newCell;
-
-      centerPlayerInScreen();
+    playWalkSound();
+    if (newCellData.inside.includes('gold')) {
+      collectGoldAt(newPos);
     }
+
+    const oldCellInside = levelStore[currentLevel][player.pos[0]][player.pos[1]].inside;
+    oldCellInside.splice(oldCellInside.indexOf('player'), 1);
+    newCellData.inside.push('player');
+
+    player.pos = newPos;
+    player.elem = newCellData.elem;
+
+    renderPlayer(newPos);
+    centerPlayerInScreen();
   };
 
   const renderPlayer = (pos: number[]) => {
-    stylePlayer.innerHTML =
-      '#display-wrapper #game-grid .row .cell.floor.player::after {top: ' +
-      pos[0] * sessionStats.zoomLevel * 8 +
-      'px; left: ' +
-      pos[1] * sessionStats.zoomLevel * 8 +
-      'px; height: ' +
-      sessionStats.zoomLevel * 8 +
-      'px;width: ' +
-      sessionStats.zoomLevel * 8 +
-      'px;}';
+    const tileSize = sessionStats.zoomLevel * 8;
+    stylePlayer.innerHTML = `#display-wrapper #game-grid .row .cell.floor.player::after {top: ${pos[0] * tileSize}px; left: ${pos[1] * tileSize}px; height: ${tileSize}px; width: ${tileSize}px;}`;
   };
 
   const renderEnemies = () => {
-    let allEnemyStyles = '';
-    for (let enemyIndex = 0; enemyIndex < enemies[currentLevel].length; enemyIndex++) {
-      const enemyObj = enemies[currentLevel][enemyIndex];
-      const pos = enemyObj.pos;
-      const tileSize = sessionStats.zoomLevel * 8;
-      allEnemyStyles += `
-        #display-wrapper #game-grid .row .cell.floor.enemy-${enemyObj.id}::after {
-          top: ${pos[0] * tileSize}px;
-          left: ${pos[1] * tileSize}px;
-          height: ${tileSize}px;
-          width: ${tileSize}px;
-        }
-      `;
-    }
-    enemyStyles.innerHTML = allEnemyStyles;
+    const tileSize = sessionStats.zoomLevel * 8;
+    enemyStyles.innerHTML = enemies[currentLevel]
+      .map(
+        (enemyObj: Enemy) => `
+      #display-wrapper #game-grid .row .cell.floor.enemy-${enemyObj.id}::after {
+        top: ${enemyObj.pos[0] * tileSize}px;
+        left: ${enemyObj.pos[1] * tileSize}px;
+        height: ${tileSize}px;
+        width: ${tileSize}px;
+      }
+    `
+      )
+      .join('');
   };
 
-  const checkVictory = () => {
-    if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const checkVictory = () => levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.includes('stairsDown');
 
   const retryLevel = () => {
-    // Subtract current level gold from total gold
     sessionStats.goldTotal -= sessionStats.goldLevel;
-
-    // Reset player
     player.reset();
-
-    // Clean up enemies and gold
     enemies.splice(currentLevel, 1);
     goldPieces.splice(currentLevel, 1);
     enemyCounter = 0;
     goldCounter = 0;
-
-    // Reset level store
     levelStore.splice(currentLevel, 1);
-
-    // Redraw and fix up level values
     refreshScreen();
     sessionStats.turnsLevel = 0;
     sessionStats.goldLevel = 0;
     sessionStats.dead = false;
-    sessionStats.retries += 1;
+    sessionStats.retries++;
     collectedGold = [];
   };
 
   const refreshScreen = () => {
     eraseScreen();
-
-    if (sessionStats.mode === 'normal') {
-      drawScreen(levelData[currentLevel]);
-    } else {
-      const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
-      drawScreen(generateRandomLevel(currentLevel, levelSize, levelSize));
-    }
+    const levelSize = 40 + currentLevel * 5;
+    const levelDataToLoad = sessionStats.mode === 'normal' ? levelData[currentLevel] : generateRandomLevel(currentLevel, levelSize, levelSize);
+    drawScreen(levelDataToLoad);
   };
 
-  const eraseScreen = (titleScreen?: boolean) => {
-    let background = document.querySelector('#display-wrapper'),
-      grid = document.querySelector('#game-grid'),
-      ui = document.querySelector('#ui-display');
-
-    background?.removeChild(ui!);
-    background?.removeChild(grid!);
+  const eraseScreen = () => {
+    const background = document.querySelector('#display-wrapper');
+    const grid = document.querySelector('#game-grid');
+    const ui = document.querySelector('#ui-display');
+    if (ui) background?.removeChild(ui);
+    if (grid) background?.removeChild(grid);
   };
 
   const goToNewLevel = (newLevel: number) => {
@@ -1000,147 +779,121 @@ const goldTypes: GoldType[] = [
     enemyCounter = 0;
     goldCounter = 0;
     collectedGold = [];
-
-    // Erase screen
     eraseScreen();
-
     currentLevel = newLevel;
-
-    // Check game mode to load the correct level type
-    if (sessionStats.mode === 'normal') {
-      drawScreen(levelData[newLevel]);
-    } else {
-      const levelSize = 40 + currentLevel * 5; // Bigger levels the higher you go
-      drawScreen(generateRandomLevel(currentLevel, 40 + levelSize, 40 + levelSize));
-    }
+    refreshScreen();
   };
 
   const newGame = () => {
-    levelStore.length = 0; // Wipe out the levelStore
-    enemies.length = 0; // Erase all the enemies
-    goldPieces.length = 0; // Erase all the gold
-
-    sessionStats.turnsTotal = 0; // Reset total turns
-    sessionStats.goldTotal = 0; // Reset total gold
-    goToNewLevel(0); // Go to level 1
+    levelStore.length = 0;
+    enemies.length = 0;
+    goldPieces.length = 0;
+    sessionStats.turnsTotal = 0;
+    sessionStats.goldTotal = 0;
+    goToNewLevel(0);
   };
 
   const backToTitleScreen = () => {
-    // Erase the screen
     eraseScreen();
-
-    // Draw the title screen
-    setTimeout(() => {
-      drawTitleScreen();
-    }, 50);
+    setTimeout(drawTitleScreen, 50);
   };
 
   const showMessageBox = (messageText: string, buttons: Array<{ text: string; action: () => void }>, layout: 'vertical' | 'inline' = 'vertical') => {
     const messageBox = document.querySelector('#message');
+    if (!messageBox) return;
+
+    messageBox.innerHTML = ''; // Clear previous content
     const message = document.createElement('p');
-    const buttonElements: HTMLElement[] = [];
-
     message.innerHTML = messageText;
+    messageBox.appendChild(message);
+    messageBox.classList.add('top', 'show');
+    messageBox.classList.toggle('inline-buttons', layout === 'inline');
 
-    messageBox?.appendChild(message);
-    messageBox?.classList.add('top');
-
-    // Add layout class to message box
+    const buttonWrapper = layout === 'inline' ? document.createElement('div') : messageBox;
     if (layout === 'inline') {
-      messageBox?.classList.add('inline-buttons');
-    } else {
-      messageBox?.classList.remove('inline-buttons');
-    }
-
-    // Create button wrapper for inline layout
-    const buttonWrapper = layout === 'inline' ? document.createElement('div') : null;
-    if (buttonWrapper) {
       buttonWrapper.classList.add('button-wrapper');
-      messageBox?.appendChild(buttonWrapper);
+      messageBox.appendChild(buttonWrapper);
     }
 
-    // Create buttons
+    const buttonElements: HTMLElement[] = [];
     buttons.forEach((buttonConfig) => {
       const button = document.createElement('a');
-      button.classList.add('btn');
+      button.className = 'btn';
       button.textContent = buttonConfig.text;
-      button.setAttribute('tabindex', '0');
-
-      const closeAndExecute = (e?: KeyboardEvent) => {
-        if (handleKeyboardConfirm(e)) {
-          closeMessageWindow();
-          setTimeout(() => {
-            buttonConfig.action();
-          }, 360);
-        }
-      };
-
-      button.addEventListener('click', () => closeAndExecute());
-      button.addEventListener('keydown', (e) => closeAndExecute(e));
-
+      button.tabIndex = 0;
+      buttonWrapper.appendChild(button);
       buttonElements.push(button);
-      (buttonWrapper || messageBox)?.appendChild(button);
     });
 
     const closeMessageWindow = () => {
-      buttonElements.forEach((btn) => {
-        btn.removeEventListener('keydown', handleKeyNavigation);
-      });
-      messageBox?.classList.remove('show');
+      messageBox.classList.remove('show');
       setTimeout(() => {
-        messageBox?.classList.remove('top');
-        messageBox?.classList.remove('inline-buttons');
-        messageBox?.removeChild(message);
-        if (buttonWrapper && messageBox?.contains(buttonWrapper)) {
-          messageBox?.removeChild(buttonWrapper);
-        } else {
-          buttonElements.forEach((btn) => {
-            if (messageBox?.contains(btn)) {
-              messageBox?.removeChild(btn);
-            }
-          });
-        }
+        messageBox.classList.remove('top', 'inline-buttons');
+        messageBox.innerHTML = '';
       }, 360);
     };
 
-    let currentFocusIndex = 0;
-
-    const handleKeyNavigation = (e: KeyboardEvent) => {
-      const prevKeys = layout === 'inline' ? ['ArrowLeft', 'Left'] : ['ArrowUp', 'Up'];
-      const nextKeys = layout === 'inline' ? ['ArrowRight', 'Right'] : ['ArrowDown', 'Down'];
-
-      if (prevKeys.includes(e.key)) {
-        e.preventDefault();
-        currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
-        buttonElements[currentFocusIndex].focus();
-      } else if (nextKeys.includes(e.key)) {
-        e.preventDefault();
-        currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
-        buttonElements[currentFocusIndex].focus();
+    const keydownHandler = (e: KeyboardEvent) => {
+      const btn = e.target as HTMLElement;
+      if (btn.classList.contains('btn') && handleKeyboardConfirm(e)) {
+        const index = buttonElements.indexOf(btn);
+        if (index > -1) {
+          closeMessageWindow();
+          setTimeout(buttons[index].action, 360);
+        }
       }
     };
 
-    buttonElements.forEach((button) => {
-      button.addEventListener('keydown', handleKeyNavigation);
+    buttonElements.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        closeMessageWindow();
+        setTimeout(buttons[index].action, 360);
+      });
+      btn.addEventListener('keydown', keydownHandler);
     });
 
-    messageBox?.classList.add('show');
+    let currentFocusIndex = 0;
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      const prevKeys = layout === 'inline' ? ['ArrowLeft', 'Left'] : ['ArrowUp', 'Up'];
+      const nextKeys = layout === 'inline' ? ['ArrowRight', 'Right'] : ['ArrowDown', 'Down'];
+      if (prevKeys.includes(e.key)) {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
+      } else if (nextKeys.includes(e.key)) {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
+      } else {
+        return;
+      }
+      buttonElements[currentFocusIndex].focus();
+    };
 
-    setTimeout(() => {
-      buttonElements[0].focus();
-      currentFocusIndex = 0;
-    }, 100);
+    document.addEventListener('keydown', handleKeyNavigation);
+
+    const transitionEndHandler = () => {
+      document.removeEventListener('keydown', handleKeyNavigation);
+      buttonElements.forEach((btn) => btn.removeEventListener('keydown', keydownHandler));
+      messageBox.removeEventListener('transitionend', transitionEndHandler);
+    };
+    messageBox.addEventListener('transitionend', transitionEndHandler);
+
+    setTimeout(() => buttonElements[0]?.focus(), 100);
   };
 
   const displayVictoryMessage = () => {
     playSuccessSound();
     const messageBox = document.querySelector('#message');
+    if (!messageBox) return;
+
+    messageBox.innerHTML = ''; // Clear existing content
+
     const goldDisplay = document.createElement('div');
     const goldText = document.createElement('div');
     const goldVisual = document.createElement('div');
     const message = document.createElement('p');
     const btnPlayAgain = document.createElement('a');
     const btnNextLevel = document.createElement('a');
+    const btnBackToTitle = document.createElement('a');
 
     // Setup gold display
     goldDisplay.className = 'gold-display';
@@ -1151,22 +904,17 @@ const goldTypes: GoldType[] = [
     goldDisplay.appendChild(goldText);
     goldDisplay.appendChild(goldVisual);
 
-    // This function closes the message window and removes the buttons.
+    const buttons: HTMLElement[] = [];
+
     const closeMessageWindow = () => {
-      // Remove keyboard navigation event listeners
       buttons.forEach((button) => {
         button.removeEventListener('keydown', handleKeyNavigation);
       });
 
-      messageBox?.classList.remove('show');
+      messageBox.classList.remove('show');
       setTimeout(() => {
-        messageBox?.classList.remove('top');
-        messageBox?.removeChild(goldDisplay);
-        messageBox?.removeChild(message);
-        messageBox?.removeChild(btnPlayAgain);
-        if (messageBox?.contains(btnNextLevel)) {
-          messageBox?.removeChild(btnNextLevel);
-        }
+        messageBox.classList.remove('top');
+        messageBox.innerHTML = '';
       }, 360);
     };
 
@@ -1174,19 +922,17 @@ const goldTypes: GoldType[] = [
       if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
         setTimeout(() => {
           newGame();
-        }, 360); // Start a new game if it was the last level
+        }, 360);
       } else {
         setTimeout(() => {
           retryLevel();
-        }, 360); // Otherwise, just retry the current level
+        }, 360);
       }
     };
 
-    // Configure the "Play again" / "New Game" button
     btnPlayAgain.classList.add('btn');
     btnPlayAgain.textContent = 'Play again';
     btnPlayAgain.setAttribute('tabindex', '0');
-
     const handleBtnPlayAgain = (e?: KeyboardEvent) => {
       if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
@@ -1196,11 +942,9 @@ const goldTypes: GoldType[] = [
     btnPlayAgain.addEventListener('click', () => handleBtnPlayAgain());
     btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
 
-    // Configure the "Next Level" button
     btnNextLevel.classList.add('btn');
     btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
     btnNextLevel.setAttribute('tabindex', '0');
-
     const handleNextLevelBtn = (e?: KeyboardEvent) => {
       if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
@@ -1212,10 +956,7 @@ const goldTypes: GoldType[] = [
     btnNextLevel.addEventListener('click', () => handleNextLevelBtn());
     btnNextLevel.addEventListener('keydown', (e) => handleNextLevelBtn(e));
 
-    // Set the main message text.
     message.innerHTML = 'You beat level ' + (currentLevel + 1) + '!<br /><br />You completed it in ' + sessionStats.turnsLevel + ' turns. Good job!';
-
-    // Special message for the final level of normal mode.
     if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
       if (sessionStats.retries === 0) {
         message.innerHTML =
@@ -1245,12 +986,9 @@ const goldTypes: GoldType[] = [
       btnPlayAgain.textContent = 'Start a new game';
     }
 
-    // Create "Back to Title Screen" button
-    const btnBackToTitle = document.createElement('a');
     btnBackToTitle.classList.add('btn');
     btnBackToTitle.textContent = 'Back to Title Screen';
     btnBackToTitle.setAttribute('tabindex', '0');
-
     const handleBackToTitleScreen = (e?: KeyboardEvent) => {
       if (handleKeyboardConfirm(e)) {
         closeMessageWindow();
@@ -1262,16 +1000,22 @@ const goldTypes: GoldType[] = [
     btnBackToTitle.addEventListener('click', () => handleBackToTitleScreen());
     btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
 
-    // Add the elements to the message box
-    messageBox?.appendChild(goldDisplay);
-    messageBox?.appendChild(message);
-    messageBox?.appendChild(btnPlayAgain);
+    messageBox.appendChild(goldDisplay);
+    messageBox.appendChild(message);
+    messageBox.appendChild(btnPlayAgain);
+    buttons.push(btnPlayAgain);
 
-    // Animate gold pieces
+    if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
+      messageBox.appendChild(btnNextLevel);
+      buttons.push(btnNextLevel);
+    }
+
+    messageBox.appendChild(btnBackToTitle);
+    buttons.push(btnBackToTitle);
+
     const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
     let runningTotal = 0;
-    // Play gold summary sound effect while animating gold
-    const goldSummaryAudio = playGoldSummarySound();
+    playGoldSummarySound();
     sortedGold.forEach((gold, index) => {
       setTimeout(
         () => {
@@ -1285,38 +1029,14 @@ const goldTypes: GoldType[] = [
         300 + index * 200
       );
     });
-    // Stop gold summary sound after animation finishes
+
     if (sortedGold.length > 0) {
-      setTimeout(
-        () => {
-          stopGoldSummarySound(goldSummaryAudio);
-        },
-        300 + (sortedGold.length - 1) * 200 + 400
-      );
+      setTimeout(stopGoldSummarySound, 300 + (sortedGold.length - 1) * 200 + 400);
     } else {
-      setTimeout(() => {
-        stopGoldSummarySound(goldSummaryAudio);
-      }, 700);
+      setTimeout(stopGoldSummarySound, 700);
     }
-
-    // Add the "Next Level" button if it's not the last level in normal mode, or for any procedural level.
-    if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
-      messageBox?.appendChild(btnNextLevel);
-    }
-
-    // Add the "Back to Title Screen" button
-    messageBox?.appendChild(btnBackToTitle);
-
-    // Create an array of buttons for keyboard navigation
-    const buttons = [btnPlayAgain];
-    if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
-      buttons.push(btnNextLevel);
-    }
-    buttons.push(btnBackToTitle);
 
     let currentFocusIndex = 0;
-
-    // Add keyboard navigation between buttons
     const handleKeyNavigation = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'Up') {
         e.preventDefault();
@@ -1329,18 +1049,15 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    // Add keyboard navigation event listeners to each button
     buttons.forEach((button) => {
       button.addEventListener('keydown', handleKeyNavigation);
     });
 
-    // Show the message box
-    messageBox?.classList.add('top');
-    messageBox?.classList.add('show');
+    messageBox.classList.add('top');
+    messageBox.classList.add('show');
 
-    // Focus on the Next Level button if it exists, otherwise focus on Play Again button
     const focusDelay = Math.max(100, sortedGold.length * 100 + 200);
-    if (messageBox?.contains(btnNextLevel)) {
+    if (messageBox.contains(btnNextLevel)) {
       setTimeout(() => {
         btnNextLevel.focus();
         currentFocusIndex = buttons.indexOf(btnNextLevel);
@@ -1356,10 +1073,9 @@ const goldTypes: GoldType[] = [
   const newTurn = () => {
     sessionStats.turnsLevel++;
     sessionStats.turnsTotal++;
-
     if (!checkVictory()) {
       enemyAITurn();
-      renderEnemies(); // Rerender all enemies after they have all moved.
+      renderEnemies();
     } else {
       displayVictoryMessage();
     }
@@ -1367,180 +1083,69 @@ const goldTypes: GoldType[] = [
 
   const death = () => {
     playDieSound();
-
-    const messageBox = document.querySelector('#message');
-    const message = document.createElement('p');
-    const button = document.createElement('a');
     const playerGraphic = document.querySelector('.player');
-
     playerGraphic?.classList.add('ashes');
-
     sessionStats.dead = true;
 
-    message.innerHTML =
-      'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
-
-    button.classList.add('btn');
-    button.textContent = 'Try again';
-    button.setAttribute('tabindex', '0');
-
-    const closeMessageWindow = () => {
-      // Remove keyboard navigation event listeners
-      buttons.forEach((btn) => {
-        btn.removeEventListener('keydown', handleKeyNavigation);
-      });
-
-      messageBox?.classList.remove('show');
-      setTimeout(() => {
-        messageBox?.classList.remove('top');
-        messageBox?.removeChild(message);
-        messageBox?.removeChild(button);
-        if (messageBox?.contains(btnBackToTitle)) {
-          messageBox?.removeChild(btnBackToTitle);
-        }
-        // Reset gameboard
-        retryLevel();
-      }, 360);
-    };
-
-    const handleCloseBtn = (e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
-        closeMessageWindow();
-      }
-    };
-    button.addEventListener('click', () => handleCloseBtn());
-    button.addEventListener('keydown', (e) => handleCloseBtn(e));
-
-    // Create "Back to Title Screen" button
-    const btnBackToTitle = document.createElement('a');
-    btnBackToTitle.classList.add('btn');
-    btnBackToTitle.textContent = 'Back to Title Screen';
-    btnBackToTitle.setAttribute('tabindex', '0');
-
-    const handleBackToTitleBtn = (e?: KeyboardEvent) => {
-      if (handleKeyboardConfirm(e)) {
-        closeMessageWindow();
-        setTimeout(() => {
-          backToTitleScreen();
-        }, 360);
-      }
-    };
-    btnBackToTitle.addEventListener('click', () => handleBackToTitleBtn());
-    btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleBtn(e));
-
-    messageBox?.appendChild(message);
-    messageBox?.appendChild(button);
-    messageBox?.appendChild(btnBackToTitle);
-
-    // Create an array of buttons for keyboard navigation
-    const buttons = [button, btnBackToTitle];
-    let currentFocusIndex = 0;
-
-    // Add keyboard navigation between buttons
-    const handleKeyNavigation = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp' || e.key === 'Up') {
-        e.preventDefault();
-        currentFocusIndex = (currentFocusIndex - 1 + buttons.length) % buttons.length;
-        buttons[currentFocusIndex].focus();
-      } else if (e.key === 'ArrowDown' || e.key === 'Down') {
-        e.preventDefault();
-        currentFocusIndex = (currentFocusIndex + 1) % buttons.length;
-        buttons[currentFocusIndex].focus();
-      }
-    };
-
-    // Add keyboard navigation event listeners to each button
-    buttons.forEach((btn) => {
-      btn.addEventListener('keydown', handleKeyNavigation);
-    });
-
-    messageBox?.classList.add('top');
-    messageBox?.classList.add('show');
-
-    // Focus on the Try Again button
-    setTimeout(() => {
-      button.focus();
-      currentFocusIndex = 0;
-    }, 100);
+    const message = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
+    showMessageBox(message, [
+      { text: 'Try Again', action: retryLevel },
+      { text: 'Back to Title Screen', action: backToTitleScreen }
+    ]);
   };
 
-  /**
-   * Rewritten to generate all gold piece positioning styles at once
-   * into a single <style> element for much better performance.
-   */
   const renderGoldPieces = () => {
-    let allGoldStyles = '';
-    for (let goldIndex = 0; goldIndex < goldPieces[currentLevel].length; goldIndex++) {
-      const goldObj = goldPieces[currentLevel][goldIndex];
-      const pos = goldObj.pos;
-      const tileSize = sessionStats.zoomLevel * 8;
-      allGoldStyles += `
-        #display-wrapper #game-grid .row .cell.floor.gold-${goldObj.id}::after {
-          top: ${pos[0] * tileSize}px;
-          left: ${pos[1] * tileSize}px;
-          height: ${tileSize}px;
-          width: ${tileSize}px;
-        }
-      `;
-    }
-    goldStyles.innerHTML = allGoldStyles;
+    const tileSize = sessionStats.zoomLevel * 8;
+    goldStyles.innerHTML = goldPieces[currentLevel]
+      .map(
+        (goldObj: Gold) => `
+      #display-wrapper #game-grid .row .cell.floor.gold-${goldObj.id}::after {
+        top: ${goldObj.pos[0] * tileSize}px;
+        left: ${goldObj.pos[1] * tileSize}px;
+        height: ${tileSize}px;
+        width: ${tileSize}px;
+      }
+    `
+      )
+      .join('');
   };
 
   const showGoldCollectionText = (pos: number[], value: number) => {
     const textElement = document.createElement('div');
     const tileSize = sessionStats.zoomLevel * 8;
-
-    // Add the class and the data-attribute that the CSS will use.
-    textElement.classList.add('gold-text-animation');
+    textElement.className = 'gold-text-animation';
     textElement.setAttribute('data-gold-value', `+${value}`);
-
-    // Apply dynamic styles directly to the element.
-    // The animation and other static styles should be in your main CSS file.
-    textElement.style.top = `${pos[0] * tileSize}px`;
-    textElement.style.left = `${pos[1] * tileSize}px`;
-    textElement.style.width = `${tileSize}px`;
-    textElement.style.height = `${tileSize}px`;
-    textElement.style.fontSize = `${Math.max(sessionStats.zoomLevel * 4, 24)}px`;
-
-    // Add the new element to the grid.
+    textElement.style.cssText = `
+      top: ${pos[0] * tileSize}px;
+      left: ${pos[1] * tileSize}px;
+      width: ${tileSize}px;
+      height: ${tileSize}px;
+      font-size: ${Math.max(sessionStats.zoomLevel * 4, 24)}px;
+    `;
     document.querySelector('#game-grid')?.appendChild(textElement);
-
-    // Remove the element after the animation finishes.
-    setTimeout(() => {
-      textElement.parentNode?.removeChild(textElement);
-    }, 1000);
+    setTimeout(() => textElement.remove(), 1000);
   };
 
   const collectGoldAt = (pos: number[]) => {
+    const goldIndex = goldPieces[currentLevel].findIndex((g: Gold) => g.pos[0] === pos[0] && g.pos[1] === pos[1]);
+    if (goldIndex === -1) return;
+
+    const [goldObj] = goldPieces[currentLevel].splice(goldIndex, 1);
     const cell = levelStore[currentLevel][pos[0]][pos[1]];
 
-    for (let i = 0; i < goldPieces[currentLevel].length; i++) {
-      const goldObj = goldPieces[currentLevel][i];
-      if (goldObj.pos[0] === pos[0] && goldObj.pos[1] === pos[1]) {
-        showGoldCollectionText(pos, goldObj.value);
+    showGoldCollectionText(pos, goldObj.value);
+    playGoldPickupSound(goldObj.type);
+    collectedGold.push({ value: goldObj.value, type: goldObj.type });
+    sessionStats.goldLevel += goldObj.value;
+    sessionStats.goldTotal += goldObj.value;
 
-        // Play gold pickup sound effect
-        playGoldPickupSound(goldObj.type);
+    const goldCounterElem = document.querySelector('#gold-counter');
+    if (goldCounterElem) goldCounterElem.textContent = `Gold: ${sessionStats.goldTotal}`;
 
-        collectedGold.push({ value: goldObj.value, type: goldObj.type });
-        sessionStats.goldLevel += goldObj.value;
-        sessionStats.goldTotal += goldObj.value;
-
-        const goldCounterElem = document.querySelector('#gold-counter');
-        if (goldCounterElem) {
-          goldCounterElem.textContent = `Gold: ${sessionStats.goldTotal}`;
-        }
-
-        cell.inside.splice(cell.inside.indexOf('gold'), 1);
-        cell.elem.classList.remove('gold');
-        cell.elem.classList.remove('gold-' + goldObj.id);
-        cell.elem.classList.remove(goldObj.type); // Remove the type class
-
-        goldPieces[currentLevel].splice(i, 1);
-        renderGoldPieces(); // Re-render the positioning styles for remaining gold
-        break;
-      }
-    }
+    const cellInside = cell.inside;
+    cellInside.splice(cellInside.indexOf('gold'), 1);
+    cell.elem.classList.remove('gold', `gold-${goldObj.id}`, goldObj.type);
+    renderGoldPieces();
   };
 
   const handleTouchStart = (evt: TouchEvent) => {
@@ -1548,99 +1153,66 @@ const goldTypes: GoldType[] = [
     yDown = evt.touches[0].clientY;
   };
 
-  // MODIFIED: Replaced 'handleTouchMove' with 'handleTouchEnd'.
   const handleTouchEnd = (evt: TouchEvent) => {
-    if (!xDown || !yDown) {
-      return;
-    }
+    if (!xDown || !yDown || sessionStats.dead) return;
 
-    if (sessionStats.dead) {
-      return;
-    }
-
-    // Use changedTouches which is correct for touchend events
     const xUp = evt.changedTouches[0].clientX;
     const yUp = evt.changedTouches[0].clientY;
-
     const xDiff = xDown - xUp;
     const yDiff = yDown - yUp;
+    const swipeThreshold = 10;
 
-    // Add a threshold to prevent accidental moves on small taps
-    const swipeThreshold = 10; // pixels
-
-    // Check if the swipe is significant enough to be considered a move
     if (Math.abs(xDiff) < swipeThreshold && Math.abs(yDiff) < swipeThreshold) {
-      xDown = null;
-      yDown = null;
-      return; // It's a tap, not a swipe, so we do nothing.
+      xDown = yDown = null;
+      return;
     }
 
-    /* Determine touch direction */
-    if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
+    if (!document.getElementById('message')?.classList.contains('show')) {
       if (Math.abs(xDiff) > Math.abs(yDiff)) {
-        if (xDiff > 0) {
-          /* left swipe */
-          movePlayer(4); // Left
-        } else {
-          /* right swipe */
-          movePlayer(2); // Right
-        }
+        movePlayer(xDiff > 0 ? 4 : 2); // Left or Right
       } else {
-        if (yDiff > 0) {
-          /* up swipe */
-          movePlayer(1); // Up
-        } else {
-          /* down swipe */
-          movePlayer(3); // Down
-        }
+        movePlayer(yDiff > 0 ? 1 : 3); // Up or Down
       }
       newTurn();
     }
 
-    /* reset values */
-    xDown = null;
-    yDown = null;
+    xDown = yDown = null;
   };
-  // End touch controls
 
-  // Start touch controls
   document.addEventListener('touchstart', handleTouchStart, false);
-  // MODIFIED: Changed 'touchmove' to 'touchend' and linked it to the new handleTouchEnd function.
   document.addEventListener('touchend', handleTouchEnd, false);
 
   document.addEventListener('keydown', (e) => {
-    const keyList = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', '.', 'Up', 'Right', 'Down', 'Left', 'Spacebar'];
+    if (sessionStats.dead || document.getElementById('message')?.classList.contains('show')) return;
 
-    if (!sessionStats.dead && !document.getElementById('message')?.classList.contains('show')) {
-      // The message window isn't displayed, and you're not dead
-      if (keyList.indexOf(e.key) > -1) {
-        // Key matches one of the permitted keys
-        switch (e.key) {
-          case 'ArrowUp':
-          case 'Up':
-            movePlayer(1); // Up
-            break;
-          case 'ArrowRight':
-          case 'Right':
-            movePlayer(2); // Right
-            break;
-          case 'ArrowDown':
-          case 'Down':
-            movePlayer(3); // Down
-            break;
-          case 'ArrowLeft':
-          case 'Left':
-            movePlayer(4); // Left
-            break;
-        }
+    let direction = 0;
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'Up':
+        direction = 1;
+        break;
+      case 'ArrowRight':
+      case 'Right':
+        direction = 2;
+        break;
+      case 'ArrowDown':
+      case 'Down':
+        direction = 3;
+        break;
+      case 'ArrowLeft':
+      case 'Left':
+        direction = 4;
+        break;
+    }
 
-        newTurn();
-      }
+    if (direction > 0) {
+      e.preventDefault();
+      movePlayer(direction);
+      newTurn();
     }
   });
 
   window.addEventListener('resize', centerPlayerInScreen);
 
-  // Draw the screen for the first time
   drawTitleScreen();
 })();
