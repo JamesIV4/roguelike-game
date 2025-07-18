@@ -518,6 +518,46 @@ body {
               position: absolute;
               z-index: 99;
             }
+
+            &.g1::after {
+              background-image: url('../imgs/gold-1.png');
+            }
+
+            &.g2::after {
+              background-image: url('../imgs/gold-2.png');
+            }
+
+            &.g3::after {
+              background-image: url('../imgs/gold-3.png');
+            }
+
+            &.g4::after {
+              background-image: url('../imgs/gold-4.png');
+            }
+
+            &.g5::after {
+              background-image: url('../imgs/gold-5.png');
+            }
+
+            &.g6::after {
+              background-image: url('../imgs/gold-6.png');
+            }
+
+            &.g7::after {
+              background-image: url('../imgs/gold-7.png');
+            }
+
+            &.g8::after {
+              background-image: url('../imgs/gold-8.png');
+            }
+
+            &.g9::after {
+              background-image: url('../imgs/gold-9.png');
+            }
+
+            &.g10::after {
+              background-image: url('../imgs/gold-10.png');
+            }
           }
 
           &.goal {

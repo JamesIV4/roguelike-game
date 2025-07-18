@@ -1,4 +1,4 @@
-// Generated: Thursday, July 17, 2025 at 07:19:49 PM EDT
+// Generated: Thursday, July 17, 2025 at 08:11:35 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -14,7 +14,7 @@ const goldTypes = [
     { id: 'g10', minValue: 85, maxValue: 100, image: 'gold-10.png' }
 ];
 (() => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     // Helper functions
     const isMobileScreen = () => {
         return window.matchMedia('(max-width: 767px)').matches;
@@ -50,9 +50,11 @@ const goldTypes = [
     const overrides = document.createElement('style');
     const zoomLevelStyle = document.createElement('style');
     const stylePlayer = document.createElement('style');
+    const goldStyles = document.createElement('style'); // A single style element for all gold
     (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(overrides);
     (_b = document.querySelector('head')) === null || _b === void 0 ? void 0 : _b.appendChild(zoomLevelStyle);
     (_c = document.querySelector('head')) === null || _c === void 0 ? void 0 : _c.appendChild(stylePlayer);
+    (_d = document.querySelector('head')) === null || _d === void 0 ? void 0 : _d.appendChild(goldStyles);
     // Unit type classes
     class Enemy {
         constructor(elem, id, pos, type, health, stylePos = document.createElement('style'), moveTries = 0) {
@@ -69,17 +71,13 @@ const goldTypes = [
         }
     }
     class Gold {
-        constructor(elem, id, pos, type, value, stylePos = document.createElement('style')) {
-            var _a;
+        constructor(elem, id, pos, type, value) {
             this.elem = elem;
             this.id = id;
             this.pos = pos;
             this.type = type;
             this.value = value;
-            this.stylePos = stylePos;
-            // Append style element to the head
-            (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(this.stylePos);
-        }
+        } // Removed stylePos from Gold
     }
     class Player {
         constructor(elem, id, pos, type, health) {
@@ -307,7 +305,7 @@ const goldTypes = [
                             elemCell.classList.add('floor');
                             elemCell.classList.add('gold');
                             elemCell.classList.add('gold-' + goldCounter);
-                            renderGold(goldPieces[currentLevel][goldPieces[currentLevel].length - 1], [rowIndex, cellIndex]);
+                            elemCell.classList.add(goldType.id); // Add the specific gold type class (e.g., 'g1', 'g2')
                             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
                             levelStore[currentLevel][rowIndex][cellIndex].inside.push('gold');
                         }
@@ -679,12 +677,6 @@ const goldTypes = [
             enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
         }
     };
-    const cleanupGoldStyles = (level) => {
-        for (let goldIndex = 0; goldIndex < goldPieces[level].length; goldIndex++) {
-            let goldObj = goldPieces[level][goldIndex];
-            goldObj.stylePos.parentNode.removeChild(goldObj.stylePos);
-        }
-    };
     const checkVictory = () => {
         if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
             return true;
@@ -700,7 +692,6 @@ const goldTypes = [
         player.reset();
         // Clean up enemies and gold
         cleanupEnemyStyles(currentLevel);
-        cleanupGoldStyles(currentLevel);
         enemies.splice(currentLevel, 1);
         goldPieces.splice(currentLevel, 1);
         enemyCounter = 0;
@@ -738,10 +729,9 @@ const goldTypes = [
         collectedGold = [];
         // Erase screen
         eraseScreen();
-        // Clean up enemy and gold style elements in head
+        // Clean up enemy style elements in head
         try {
             cleanupEnemyStyles(currentLevel);
-            cleanupGoldStyles(currentLevel);
         }
         catch (error) {
             // Error happens when using newGame since arrays are already deleted. Revisit.
@@ -759,7 +749,6 @@ const goldTypes = [
     const newGame = () => {
         levelStore.length = 0; // Wipe out the levelStore
         cleanupEnemyStyles(currentLevel);
-        cleanupGoldStyles(currentLevel);
         enemies.length = 0; // Erase all the enemies
         goldPieces.length = 0; // Erase all the gold
         sessionStats.turnsTotal = 0; // Reset total turns
@@ -768,7 +757,6 @@ const goldTypes = [
     };
     const backToTitleScreen = () => {
         cleanupEnemyStyles(currentLevel);
-        cleanupGoldStyles(currentLevel);
         // Erase the screen
         eraseScreen();
         // Draw the title screen
@@ -1136,34 +1124,26 @@ const goldTypes = [
             currentFocusIndex = 0;
         }, 100);
     };
-    const renderGold = (goldObj, pos) => {
-        const goldType = goldTypes.find((g) => g.id === goldObj.type);
-        goldObj.stylePos.innerHTML =
-            '#display-wrapper #game-grid .row .cell.floor.gold-' +
-                goldObj.id +
-                '::after {' +
-                'background-image: url("../imgs/' +
-                ((goldType === null || goldType === void 0 ? void 0 : goldType.image) || 'gold-1.png') +
-                '");' +
-                'top: ' +
-                pos[0] * sessionStats.zoomLevel * 8 +
-                'px;' +
-                'left: ' +
-                pos[1] * sessionStats.zoomLevel * 8 +
-                'px;' +
-                'height: ' +
-                sessionStats.zoomLevel * 8 +
-                'px;' +
-                'width: ' +
-                sessionStats.zoomLevel * 8 +
-                'px;' +
-                '}';
-    };
+    /**
+     * Rewritten to generate all gold piece positioning styles at once
+     * into a single <style> element for much better performance.
+     */
     const renderGoldPieces = () => {
+        let allGoldStyles = '';
         for (let goldIndex = 0; goldIndex < goldPieces[currentLevel].length; goldIndex++) {
-            let goldObj = goldPieces[currentLevel][goldIndex];
-            renderGold(goldObj, goldObj.pos);
+            const goldObj = goldPieces[currentLevel][goldIndex];
+            const pos = goldObj.pos;
+            const tileSize = sessionStats.zoomLevel * 8;
+            allGoldStyles += `
+        #display-wrapper #game-grid .row .cell.floor.gold-${goldObj.id}::after {
+          top: ${pos[0] * tileSize}px;
+          left: ${pos[1] * tileSize}px;
+          height: ${tileSize}px;
+          width: ${tileSize}px;
         }
+      `;
+        }
+        goldStyles.innerHTML = allGoldStyles;
     };
     const showGoldCollectionText = (pos, value) => {
         var _a, _b;
@@ -1210,7 +1190,6 @@ const goldTypes = [
         }, 1000);
     };
     const collectGoldAt = (pos) => {
-        var _a;
         const cell = levelStore[currentLevel][pos[0]][pos[1]];
         for (let i = 0; i < goldPieces[currentLevel].length; i++) {
             const goldObj = goldPieces[currentLevel][i];
@@ -1226,8 +1205,9 @@ const goldTypes = [
                 cell.inside.splice(cell.inside.indexOf('gold'), 1);
                 cell.elem.classList.remove('gold');
                 cell.elem.classList.remove('gold-' + goldObj.id);
-                (_a = goldObj.stylePos.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(goldObj.stylePos);
+                cell.elem.classList.remove(goldObj.type); // Remove the type class
                 goldPieces[currentLevel].splice(i, 1);
+                renderGoldPieces(); // Re-render the positioning styles for remaining gold
                 break;
             }
         }

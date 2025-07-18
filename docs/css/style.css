@@ -438,6 +438,36 @@ body {
   position: absolute;
   z-index: 99;
 }
+#display-wrapper #game-grid .row .cell.floor.gold.g1::after {
+  background-image: url("../imgs/gold-1.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g2::after {
+  background-image: url("../imgs/gold-2.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g3::after {
+  background-image: url("../imgs/gold-3.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g4::after {
+  background-image: url("../imgs/gold-4.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g5::after {
+  background-image: url("../imgs/gold-5.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g6::after {
+  background-image: url("../imgs/gold-6.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g7::after {
+  background-image: url("../imgs/gold-7.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g8::after {
+  background-image: url("../imgs/gold-8.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g9::after {
+  background-image: url("../imgs/gold-9.png");
+}
+#display-wrapper #game-grid .row .cell.floor.gold.g10::after {
+  background-image: url("../imgs/gold-10.png");
+}
 #display-wrapper #game-grid .row .cell.floor.goal {
   background-image: none !important;
 }
