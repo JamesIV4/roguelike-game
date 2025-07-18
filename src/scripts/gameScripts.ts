@@ -39,6 +39,12 @@ const goldTypes: GoldType[] = [
   };
   const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
+  // --- Audio Performance Note ---
+  // The audio implementation below uses pooling, which is a highly performant pattern for games.
+  // It creates a small number of Audio objects upfront and cycles through them.
+  // This prevents the overhead of creating/destroying objects during gameplay and avoids issues
+  // with sounds cutting each other off on mobile browsers. It's already well-optimized.
+
   // --- Gold Pickup, Success, and Gold Summary Sound Effect Helpers (with audio pool for mobile reliability) ---
   const goldPickupAudioPool = {
     'pickup-1': Array.from({ length: 4 }, () => new Audio('sfx/pickup-1.mp3')),
@@ -191,10 +197,12 @@ const goldTypes: GoldType[] = [
   const zoomLevelStyle = document.createElement('style');
   const stylePlayer = document.createElement('style');
   const goldStyles = document.createElement('style'); // A single style element for all gold
+  const enemyStyles = document.createElement('style'); // A single style element for all enemies
   document.querySelector('head')?.appendChild(overrides);
   document.querySelector('head')?.appendChild(zoomLevelStyle);
   document.querySelector('head')?.appendChild(stylePlayer);
   document.querySelector('head')?.appendChild(goldStyles);
+  document.querySelector('head')?.appendChild(enemyStyles);
 
   // Unit type classes
   class Enemy {
@@ -204,12 +212,8 @@ const goldTypes: GoldType[] = [
       public pos: number[],
       public type: string,
       public health: number,
-      public stylePos: HTMLStyleElement = document.createElement('style'),
       public moveTries: number = 0
-    ) {
-      // Append style element to the head
-      document.querySelector('head')?.appendChild(this.stylePos);
-    }
+    ) {}
   }
 
   class Gold {
@@ -219,7 +223,7 @@ const goldTypes: GoldType[] = [
       public pos: number[],
       public type: string,
       public value: number
-    ) {} // Removed stylePos from Gold
+    ) {}
   }
 
   class Player {
@@ -486,7 +490,6 @@ const goldTypes: GoldType[] = [
             elemCell.classList.add('floor');
             elemCell.classList.add('enemy');
             elemCell.classList.add('enemy-' + enemyCounter);
-            renderEnemy(enemies[currentLevel][enemyCounter - 1], enemies[currentLevel][enemyCounter - 1].pos);
 
             levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
             levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
@@ -535,6 +538,7 @@ const goldTypes: GoldType[] = [
 
     renderPlayer(player.pos);
     renderGoldPieces();
+    renderEnemies();
     drawDecorations();
     centerPlayerInScreen();
 
@@ -838,9 +842,6 @@ const goldTypes: GoldType[] = [
       levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
       levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
 
-      // Update the visuals
-      renderEnemy(enemyObject, newPos);
-
       // Update enemy object
       enemyObject.pos = newPos;
       enemyObject.elem = newCell;
@@ -922,35 +923,22 @@ const goldTypes: GoldType[] = [
       'px;}';
   };
 
-  const renderEnemy = (enemyObj: Enemy, pos: number[]) => {
-    enemyObj.stylePos.innerHTML =
-      '#display-wrapper #game-grid .row .cell.floor.enemy-' +
-      enemyObj.id +
-      '::after {top: ' +
-      pos[0] * sessionStats.zoomLevel * 8 +
-      'px; left: ' +
-      pos[1] * sessionStats.zoomLevel * 8 +
-      'px; height: ' +
-      sessionStats.zoomLevel * 8 +
-      'px;width: ' +
-      sessionStats.zoomLevel * 8 +
-      'px;}';
-  };
-
   const renderEnemies = () => {
+    let allEnemyStyles = '';
     for (let enemyIndex = 0; enemyIndex < enemies[currentLevel].length; enemyIndex++) {
-      let enemyObj = enemies[currentLevel][enemyIndex];
-
-      renderEnemy(enemyObj, enemyObj.pos);
+      const enemyObj = enemies[currentLevel][enemyIndex];
+      const pos = enemyObj.pos;
+      const tileSize = sessionStats.zoomLevel * 8;
+      allEnemyStyles += `
+        #display-wrapper #game-grid .row .cell.floor.enemy-${enemyObj.id}::after {
+          top: ${pos[0] * tileSize}px;
+          left: ${pos[1] * tileSize}px;
+          height: ${tileSize}px;
+          width: ${tileSize}px;
+        }
+      `;
     }
-  };
-
-  const cleanupEnemyStyles = (level: number) => {
-    for (let enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
-      let enemyObj = enemies[level][enemyIndex];
-
-      enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
-    }
+    enemyStyles.innerHTML = allEnemyStyles;
   };
 
   const checkVictory = () => {
@@ -969,7 +957,6 @@ const goldTypes: GoldType[] = [
     player.reset();
 
     // Clean up enemies and gold
-    cleanupEnemyStyles(currentLevel);
     enemies.splice(currentLevel, 1);
     goldPieces.splice(currentLevel, 1);
     enemyCounter = 0;
@@ -1017,13 +1004,6 @@ const goldTypes: GoldType[] = [
     // Erase screen
     eraseScreen();
 
-    // Clean up enemy style elements in head
-    try {
-      cleanupEnemyStyles(currentLevel);
-    } catch (error) {
-      // Error happens when using newGame since arrays are already deleted. Revisit.
-    }
-
     currentLevel = newLevel;
 
     // Check game mode to load the correct level type
@@ -1037,8 +1017,6 @@ const goldTypes: GoldType[] = [
 
   const newGame = () => {
     levelStore.length = 0; // Wipe out the levelStore
-
-    cleanupEnemyStyles(currentLevel);
     enemies.length = 0; // Erase all the enemies
     goldPieces.length = 0; // Erase all the gold
 
@@ -1048,8 +1026,6 @@ const goldTypes: GoldType[] = [
   };
 
   const backToTitleScreen = () => {
-    cleanupEnemyStyles(currentLevel);
-
     // Erase the screen
     eraseScreen();
 
@@ -1383,6 +1359,7 @@ const goldTypes: GoldType[] = [
 
     if (!checkVictory()) {
       enemyAITurn();
+      renderEnemies(); // Rerender all enemies after they have all moved.
     } else {
       displayVictoryMessage();
     }
@@ -1571,7 +1548,7 @@ const goldTypes: GoldType[] = [
     yDown = evt.touches[0].clientY;
   };
 
-  // Replaced 'handleTouchMove' with 'handleTouchEnd'.
+  // MODIFIED: Replaced 'handleTouchMove' with 'handleTouchEnd'.
   const handleTouchEnd = (evt: TouchEvent) => {
     if (!xDown || !yDown) {
       return;

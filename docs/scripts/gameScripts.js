@@ -1,4 +1,4 @@
-// Generated: Friday, July 18, 2025 at 05:43:48 PM EDT
+// Generated: Friday, July 18, 2025 at 05:51:24 PM EDT
 import { levelData } from './levels.js';
 import { generateRandomLevel } from './randomLevelGenerator.js';
 const goldTypes = [
@@ -14,12 +14,17 @@ const goldTypes = [
     { id: 'g10', minValue: 85, maxValue: 100, image: 'gold-10.png' }
 ];
 (() => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     // Helper functions
     const isMobileScreen = () => {
         return window.matchMedia('(max-width: 767px)').matches;
     };
     const handleKeyboardConfirm = (e) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
+    // --- Audio Performance Note ---
+    // The audio implementation below uses pooling, which is a highly performant pattern for games.
+    // It creates a small number of Audio objects upfront and cycles through them.
+    // This prevents the overhead of creating/destroying objects during gameplay and avoids issues
+    // with sounds cutting each other off on mobile browsers. It's already well-optimized.
     // --- Gold Pickup, Success, and Gold Summary Sound Effect Helpers (with audio pool for mobile reliability) ---
     const goldPickupAudioPool = {
         'pickup-1': Array.from({ length: 4 }, () => new Audio('sfx/pickup-1.mp3')),
@@ -154,23 +159,21 @@ const goldTypes = [
     const zoomLevelStyle = document.createElement('style');
     const stylePlayer = document.createElement('style');
     const goldStyles = document.createElement('style'); // A single style element for all gold
+    const enemyStyles = document.createElement('style'); // A single style element for all enemies
     (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(overrides);
     (_b = document.querySelector('head')) === null || _b === void 0 ? void 0 : _b.appendChild(zoomLevelStyle);
     (_c = document.querySelector('head')) === null || _c === void 0 ? void 0 : _c.appendChild(stylePlayer);
     (_d = document.querySelector('head')) === null || _d === void 0 ? void 0 : _d.appendChild(goldStyles);
+    (_e = document.querySelector('head')) === null || _e === void 0 ? void 0 : _e.appendChild(enemyStyles);
     // Unit type classes
     class Enemy {
-        constructor(elem, id, pos, type, health, stylePos = document.createElement('style'), moveTries = 0) {
-            var _a;
+        constructor(elem, id, pos, type, health, moveTries = 0) {
             this.elem = elem;
             this.id = id;
             this.pos = pos;
             this.type = type;
             this.health = health;
-            this.stylePos = stylePos;
             this.moveTries = moveTries;
-            // Append style element to the head
-            (_a = document.querySelector('head')) === null || _a === void 0 ? void 0 : _a.appendChild(this.stylePos);
         }
     }
     class Gold {
@@ -180,7 +183,7 @@ const goldTypes = [
             this.pos = pos;
             this.type = type;
             this.value = value;
-        } // Removed stylePos from Gold
+        }
     }
     class Player {
         constructor(elem, id, pos, type, health) {
@@ -388,7 +391,6 @@ const goldTypes = [
                         elemCell.classList.add('floor');
                         elemCell.classList.add('enemy');
                         elemCell.classList.add('enemy-' + enemyCounter);
-                        renderEnemy(enemies[currentLevel][enemyCounter - 1], enemies[currentLevel][enemyCounter - 1].pos);
                         levelStore[currentLevel][rowIndex][cellIndex].type = 'floor';
                         levelStore[currentLevel][rowIndex][cellIndex].inside.push('enemy');
                         break;
@@ -432,6 +434,7 @@ const goldTypes = [
         background === null || background === void 0 ? void 0 : background.appendChild(grid);
         renderPlayer(player.pos);
         renderGoldPieces();
+        renderEnemies();
         drawDecorations();
         centerPlayerInScreen();
         setTimeout(() => {
@@ -685,8 +688,6 @@ const goldTypes = [
             // Update the level database
             levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.splice(levelStore[currentLevel][enemyObject.pos[0]][enemyObject.pos[1]].inside.indexOf('enemy'), 1);
             levelStore[currentLevel][newPos[0]][newPos[1]].inside.push('enemy');
-            // Update the visuals
-            renderEnemy(enemyObject, newPos);
             // Update enemy object
             enemyObject.pos = newPos;
             enemyObject.elem = newCell;
@@ -755,31 +756,22 @@ const goldTypes = [
                 sessionStats.zoomLevel * 8 +
                 'px;}';
     };
-    const renderEnemy = (enemyObj, pos) => {
-        enemyObj.stylePos.innerHTML =
-            '#display-wrapper #game-grid .row .cell.floor.enemy-' +
-                enemyObj.id +
-                '::after {top: ' +
-                pos[0] * sessionStats.zoomLevel * 8 +
-                'px; left: ' +
-                pos[1] * sessionStats.zoomLevel * 8 +
-                'px; height: ' +
-                sessionStats.zoomLevel * 8 +
-                'px;width: ' +
-                sessionStats.zoomLevel * 8 +
-                'px;}';
-    };
     const renderEnemies = () => {
+        let allEnemyStyles = '';
         for (let enemyIndex = 0; enemyIndex < enemies[currentLevel].length; enemyIndex++) {
-            let enemyObj = enemies[currentLevel][enemyIndex];
-            renderEnemy(enemyObj, enemyObj.pos);
+            const enemyObj = enemies[currentLevel][enemyIndex];
+            const pos = enemyObj.pos;
+            const tileSize = sessionStats.zoomLevel * 8;
+            allEnemyStyles += `
+        #display-wrapper #game-grid .row .cell.floor.enemy-${enemyObj.id}::after {
+          top: ${pos[0] * tileSize}px;
+          left: ${pos[1] * tileSize}px;
+          height: ${tileSize}px;
+          width: ${tileSize}px;
         }
-    };
-    const cleanupEnemyStyles = (level) => {
-        for (let enemyIndex = 0; enemyIndex < enemies[level].length; enemyIndex++) {
-            let enemyObj = enemies[level][enemyIndex];
-            enemyObj.stylePos.parentNode.removeChild(enemyObj.stylePos);
+      `;
         }
+        enemyStyles.innerHTML = allEnemyStyles;
     };
     const checkVictory = () => {
         if (levelStore[currentLevel][player.pos[0]][player.pos[1]].inside.indexOf('stairsDown') > -1) {
@@ -795,7 +787,6 @@ const goldTypes = [
         // Reset player
         player.reset();
         // Clean up enemies and gold
-        cleanupEnemyStyles(currentLevel);
         enemies.splice(currentLevel, 1);
         goldPieces.splice(currentLevel, 1);
         enemyCounter = 0;
@@ -833,13 +824,6 @@ const goldTypes = [
         collectedGold = [];
         // Erase screen
         eraseScreen();
-        // Clean up enemy style elements in head
-        try {
-            cleanupEnemyStyles(currentLevel);
-        }
-        catch (error) {
-            // Error happens when using newGame since arrays are already deleted. Revisit.
-        }
         currentLevel = newLevel;
         // Check game mode to load the correct level type
         if (sessionStats.mode === 'normal') {
@@ -852,7 +836,6 @@ const goldTypes = [
     };
     const newGame = () => {
         levelStore.length = 0; // Wipe out the levelStore
-        cleanupEnemyStyles(currentLevel);
         enemies.length = 0; // Erase all the enemies
         goldPieces.length = 0; // Erase all the gold
         sessionStats.turnsTotal = 0; // Reset total turns
@@ -860,7 +843,6 @@ const goldTypes = [
         goToNewLevel(0); // Go to level 1
     };
     const backToTitleScreen = () => {
-        cleanupEnemyStyles(currentLevel);
         // Erase the screen
         eraseScreen();
         // Draw the title screen
@@ -1154,6 +1136,7 @@ const goldTypes = [
         sessionStats.turnsTotal++;
         if (!checkVictory()) {
             enemyAITurn();
+            renderEnemies(); // Rerender all enemies after they have all moved.
         }
         else {
             displayVictoryMessage();
@@ -1314,7 +1297,7 @@ const goldTypes = [
         xDown = evt.touches[0].clientX;
         yDown = evt.touches[0].clientY;
     };
-    // Replaced 'handleTouchMove' with 'handleTouchEnd'.
+    // MODIFIED: Replaced 'handleTouchMove' with 'handleTouchEnd'.
     const handleTouchEnd = (evt) => {
         var _a;
         if (!xDown || !yDown) {
