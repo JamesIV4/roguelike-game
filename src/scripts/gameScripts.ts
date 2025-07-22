@@ -99,7 +99,12 @@ const goldTypes: GoldType[] = [
 
   // --- Sound Effect Wrappers ---
   // These functions now use the high-performance playSound function.
-  const playWalkSound = () => playSound('walk', 0.5);
+  const playWalkSound = (pitchRange: number = 200) => {
+    const source = playSound('walk', 0.5);
+    if (source) {
+      source.detune.value = Math.random() * 2 * pitchRange;
+    }
+  };
   const playGoldPickupSound = (goldType: string) => {
     const soundKey = ['g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
     playSound(soundKey, 0.7);
