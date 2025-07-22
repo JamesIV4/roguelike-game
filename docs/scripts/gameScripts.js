@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 04:57:42 PM EDT
+// Generated: Tuesday, July 22, 2025 at 05:13:48 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -289,10 +289,12 @@ const goldTypes = [
                 buttons[currentFocusIndex].focus();
             }
         };
-        buttons.forEach((button) => {
+        buttons.forEach((button, index) => {
             button.addEventListener('keydown', handleKeyNavigation);
-            // Add mouseover to focus the button for visual feedback
-            button.addEventListener('mouseenter', () => button.focus());
+            button.addEventListener('mouseover', () => {
+                currentFocusIndex = index;
+                button.focus();
+            });
         });
         setTimeout(() => {
             titleContainer.classList.add('show');
@@ -772,8 +774,12 @@ const goldTypes = [
                 return;
             }
         };
-        buttonElements.forEach((button) => {
+        buttonElements.forEach((button, index) => {
             button.addEventListener('keydown', handleKeyNavigation);
+            button.addEventListener('mouseover', () => {
+                currentFocusIndex = index;
+                button.focus();
+            });
         });
         const transitionEndHandler = () => {
             document.removeEventListener('keydown', handleKeyNavigation);
@@ -941,8 +947,12 @@ const goldTypes = [
                 buttons[currentFocusIndex].focus();
             }
         };
-        buttons.forEach((button) => {
+        buttons.forEach((button, index) => {
             button.addEventListener('keydown', handleKeyNavigation);
+            button.addEventListener('mouseover', () => {
+                currentFocusIndex = index;
+                button.focus();
+            });
         });
         messageBox.classList.add('top');
         messageBox.classList.add('show');

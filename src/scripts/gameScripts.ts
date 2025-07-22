@@ -343,10 +343,12 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    buttons.forEach((button) => {
+    buttons.forEach((button, index) => {
       button.addEventListener('keydown', handleKeyNavigation);
-      // Add mouseover to focus the button for visual feedback
-      button.addEventListener('mouseenter', () => button.focus());
+      button.addEventListener('mouseover', () => {
+        currentFocusIndex = index;
+        button.focus();
+      });
     });
 
     setTimeout(() => {
@@ -888,8 +890,12 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    buttonElements.forEach((button) => {
+    buttonElements.forEach((button, index) => {
       button.addEventListener('keydown', handleKeyNavigation);
+      button.addEventListener('mouseover', () => {
+        currentFocusIndex = index;
+        button.focus();
+      });
     });
 
     const transitionEndHandler = () => {
@@ -1074,8 +1080,12 @@ const goldTypes: GoldType[] = [
       }
     };
 
-    buttons.forEach((button) => {
+    buttons.forEach((button, index) => {
       button.addEventListener('keydown', handleKeyNavigation);
+      button.addEventListener('mouseover', () => {
+        currentFocusIndex = index;
+        button.focus();
+      });
     });
 
     messageBox.classList.add('top');

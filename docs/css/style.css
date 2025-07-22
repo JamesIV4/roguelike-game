@@ -86,6 +86,10 @@ body {
   margin-top: 1.5rem;
   padding: 0.3rem 1rem;
 }
+#display-wrapper #ui-display .titlescreen-container .btn:hover, #display-wrapper #ui-display .titlescreen-container .btn:focus {
+  outline: 2px solid #00bfff;
+  outline-offset: 2px;
+}
 #display-wrapper #ui-display #message {
   align-items: center;
   background-color: rgba(11, 10, 10, 0.85);
@@ -132,6 +136,10 @@ body {
   margin-bottom: 0.6rem;
   margin-top: 1.5rem;
   padding: 0.3rem 1rem;
+}
+#display-wrapper #ui-display #message .btn:hover, #display-wrapper #ui-display #message .btn:focus {
+  outline: 2px solid #00bfff;
+  outline-offset: 2px;
 }
 #display-wrapper #ui-display #message.show {
   opacity: 1;
