@@ -139,7 +139,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
         placeWall(y, x2 - 1);
         placeWall(y, x2 + 1);
       }
-      
+
       // Add corner walls at the bend
       placeWall(y1 - 1, x2 - 1); // Top-left corner
       placeWall(y1 - 1, x2 + 1); // Top-right corner
@@ -157,7 +157,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
         placeWall(y2 - 1, x);
         placeWall(y2 + 1, x);
       }
-      
+
       // Add corner walls at the bend
       placeWall(y2 - 1, x1 - 1); // Top-left corner
       placeWall(y2 - 1, x1 + 1); // Top-right corner
@@ -230,18 +230,18 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
   const placeEnemies = (numEnemies: number) => {
     let placed: number = 0;
     let tries = 0;
-    
+
     // Calculate room weights based on walkable area
-    const roomWeights = rooms.map(room => (room.height - 2) * (room.width - 2));
+    const roomWeights = rooms.map((room) => (room.height - 2) * (room.width - 2));
     const totalWeight = roomWeights.reduce((sum, weight) => sum + weight, 0);
-    
+
     // Distribute enemies among rooms
     while (placed < numEnemies && tries < 1000) {
       // Select a weighted random room
       const randomValue = Math.random() * totalWeight;
       let cumulativeWeight = 0;
       let selectedRoom = rooms[0];
-      
+
       for (let i = 0; i < rooms.length; i++) {
         cumulativeWeight += roomWeights[i];
         if (randomValue <= cumulativeWeight) {
@@ -249,11 +249,11 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
           break;
         }
       }
-      
+
       // Get a random position within the selected room (avoiding walls)
       const y = selectedRoom.corners.topLeft[0] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.height - 2));
       const x = selectedRoom.corners.topLeft[1] + 1 + Math.floor(Math.random() * Math.max(1, selectedRoom.width - 2));
-      
+
       // Check if the position is valid and empty
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
         levelGrid[y][x] = 'F'; // Place an enemy
@@ -269,35 +269,35 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
     const goldCount = Math.floor(Math.random() * 8) + 5 + Math.floor(currentLevel * 1.5); // 5-12 + level scaling
     let placed = 0;
     let tries = 0;
-    
+
     const [playerY, playerX] = playerStartRoom.getCenter();
-    
+
     while (placed < goldCount && tries < 1000) {
       const y = Math.floor(Math.random() * levelHeight);
       const x = Math.floor(Math.random() * levelWidth);
-      
+
       // Place gold on empty floor tiles
       if (y >= 0 && y < levelHeight && x >= 0 && x < levelWidth && levelGrid[y][x] === '') {
         // Calculate distance from player start position
         const distance = Math.sqrt(Math.pow(x - playerX, 2) + Math.pow(y - playerY, 2));
         const maxDistance = Math.sqrt(Math.pow(levelWidth, 2) + Math.pow(levelHeight, 2));
         const distanceFactor = Math.min(distance / maxDistance, 1);
-        
+
         // Weight gold types based on distance from player start
         const randomValue = Math.random();
-        
+
         let goldType;
         if (randomValue < 0.6 - distanceFactor * 0.4) {
           // Low-tier gold (g1-g3) - more likely near start
           goldType = goldTypes[Math.floor(Math.random() * 3)];
         } else if (randomValue < 0.9 - distanceFactor * 0.2) {
-          // Mid-tier gold (g4-g7)
-          goldType = goldTypes[3 + Math.floor(Math.random() * 4)];
+          // Mid-tier gold (g4-g6)
+          goldType = goldTypes[3 + Math.floor(Math.random() * 3)];
         } else {
-          // High-tier gold (g8-g10) - more likely far from start
-          goldType = goldTypes[7 + Math.floor(Math.random() * 3)];
+          // High-tier gold (g7-g10) - more likely far from start
+          goldType = goldTypes[7 + Math.floor(Math.random() * 4)];
         }
-        
+
         levelGrid[y][x] = goldType;
         placed++;
       }

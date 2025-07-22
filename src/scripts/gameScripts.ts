@@ -23,12 +23,12 @@ const goldTypes: GoldType[] = [
   { id: 'g1', minValue: 1, maxValue: 1, image: 'gold-1.png' },
   { id: 'g2', minValue: 2, maxValue: 5, image: 'gold-2.png' },
   { id: 'g3', minValue: 5, maxValue: 15, image: 'gold-3.png' },
-  { id: 'g4', minValue: 10, maxValue: 25, image: 'gold-4.png' },
-  { id: 'g5', minValue: 20, maxValue: 35, image: 'gold-5.png' },
+  { id: 'g4', minValue: 15, maxValue: 20, image: 'gold-4.png' },
+  { id: 'g5', minValue: 20, maxValue: 30, image: 'gold-5.png' },
   { id: 'g6', minValue: 30, maxValue: 50, image: 'gold-6.png' },
-  { id: 'g7', minValue: 40, maxValue: 65, image: 'gold-7.png' },
-  { id: 'g8', minValue: 55, maxValue: 80, image: 'gold-8.png' },
-  { id: 'g9', minValue: 70, maxValue: 90, image: 'gold-9.png' },
+  { id: 'g7', minValue: 50, maxValue: 60, image: 'gold-7.png' },
+  { id: 'g8', minValue: 60, maxValue: 70, image: 'gold-8.png' },
+  { id: 'g9', minValue: 70, maxValue: 85, image: 'gold-9.png' },
   { id: 'g10', minValue: 85, maxValue: 100, image: 'gold-10.png' }
 ];
 
@@ -106,7 +106,7 @@ const goldTypes: GoldType[] = [
     }
   };
   const playGoldPickupSound = (goldType: string) => {
-    const soundKey = ['g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
+    const soundKey = ['g7', 'g8', 'g9', 'g10'].includes(goldType) ? 'pickup-2' : 'pickup-1';
     playSound(soundKey, 0.7);
   };
   const playSuccessSound = () => playSound('success', 1);
@@ -116,17 +116,26 @@ const goldTypes: GoldType[] = [
 
   // Special handling for the summary sound which needs to be stoppable.
   let goldSummaryAudioSource: AudioBufferSourceNode | null = null;
+  let goldSummaryFading = false;
   const playGoldSummarySound = () => {
     goldSummaryAudioSource = playSound('gold-summary', 0.5);
   };
   const stopGoldSummarySound = () => {
-    if (goldSummaryAudioSource) {
-      try {
-        goldSummaryAudioSource.stop();
-      } catch (e) {
-        // Can error if already stopped
-      }
-      goldSummaryAudioSource = null;
+    // Fade the gold summary sound out over 200 ms instead of hard stopping, and don't start over if it's already being faded
+    if (goldSummaryAudioSource && audioContext && !goldSummaryFading) {
+      goldSummaryFading = true;
+      const gainNode = audioContext.createGain();
+      goldSummaryAudioSource.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+      setTimeout(() => {
+        try {
+          goldSummaryAudioSource?.stop();
+        } catch (e) {}
+        goldSummaryAudioSource = null;
+        goldSummaryFading = false;
+      }, 500);
     }
   };
 
@@ -1037,9 +1046,7 @@ const goldTypes: GoldType[] = [
       );
     });
 
-    if (sortedGold.length > 0) {
-      setTimeout(stopGoldSummarySound, 300 + (sortedGold.length - 1) * 200 + 400);
-    } else {
+    if (sortedGold.length === 0) {
       setTimeout(stopGoldSummarySound, 700);
     }
 
@@ -1145,6 +1152,11 @@ const goldTypes: GoldType[] = [
     collectedGold.push({ value: goldObj.value, type: goldObj.type });
     sessionStats.goldLevel += goldObj.value;
     sessionStats.goldTotal += goldObj.value;
+
+    // Start fading gold summary sound on second-to-last piece
+    if (goldPieces[currentLevel].length === 1) {
+      stopGoldSummarySound();
+    }
 
     const goldCounterElem = document.querySelector('#gold-counter');
     if (goldCounterElem) goldCounterElem.textContent = `Gold: ${sessionStats.goldTotal}`;

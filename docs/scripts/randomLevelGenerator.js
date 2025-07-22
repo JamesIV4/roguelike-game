@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 04:11:20 PM EDT
+// Generated: Tuesday, July 22, 2025 at 04:30:07 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -207,7 +207,7 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
         let placed = 0;
         let tries = 0;
         // Calculate room weights based on walkable area
-        const roomWeights = rooms.map(room => (room.height - 2) * (room.width - 2));
+        const roomWeights = rooms.map((room) => (room.height - 2) * (room.width - 2));
         const totalWeight = roomWeights.reduce((sum, weight) => sum + weight, 0);
         // Distribute enemies among rooms
         while (placed < numEnemies && tries < 1000) {
@@ -257,12 +257,12 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
                     goldType = goldTypes[Math.floor(Math.random() * 3)];
                 }
                 else if (randomValue < 0.9 - distanceFactor * 0.2) {
-                    // Mid-tier gold (g4-g7)
-                    goldType = goldTypes[3 + Math.floor(Math.random() * 4)];
+                    // Mid-tier gold (g4-g6)
+                    goldType = goldTypes[3 + Math.floor(Math.random() * 3)];
                 }
                 else {
-                    // High-tier gold (g8-g10) - more likely far from start
-                    goldType = goldTypes[7 + Math.floor(Math.random() * 3)];
+                    // High-tier gold (g7-g10) - more likely far from start
+                    goldType = goldTypes[7 + Math.floor(Math.random() * 4)];
                 }
                 levelGrid[y][x] = goldType;
                 placed++;
