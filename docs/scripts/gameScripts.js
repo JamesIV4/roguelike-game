@@ -1,4 +1,4 @@
-// Generated: Friday, July 18, 2025 at 06:55:51 PM EDT
+// Generated: Tuesday, July 22, 2025 at 03:57:59 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -735,7 +735,7 @@ const goldTypes = [
                 closeMessageWindow();
                 setTimeout(buttons[index].action, 360);
             });
-            btn.addEventListener('keydown', keydownHandler);
+            btn.addEventListener('keydown', (e) => keydownHandler(e));
         });
         let currentFocusIndex = 0;
         const handleKeyNavigation = (e) => {
@@ -744,17 +744,20 @@ const goldTypes = [
             if (prevKeys.includes(e.key)) {
                 e.preventDefault();
                 currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
+                buttonElements[currentFocusIndex].focus();
             }
             else if (nextKeys.includes(e.key)) {
                 e.preventDefault();
                 currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
+                buttonElements[currentFocusIndex].focus();
             }
             else {
                 return;
             }
-            buttonElements[currentFocusIndex].focus();
         };
-        document.addEventListener('keydown', handleKeyNavigation);
+        buttonElements.forEach((button) => {
+            button.addEventListener('keydown', handleKeyNavigation);
+        });
         const transitionEndHandler = () => {
             document.removeEventListener('keydown', handleKeyNavigation);
             buttonElements.forEach((btn) => btn.removeEventListener('keydown', keydownHandler));

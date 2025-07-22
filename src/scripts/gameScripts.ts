@@ -845,7 +845,7 @@ const goldTypes: GoldType[] = [
         closeMessageWindow();
         setTimeout(buttons[index].action, 360);
       });
-      btn.addEventListener('keydown', keydownHandler);
+      btn.addEventListener('keydown', (e) => keydownHandler(e));
     });
 
     let currentFocusIndex = 0;
@@ -855,16 +855,19 @@ const goldTypes: GoldType[] = [
       if (prevKeys.includes(e.key)) {
         e.preventDefault();
         currentFocusIndex = (currentFocusIndex - 1 + buttonElements.length) % buttonElements.length;
+        buttonElements[currentFocusIndex].focus();
       } else if (nextKeys.includes(e.key)) {
         e.preventDefault();
         currentFocusIndex = (currentFocusIndex + 1) % buttonElements.length;
+        buttonElements[currentFocusIndex].focus();
       } else {
         return;
       }
-      buttonElements[currentFocusIndex].focus();
     };
 
-    document.addEventListener('keydown', handleKeyNavigation);
+    buttonElements.forEach((button) => {
+      button.addEventListener('keydown', handleKeyNavigation);
+    });
 
     const transitionEndHandler = () => {
       document.removeEventListener('keydown', handleKeyNavigation);
