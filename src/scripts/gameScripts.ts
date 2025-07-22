@@ -48,7 +48,7 @@ const goldTypes: GoldType[] = [
 
   // List of all sound assets to be loaded
   const soundAssets = [
-    { name: 'pickup-1', url: 'sfx/pickup-1.mp3' },
+    { name: 'pickup-1', url: 'sfx/pickup-1-alt.mp3' },
     { name: 'pickup-2', url: 'sfx/pickup-2.mp3' },
     { name: 'success', url: 'sfx/success-1.mp3' },
     { name: 'gold-summary', url: 'sfx/gold-summary.mp3' },
@@ -1046,7 +1046,9 @@ const goldTypes: GoldType[] = [
       );
     });
 
-    if (sortedGold.length === 0) {
+    if (sortedGold.length > 0) {
+      setTimeout(stopGoldSummarySound, 300 + (sortedGold.length - 1) * 200 + 400);
+    } else {
       setTimeout(stopGoldSummarySound, 700);
     }
 

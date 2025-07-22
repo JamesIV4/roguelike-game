@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 04:30:07 PM EDT
+// Generated: Tuesday, July 22, 2025 at 04:49:44 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,7 +37,7 @@ const goldTypes = [
     let soundsLoaded = false;
     // List of all sound assets to be loaded
     const soundAssets = [
-        { name: 'pickup-1', url: 'sfx/pickup-1.mp3' },
+        { name: 'pickup-1', url: 'sfx/pickup-1-alt.mp3' },
         { name: 'pickup-2', url: 'sfx/pickup-2.mp3' },
         { name: 'success', url: 'sfx/success-1.mp3' },
         { name: 'gold-summary', url: 'sfx/gold-summary.mp3' },
@@ -919,7 +919,10 @@ const goldTypes = [
                 goldVisual.appendChild(goldPiece);
             }, 300 + index * 200);
         });
-        if (sortedGold.length === 0) {
+        if (sortedGold.length > 0) {
+            setTimeout(stopGoldSummarySound, 300 + (sortedGold.length - 1) * 200 + 400);
+        }
+        else {
             setTimeout(stopGoldSummarySound, 700);
         }
         let currentFocusIndex = 0;
