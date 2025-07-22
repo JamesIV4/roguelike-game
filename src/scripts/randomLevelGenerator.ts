@@ -295,7 +295,7 @@ export const generateRandomLevel = (currentLevel: number, levelHeight: number, l
           goldType = goldTypes[3 + Math.floor(Math.random() * 3)];
         } else {
           // High-tier gold (g7-g10) - more likely far from start
-          goldType = goldTypes[7 + Math.floor(Math.random() * 4)];
+          goldType = goldTypes[6 + Math.floor(Math.random() * 4)];
         }
 
         levelGrid[y][x] = goldType;

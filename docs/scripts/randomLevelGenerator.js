@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 05:13:48 PM EDT
+// Generated: Tuesday, July 22, 2025 at 06:55:19 PM EDT
 export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
     let randLevelDatabase = [];
     const roomNum = Math.floor(Math.random() * (currentLevel + 4) + 3);
@@ -262,7 +262,7 @@ export const generateRandomLevel = (currentLevel, levelHeight, levelWidth) => {
                 }
                 else {
                     // High-tier gold (g7-g10) - more likely far from start
-                    goldType = goldTypes[7 + Math.floor(Math.random() * 4)];
+                    goldType = goldTypes[6 + Math.floor(Math.random() * 4)];
                 }
                 levelGrid[y][x] = goldType;
                 placed++;
