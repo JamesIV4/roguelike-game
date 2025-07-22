@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 04:49:44 PM EDT
+// Generated: Tuesday, July 22, 2025 at 04:57:42 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -68,6 +68,7 @@ const goldTypes = [
         }
     });
     // Generic function to play any pre-loaded sound from its buffer.
+    // MODIFIED: Now returns both the source and the gain node for more control.
     const playSound = (soundName, volume = 1) => {
         if (!soundsLoaded || !audioBuffers.has(soundName) || !audioContext)
             return null;
@@ -78,14 +79,15 @@ const goldTypes = [
         source.connect(gainNode);
         gainNode.connect(audioContext.destination);
         source.start(0);
-        return source;
+        return { source, gainNode };
     };
     // --- Sound Effect Wrappers ---
     // These functions now use the high-performance playSound function.
     const playWalkSound = (pitchRange = 200) => {
-        const source = playSound('walk', 0.5);
-        if (source) {
-            source.detune.value = Math.random() * 2 * pitchRange;
+        // Access the 'source' property from the object returned by playSound.
+        const sound = playSound('walk', 0.5);
+        if (sound) {
+            sound.source.detune.value = Math.random() * 2 * pitchRange;
         }
     };
     const playGoldPickupSound = (goldType) => {
@@ -97,28 +99,29 @@ const goldTypes = [
     const playButtonClickSound = () => playSound('button-click', 0.7);
     const playUIHoverSound = () => playSound('ui-hover', 0.7);
     // Special handling for the summary sound which needs to be stoppable.
-    let goldSummaryAudioSource = null;
+    let goldSummarySound = null;
     let goldSummaryFading = false;
     const playGoldSummarySound = () => {
-        goldSummaryAudioSource = playSound('gold-summary', 0.5);
+        goldSummarySound = playSound('gold-summary', 0.5);
     };
     const stopGoldSummarySound = () => {
-        // Fade the gold summary sound out over 200 ms instead of hard stopping, and don't start over if it's already being faded
-        if (goldSummaryAudioSource && audioContext && !goldSummaryFading) {
+        if (goldSummarySound && audioContext && !goldSummaryFading) {
             goldSummaryFading = true;
-            const gainNode = audioContext.createGain();
-            goldSummaryAudioSource.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+            const { source, gainNode } = goldSummarySound;
+            const fadeTime = 0.3; // 300ms
+            // Use the existing gainNode to fade out.
+            // This ensures we're modifying the sound that's actually playing.
+            gainNode.gain.cancelScheduledValues(audioContext.currentTime); // Clear any future gain changes
+            gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime); // Start fade from current volume
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeTime);
+            // Schedule the source to stop *after* the fade is complete.
+            // This prevents the abrupt cutoff sound.
+            source.stop(audioContext.currentTime + fadeTime);
+            // Use a timeout to reset our state variables after the sound has stopped.
             setTimeout(() => {
-                try {
-                    goldSummaryAudioSource === null || goldSummaryAudioSource === void 0 ? void 0 : goldSummaryAudioSource.stop();
-                }
-                catch (e) { }
-                goldSummaryAudioSource = null;
+                goldSummarySound = null;
                 goldSummaryFading = false;
-            }, 500);
+            }, fadeTime * 1000);
         }
     };
     // Attach global event listeners for button click and hover sounds
