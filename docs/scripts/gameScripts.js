@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 06:55:19 PM EDT
+// Generated: Tuesday, July 22, 2025 at 07:42:02 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -298,7 +298,9 @@ const goldTypes = [
         });
         setTimeout(() => {
             titleContainer.classList.add('show');
-            btnStartNormal.focus();
+            if (!isMobileScreen()) {
+                btnStartNormal.focus();
+            }
         }, 150);
         const closeTitlescreen = () => {
             buttons.forEach((button) => {
@@ -787,7 +789,12 @@ const goldTypes = [
             messageBox.removeEventListener('transitionend', transitionEndHandler);
         };
         messageBox.addEventListener('transitionend', transitionEndHandler);
-        setTimeout(() => { var _a; return (_a = buttonElements[0]) === null || _a === void 0 ? void 0 : _a.focus(); }, 100);
+        setTimeout(() => {
+            var _a;
+            if (!isMobileScreen()) {
+                (_a = buttonElements[0]) === null || _a === void 0 ? void 0 : _a.focus();
+            }
+        }, 100);
     };
     const displayVictoryMessage = () => {
         playSuccessSound();
@@ -957,17 +964,19 @@ const goldTypes = [
         messageBox.classList.add('top');
         messageBox.classList.add('show');
         const focusDelay = Math.max(100, sortedGold.length * 100 + 200);
-        if (messageBox.contains(btnNextLevel)) {
-            setTimeout(() => {
-                btnNextLevel.focus();
-                currentFocusIndex = buttons.indexOf(btnNextLevel);
-            }, focusDelay);
-        }
-        else {
-            setTimeout(() => {
-                btnPlayAgain.focus();
-                currentFocusIndex = 0;
-            }, focusDelay);
+        if (!isMobileScreen()) {
+            if (messageBox.contains(btnNextLevel)) {
+                setTimeout(() => {
+                    btnNextLevel.focus();
+                    currentFocusIndex = buttons.indexOf(btnNextLevel);
+                }, focusDelay);
+            }
+            else {
+                setTimeout(() => {
+                    btnPlayAgain.focus();
+                    currentFocusIndex = 0;
+                }, focusDelay);
+            }
         }
     };
     const newTurn = () => {

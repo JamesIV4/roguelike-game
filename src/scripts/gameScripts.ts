@@ -353,7 +353,9 @@ const goldTypes: GoldType[] = [
 
     setTimeout(() => {
       titleContainer.classList.add('show');
-      btnStartNormal.focus();
+      if (!isMobileScreen()) {
+        btnStartNormal.focus();
+      }
     }, 150);
 
     const closeTitlescreen = () => {
@@ -905,7 +907,11 @@ const goldTypes: GoldType[] = [
     };
     messageBox.addEventListener('transitionend', transitionEndHandler);
 
-    setTimeout(() => buttonElements[0]?.focus(), 100);
+    setTimeout(() => {
+      if (!isMobileScreen()) {
+        buttonElements[0]?.focus();
+      }
+    }, 100);
   };
 
   const displayVictoryMessage = () => {
@@ -1092,16 +1098,18 @@ const goldTypes: GoldType[] = [
     messageBox.classList.add('show');
 
     const focusDelay = Math.max(100, sortedGold.length * 100 + 200);
-    if (messageBox.contains(btnNextLevel)) {
-      setTimeout(() => {
-        btnNextLevel.focus();
-        currentFocusIndex = buttons.indexOf(btnNextLevel);
-      }, focusDelay);
-    } else {
-      setTimeout(() => {
-        btnPlayAgain.focus();
-        currentFocusIndex = 0;
-      }, focusDelay);
+    if (!isMobileScreen()) {
+      if (messageBox.contains(btnNextLevel)) {
+        setTimeout(() => {
+          btnNextLevel.focus();
+          currentFocusIndex = buttons.indexOf(btnNextLevel);
+        }, focusDelay);
+      } else {
+        setTimeout(() => {
+          btnPlayAgain.focus();
+          currentFocusIndex = 0;
+        }, focusDelay);
+      }
     }
   };
 
