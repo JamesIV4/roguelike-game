@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 07:42:02 PM EDT
+// Generated: Tuesday, July 22, 2025 at 08:17:59 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -167,6 +167,7 @@ const goldTypes = [
         retries: 0,
         zoomLevel: isMobileScreen() ? 3 : 4,
         dead: false,
+        playing: true,
         mode: 'normal',
         goldTotal: 0,
         goldLevel: 0
@@ -240,6 +241,7 @@ const goldTypes = [
         sessionStats.turnsLevel = 0;
         sessionStats.retries = 0;
         sessionStats.dead = false;
+        sessionStats.playing = true;
         sessionStats.goldTotal = 0;
         sessionStats.goldLevel = 0;
         collectedGold = [];
@@ -438,16 +440,25 @@ const goldTypes = [
         setTimeout(() => {
             grid.classList.add('show');
         }, 300);
-        const handleBackBtn = (e) => {
+        const backToTitleScreenMessageBox = () => showMessageBox('Abandon the current game and return to the Title Screen?', [
+            { text: 'Confirm', action: () => backToTitleScreen() },
+            { text: 'Cancel', action: () => { } }
+        ], 'inline');
+        const handleBackBtnPress = (e) => {
             if (handleKeyboardConfirm(e)) {
-                showMessageBox('Abandon the current game and return to the Title Screen?', [
-                    { text: 'Confirm', action: () => backToTitleScreen() },
-                    { text: 'Cancel', action: () => { } }
-                ], 'inline');
+                backToTitleScreenMessageBox();
             }
         };
-        backButton.addEventListener('click', () => handleBackBtn());
-        backButton.addEventListener('keydown', (e) => handleBackBtn(e));
+        document.addEventListener('keydown', (e) => {
+            var _a;
+            if (sessionStats.dead || !sessionStats.playing || ((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show')))
+                return;
+            if (e.key === 'Escape') {
+                backToTitleScreenMessageBox();
+            }
+        });
+        backButton.addEventListener('click', () => handleBackBtnPress());
+        backButton.addEventListener('keydown', (e) => handleBackBtnPress(e));
         const handleSwitchCameraBtn = (e) => {
             if (handleKeyboardConfirm(e)) {
                 toggleCenterMode();
@@ -689,6 +700,7 @@ const goldTypes = [
             background === null || background === void 0 ? void 0 : background.removeChild(grid);
     };
     const goToNewLevel = (newLevel) => {
+        sessionStats.playing = true;
         sessionStats.turnsLevel = 0;
         sessionStats.goldLevel = 0;
         enemyCounter = 0;
@@ -704,9 +716,11 @@ const goldTypes = [
         goldPieces.length = 0;
         sessionStats.turnsTotal = 0;
         sessionStats.goldTotal = 0;
+        sessionStats.playing = true;
         goToNewLevel(0);
     };
     const backToTitleScreen = () => {
+        sessionStats.playing = false;
         eraseScreen();
         setTimeout(drawTitleScreen, 50);
     };
@@ -806,7 +820,6 @@ const goldTypes = [
         const goldText = document.createElement('div');
         const goldVisual = document.createElement('div');
         const message = document.createElement('p');
-        const btnPlayAgain = document.createElement('button');
         const btnNextLevel = document.createElement('button');
         const btnBackToTitle = document.createElement('button');
         // Setup gold display
@@ -827,31 +840,6 @@ const goldTypes = [
                 messageBox.innerHTML = '';
             }, 360);
         };
-        const playAgainOrNewGame = () => {
-            if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
-                setTimeout(() => {
-                    newGame();
-                }, 360);
-            }
-            else {
-                setTimeout(() => {
-                    retryLevel();
-                }, 360);
-            }
-        };
-        btnPlayAgain.classList.add('btn');
-        btnPlayAgain.textContent = 'Play again';
-        btnPlayAgain.setAttribute('tabindex', '0');
-        const handleBtnPlayAgain = (e) => {
-            var _a;
-            if (!e || (e instanceof KeyboardEvent && handleKeyboardConfirm(e)) || e.type === 'click') {
-                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
-                closeMessageWindow();
-                playAgainOrNewGame();
-            }
-        };
-        btnPlayAgain.addEventListener('click', handleBtnPlayAgain);
-        btnPlayAgain.addEventListener('keydown', (e) => handleBtnPlayAgain(e));
         btnNextLevel.classList.add('btn');
         btnNextLevel.textContent = 'Go to level ' + (currentLevel + 2);
         btnNextLevel.setAttribute('tabindex', '0');
@@ -895,7 +883,6 @@ const goldTypes = [
                         sessionStats.retries +
                         ' retries. Good job!';
             }
-            btnPlayAgain.textContent = 'Start a new game';
         }
         btnBackToTitle.classList.add('btn');
         btnBackToTitle.textContent = 'Back to Title Screen';
@@ -914,14 +901,15 @@ const goldTypes = [
         btnBackToTitle.addEventListener('keydown', (e) => handleBackToTitleScreen(e));
         messageBox.appendChild(goldDisplay);
         messageBox.appendChild(message);
-        messageBox.appendChild(btnPlayAgain);
-        buttons.push(btnPlayAgain);
         if (sessionStats.mode === 'procedural' || (sessionStats.mode === 'normal' && levelData.length > currentLevel + 1)) {
             messageBox.appendChild(btnNextLevel);
             buttons.push(btnNextLevel);
         }
-        messageBox.appendChild(btnBackToTitle);
-        buttons.push(btnBackToTitle);
+        // Only on the last level of a normal game, show the back to title button
+        if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+            messageBox.appendChild(btnBackToTitle);
+            buttons.push(btnBackToTitle);
+        }
         const sortedGold = [...collectedGold].sort((a, b) => a.value - b.value);
         let runningTotal = 0;
         playGoldSummarySound();
@@ -965,18 +953,10 @@ const goldTypes = [
         messageBox.classList.add('show');
         const focusDelay = Math.max(100, sortedGold.length * 100 + 200);
         if (!isMobileScreen()) {
-            if (messageBox.contains(btnNextLevel)) {
-                setTimeout(() => {
-                    btnNextLevel.focus();
-                    currentFocusIndex = buttons.indexOf(btnNextLevel);
-                }, focusDelay);
-            }
-            else {
-                setTimeout(() => {
-                    btnPlayAgain.focus();
-                    currentFocusIndex = 0;
-                }, focusDelay);
-            }
+            setTimeout(() => {
+                btnNextLevel.focus();
+                currentFocusIndex = buttons.indexOf(btnNextLevel);
+            }, focusDelay);
         }
     };
     const newTurn = () => {
@@ -995,6 +975,7 @@ const goldTypes = [
         const playerGraphic = document.querySelector('.player');
         playerGraphic === null || playerGraphic === void 0 ? void 0 : playerGraphic.classList.add('ashes');
         sessionStats.dead = true;
+        sessionStats.playing = false;
         const message = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
         showMessageBox(message, [
             { text: 'Try Again', action: retryLevel },
