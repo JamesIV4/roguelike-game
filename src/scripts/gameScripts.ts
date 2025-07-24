@@ -521,7 +521,7 @@ const goldTypes: GoldType[] = [
       messageWindow = document.createElement('div'),
       buttonContainer = document.createElement('div'),
       btnStartNormal = document.createElement('div'),
-      btnStartProcudural = document.createElement('div'),
+      btnStartProcedural = document.createElement('div'),
       btnLoadGame = document.createElement('div');
 
     uiElem.id = 'ui-display';
@@ -530,30 +530,30 @@ const goldTypes: GoldType[] = [
     messageWindow.id = 'message';
     buttonContainer.classList.add('button-container');
     btnStartNormal.classList.add('btn');
-    btnStartProcudural.classList.add('btn');
+    btnStartProcedural.classList.add('btn');
     btnLoadGame.classList.add('btn');
 
     btnStartNormal.setAttribute('tabindex', '0');
-    btnStartProcudural.setAttribute('tabindex', '0');
+    btnStartProcedural.setAttribute('tabindex', '0');
     btnLoadGame.setAttribute('tabindex', '0');
 
     background?.classList.add('titlescreen');
 
     titleHeader.textContent = 'Fire Gauntlet';
     btnStartNormal.textContent = 'Start Normal Game';
-    btnStartProcudural.textContent = 'Start Procedural Game';
+    btnStartProcedural.textContent = 'Start Procedural Game';
     btnLoadGame.textContent = 'Load Game';
 
     background?.appendChild(uiElem);
     titleContainer.appendChild(titleHeader);
     titleContainer.appendChild(buttonContainer);
     buttonContainer.appendChild(btnStartNormal);
-    buttonContainer.appendChild(btnStartProcudural);
+    buttonContainer.appendChild(btnStartProcedural);
     buttonContainer.appendChild(btnLoadGame);
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    const buttons = [btnStartNormal, btnStartProcudural, btnLoadGame];
+    const buttons = [btnStartNormal, btnStartProcedural, btnLoadGame];
     let currentFocusIndex = 0;
 
     const handleKeyNavigation = (e: KeyboardEvent) => {
@@ -607,8 +607,8 @@ const goldTypes: GoldType[] = [
 
     btnStartNormal.addEventListener('click', (e) => handleStartButton('normal', e), { once: true });
     btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e), { once: true });
-    btnStartProcudural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
-    btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
+    btnStartProcedural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
+    btnStartProcedural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
 
     // Check IndexedDB for saved game and enable/disable Load Game button accordingly
     openGameDB().then((db) => {
@@ -801,15 +801,7 @@ const goldTypes: GoldType[] = [
             action: () => {
               saveGameToStorage();
               // Optionally show a confirmation message
-              showMessageBox(
-                'Game saved!',
-                [
-                  { text: 'Back', action: backToTitleScreenMessageBox },
-                  { text: 'Confirm', action: backToTitleScreen },
-                  { text: 'Cancel', action: () => {} }
-                ],
-                'inline'
-              );
+              showMessageBox('Game saved!', [{ text: 'Confirm', action: backToTitleScreen }], 'inline');
             }
           },
           { text: 'Confirm', action: () => backToTitleScreen() },
