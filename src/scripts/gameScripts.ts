@@ -81,6 +81,41 @@ const goldTypes: GoldType[] = [
       soundsLoaded = false;
     }
   };
+  // ---- Audio resume/unlock helpers ----
+  const resumeAudioIfNeeded = async () => {
+    if (!audioContext) return;
+    if (audioContext.state === 'suspended') {
+      try {
+        await audioContext.resume();
+      } catch (e) {
+        console.warn('AudioContext resume failed, will require user gesture', e);
+      }
+    } else if (audioContext.state === 'closed') {
+      // Recreate and reload
+      audioContext = undefined as any;
+      soundsLoaded = false;
+      await initAudioSystem();
+    }
+  };
+
+  const unlockAudio = async () => {
+    await initAudioSystem();
+    if (audioContext && audioContext.state !== 'running') {
+      try {
+        await audioContext.resume();
+      } catch (e) {
+        console.warn('AudioContext resume needs a user gesture', e);
+      }
+    }
+    if (audioContext && audioContext.state === 'running') {
+      // play a silent buffer to force some mobile browsers to unlock
+      const buffer = audioContext.createBuffer(1, 1, 22050);
+      const src = audioContext.createBufferSource();
+      src.buffer = buffer;
+      src.connect(audioContext.destination);
+      src.start(0);
+    }
+  };
 
   // Generic function to play any pre-loaded sound from its buffer.
   // MODIFIED: Now returns both the source and the gain node for more control.
@@ -1243,6 +1278,30 @@ const goldTypes: GoldType[] = [
   });
 
   window.addEventListener('resize', centerPlayerInScreen);
+
+  // Re-initialize or resume audio when coming back from background or when the user interacts.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      resumeAudioIfNeeded();
+    }
+  });
+  window.addEventListener('pageshow', () => {
+    resumeAudioIfNeeded();
+  });
+  window.addEventListener('focus', () => {
+    resumeAudioIfNeeded();
+  });
+
+  const unlockEvents: (keyof WindowEventMap)[] = ['pointerdown', 'touchstart', 'click', 'keydown'];
+  unlockEvents.forEach((evt) => {
+    window.addEventListener(
+      evt,
+      () => {
+        unlockAudio();
+      },
+      { passive: true, once: false }
+    );
+  });
 
   drawTitleScreen();
   initAudioSystem();

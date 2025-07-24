@@ -1,4 +1,4 @@
-// Generated: Tuesday, July 22, 2025 at 08:17:59 PM EDT
+// Generated: Thursday, July 24, 2025 at 05:25:41 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -65,6 +65,44 @@ const goldTypes = [
             console.error('Audio system failed to initialize:', error);
             // Game can continue without sound
             soundsLoaded = false;
+        }
+    });
+    // ---- Audio resume/unlock helpers ----
+    const resumeAudioIfNeeded = () => __awaiter(void 0, void 0, void 0, function* () {
+        if (!audioContext)
+            return;
+        if (audioContext.state === 'suspended') {
+            try {
+                yield audioContext.resume();
+            }
+            catch (e) {
+                console.warn('AudioContext resume failed, will require user gesture', e);
+            }
+        }
+        else if (audioContext.state === 'closed') {
+            // Recreate and reload
+            audioContext = undefined;
+            soundsLoaded = false;
+            yield initAudioSystem();
+        }
+    });
+    const unlockAudio = () => __awaiter(void 0, void 0, void 0, function* () {
+        yield initAudioSystem();
+        if (audioContext && audioContext.state !== 'running') {
+            try {
+                yield audioContext.resume();
+            }
+            catch (e) {
+                console.warn('AudioContext resume needs a user gesture', e);
+            }
+        }
+        if (audioContext && audioContext.state === 'running') {
+            // play a silent buffer to force some mobile browsers to unlock
+            const buffer = audioContext.createBuffer(1, 1, 22050);
+            const src = audioContext.createBufferSource();
+            src.buffer = buffer;
+            src.connect(audioContext.destination);
+            src.start(0);
         }
     });
     // Generic function to play any pre-loaded sound from its buffer.
@@ -1094,6 +1132,24 @@ const goldTypes = [
         }
     });
     window.addEventListener('resize', centerPlayerInScreen);
+    // Re-initialize or resume audio when coming back from background or when the user interacts.
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            resumeAudioIfNeeded();
+        }
+    });
+    window.addEventListener('pageshow', () => {
+        resumeAudioIfNeeded();
+    });
+    window.addEventListener('focus', () => {
+        resumeAudioIfNeeded();
+    });
+    const unlockEvents = ['pointerdown', 'touchstart', 'click', 'keydown'];
+    unlockEvents.forEach((evt) => {
+        window.addEventListener(evt, () => {
+            unlockAudio();
+        }, { passive: true, once: false });
+    });
     drawTitleScreen();
     initAudioSystem();
 })();
