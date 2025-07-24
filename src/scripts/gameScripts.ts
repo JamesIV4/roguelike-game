@@ -8,7 +8,7 @@ type SessionStats = {
   zoomLevel: number;
   dead: boolean;
   playing: boolean;
-  mode: 'normal' | 'procedural';
+  mode: string;
   goldTotal: number;
   goldLevel: number;
 };
@@ -302,6 +302,188 @@ const goldTypes: GoldType[] = [
     ) {}
   }
 
+  // --- IndexedDB Save/Load Functions ---
+  const DB_NAME = 'roguelike_game_db';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'game_saves';
+
+  function openGameDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function saveGameToStorage() {
+    const stats = Object.values(sessionStats).join(',');
+    const playerData = player ? [player.pos[0], player.pos[1], player.health].join(',') : '';
+    const level = currentLevel;
+    const goldData = collectedGold.map((g) => `${g.value}:${g.type}`).join('|');
+    const mode = sessionStats.mode;
+    let levelString = '';
+    if (levelStore[currentLevel]) {
+      levelString = levelStore[currentLevel]
+        .map((row: any[], rowIdx: number) =>
+          row
+            .map((cell: any, colIdx: number) => {
+              if (cell.type === 'wall') return '#';
+              if (cell.type === 'empty') return '.';
+              // Goal cell: must encode as 'C' if it contains stairsDown
+              if (cell.type === 'floor' && cell.inside.includes('stairsDown')) return 'C';
+              // Player cell: encode as '@' if it contains player
+              if (cell.type === 'floor' && cell.inside.includes('player')) return '@';
+              // Enemy cell: encode as 'F' if it contains enemy (for procedural levels)
+              if (cell.type === 'floor' && cell.inside.includes('enemy')) return 'F';
+              // Gold cell: encode as goldType id if it contains gold
+              if (cell.type === 'floor' && cell.inside.includes('gold')) {
+                // Find gold type for this cell
+                const goldObj = goldPieces[currentLevel]?.find((g: any) => g.pos[0] === rowIdx && g.pos[1] === colIdx);
+                return goldObj ? goldObj.type : '';
+              }
+              // Otherwise, plain floor
+              return '';
+            })
+            .join(',')
+        )
+        .join('\n');
+    }
+    const goldPiecesData = goldPieces[currentLevel]?.map((g: any) => [g.pos[0], g.pos[1], g.type, g.value].join(':')).join('|') || '';
+    const enemiesData = enemies[currentLevel]?.map((e: any) => [e.pos[0], e.pos[1], e.type, e.health].join(':')).join('|') || '';
+    const csv = [stats, playerData, level, mode, goldData, levelString.replace(/\n/g, '<NL>'), goldPiecesData, enemiesData].join(';');
+
+    openGameDB()
+      .then((db) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.put(csv, SAVE_COOKIE_NAME);
+        tx.oncomplete = () => {
+          console.log('Game saved to IndexedDB.');
+          db.close();
+        };
+        tx.onerror = () => {
+          console.error('Failed to save game to IndexedDB:', tx.error);
+          db.close();
+        };
+      })
+      .catch((e) => {
+        console.error('IndexedDB error:', e);
+      });
+  }
+
+  function loadGameFromStorage() {
+    openGameDB()
+      .then((db) => {
+        // --- FULL RESET OF GAME STATE BEFORE RESTORING ---
+        // Remove all previous game state to prevent phantom entities
+        levelStore = [];
+        enemies = [];
+        goldPieces = [];
+        collectedGold = [];
+        enemyCounter = 0;
+        goldCounter = 0;
+        // Remove player instance
+        player = undefined as any;
+
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.get(SAVE_COOKIE_NAME);
+        request.onsuccess = () => {
+          const csv = request.result;
+          if (!csv) {
+            db.close();
+            return false;
+          }
+          const [stats, playerData, level, mode, goldData, levelString, goldPiecesData, enemiesData] = csv.split(';');
+          const statsArr = stats.split(',');
+          currentLevel = +level;
+          [
+            sessionStats.turnsTotal,
+            sessionStats.turnsLevel,
+            sessionStats.retries,
+            sessionStats.zoomLevel,
+            sessionStats.dead,
+            sessionStats.playing,
+            sessionStats.mode,
+            sessionStats.goldTotal,
+            sessionStats.goldLevel
+          ] = [+statsArr[0], +statsArr[1], +statsArr[2], +statsArr[3], statsArr[4] === 'true', statsArr[5] === 'true', statsArr[6], +statsArr[7], +statsArr[8]];
+          sessionStats.mode = mode as 'normal' | 'procedural';
+          if (playerData) {
+            const [row, col, health] = playerData.split(',').map(Number);
+            // Create new player instance
+            player = new Player(null as any, 1, [row, col], 'player', health);
+          }
+          collectedGold = goldData
+            ? goldData.split('|').map((g: any) => {
+                const [value, type] = g.split(':');
+                return { value: +value, type };
+              })
+            : [];
+          if (levelString) {
+            const decodedLevelString = levelString.replace(/<NL>/g, '\n');
+            // Ensure arrays are initialized for all levels up to currentLevel
+            for (let i = 0; i <= currentLevel; i++) {
+              levelStore[i] = [];
+              enemies[i] = [];
+              goldPieces[i] = [];
+            }
+            drawScreen(decodedLevelString);
+          }
+          if (goldPiecesData && goldPieces[currentLevel]) {
+            goldPieces[currentLevel] = goldPiecesData.split('|').map((g: any, idx: number) => {
+              const [row, col, type, value] = g.split(':');
+              const r = Number(row),
+                c = Number(col);
+              const cell = levelStore[currentLevel][r][c];
+              cell.type = 'floor';
+              cell.inside.push('gold');
+              cell.elem.classList.add('floor', 'gold', `gold-${idx + 1}`, type);
+              return new Gold(cell.elem, idx + 1, [r, c], type, Number(value));
+            });
+          }
+          if (enemiesData && enemies[currentLevel]) {
+            enemies[currentLevel] = enemiesData.split('|').map((e: any, idx: number) => {
+              const [row, col, type, health] = e.split(':');
+              const r = Number(row),
+                c = Number(col);
+              const cell = levelStore[currentLevel][r][c];
+              cell.type = 'floor';
+              cell.inside.push('enemy');
+              cell.elem.classList.add('floor', 'enemy', `enemy-${idx + 1}`);
+              return new Enemy(cell.elem, idx + 1, [r, c], type, Number(health));
+            });
+          }
+          // Restore player
+          if (player && player.pos && Array.isArray(player.pos) && player.pos.length === 2) {
+            const [r, c] = player.pos;
+            const cell = levelStore[currentLevel][r][c];
+            cell.type = 'floor';
+            cell.inside.push('player');
+            cell.elem.classList.add('floor', 'player');
+            player.elem = cell.elem;
+          }
+          // Render gold and enemies after restoring them
+          renderGoldPieces();
+          renderEnemies();
+          db.close();
+        };
+        request.onerror = () => {
+          console.error('Failed to load game from IndexedDB:', request.error);
+          db.close();
+        };
+      })
+      .catch((e) => {
+        console.error('IndexedDB error:', e);
+      });
+  }
+
   // Game code functions
   const beginGame = () => {
     levelStore = [];
@@ -339,7 +521,8 @@ const goldTypes: GoldType[] = [
       messageWindow = document.createElement('div'),
       buttonContainer = document.createElement('div'),
       btnStartNormal = document.createElement('div'),
-      btnStartProcudural = document.createElement('div');
+      btnStartProcudural = document.createElement('div'),
+      btnLoadGame = document.createElement('div');
 
     uiElem.id = 'ui-display';
     titleContainer.classList.add('titlescreen-container');
@@ -348,25 +531,29 @@ const goldTypes: GoldType[] = [
     buttonContainer.classList.add('button-container');
     btnStartNormal.classList.add('btn');
     btnStartProcudural.classList.add('btn');
+    btnLoadGame.classList.add('btn');
 
     btnStartNormal.setAttribute('tabindex', '0');
     btnStartProcudural.setAttribute('tabindex', '0');
+    btnLoadGame.setAttribute('tabindex', '0');
 
     background?.classList.add('titlescreen');
 
     titleHeader.textContent = 'Fire Gauntlet';
     btnStartNormal.textContent = 'Start Normal Game';
     btnStartProcudural.textContent = 'Start Procedural Game';
+    btnLoadGame.textContent = 'Load Game';
 
     background?.appendChild(uiElem);
     titleContainer.appendChild(titleHeader);
     titleContainer.appendChild(buttonContainer);
     buttonContainer.appendChild(btnStartNormal);
     buttonContainer.appendChild(btnStartProcudural);
+    buttonContainer.appendChild(btnLoadGame);
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    const buttons = [btnStartNormal, btnStartProcudural];
+    const buttons = [btnStartNormal, btnStartProcudural, btnLoadGame];
     let currentFocusIndex = 0;
 
     const handleKeyNavigation = (e: KeyboardEvent) => {
@@ -422,6 +609,44 @@ const goldTypes: GoldType[] = [
     btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e), { once: true });
     btnStartProcudural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
     btnStartProcudural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
+
+    // Check IndexedDB for saved game and enable/disable Load Game button accordingly
+    openGameDB().then((db) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.get(SAVE_COOKIE_NAME);
+      request.onsuccess = () => {
+        if (!request.result) {
+          btnLoadGame.classList.add('disabled');
+          btnLoadGame.setAttribute('aria-disabled', 'true');
+        } else {
+          btnLoadGame.classList.remove('disabled');
+          btnLoadGame.setAttribute('aria-disabled', 'false');
+        }
+        db.close();
+      };
+      request.onerror = () => {
+        btnLoadGame.classList.add('disabled');
+        btnLoadGame.setAttribute('aria-disabled', 'true');
+        db.close();
+      };
+    });
+
+    btnLoadGame.addEventListener('click', () => {
+      if (btnLoadGame.classList.contains('disabled')) return;
+      loadGameFromStorage();
+      closeTitlescreen();
+      sessionStats.playing = true;
+    });
+
+    btnLoadGame.addEventListener('keydown', (e) => {
+      if (btnLoadGame.classList.contains('disabled')) return;
+      if (handleKeyboardConfirm(e)) {
+        loadGameFromStorage();
+        closeTitlescreen();
+        sessionStats.playing = true;
+      }
+    });
   };
 
   const drawScreen = (selectedLevel: any) => {
@@ -571,6 +796,22 @@ const goldTypes: GoldType[] = [
       showMessageBox(
         'Abandon the current game and return to the Title Screen?',
         [
+          {
+            text: 'Save Game',
+            action: () => {
+              saveGameToStorage();
+              // Optionally show a confirmation message
+              showMessageBox(
+                'Game saved!',
+                [
+                  { text: 'Back', action: backToTitleScreenMessageBox },
+                  { text: 'Confirm', action: backToTitleScreen },
+                  { text: 'Cancel', action: () => {} }
+                ],
+                'inline'
+              );
+            }
+          },
           { text: 'Confirm', action: () => backToTitleScreen() },
           { text: 'Cancel', action: () => {} }
         ],
@@ -1302,6 +1543,12 @@ const goldTypes: GoldType[] = [
       { passive: true, once: false }
     );
   });
+
+  const SAVE_COOKIE_NAME = 'roguelike_save';
+
+  // (Removed duplicate saveGameToStorage)
+
+  // (Removed duplicate loadGameFromStorage)
 
   drawTitleScreen();
   initAudioSystem();
