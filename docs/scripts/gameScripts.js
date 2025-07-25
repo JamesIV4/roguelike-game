@@ -1,4 +1,4 @@
-// Generated: Friday, July 25, 2025 at 04:51:20 PM EDT
+// Generated: Friday, July 25, 2025 at 05:20:02 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -280,15 +280,34 @@ const goldTypes = [
             const request = indexedDB.open(DB_NAME, DB_VERSION);
             request.onupgradeneeded = () => {
                 const db = request.result;
+                // Always create or upgrade both stores
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     db.createObjectStore(STORE_NAME);
                 }
-                // Ensure a dedicated object store exists for high score entries.
                 if (!db.objectStoreNames.contains(HIGH_SCORES_STORE_NAME)) {
                     db.createObjectStore(HIGH_SCORES_STORE_NAME);
                 }
             };
-            request.onsuccess = () => resolve(request.result);
+            request.onsuccess = () => {
+                const db = request.result;
+                // Defensive: If for any reason the store is missing, upgrade again
+                if (!db.objectStoreNames.contains(HIGH_SCORES_STORE_NAME)) {
+                    db.close();
+                    // Force upgrade by bumping version
+                    const upgradeRequest = indexedDB.open(DB_NAME, db.version + 1);
+                    upgradeRequest.onupgradeneeded = () => {
+                        const upgradeDb = upgradeRequest.result;
+                        if (!upgradeDb.objectStoreNames.contains(HIGH_SCORES_STORE_NAME)) {
+                            upgradeDb.createObjectStore(HIGH_SCORES_STORE_NAME);
+                        }
+                    };
+                    upgradeRequest.onsuccess = () => resolve(upgradeRequest.result);
+                    upgradeRequest.onerror = () => reject(upgradeRequest.error);
+                }
+                else {
+                    resolve(db);
+                }
+            };
             request.onerror = () => reject(request.error);
         });
     }
@@ -531,9 +550,14 @@ const goldTypes = [
                 }
                 if (cellObj.inside.includes('enemy')) {
                     const enemy = (_a = enemies[currentLevel]) === null || _a === void 0 ? void 0 : _a.find((e) => e.pos[0] === rowIndex && e.pos[1] === cellIndex);
-                    if (enemy)
+                    if (enemy) {
                         enemy.elem = elemCell;
-                    elemCell.classList.add('enemy');
+                        // Add the enemy type and id class for styling, just like original drawScreen
+                        elemCell.classList.add('floor', 'enemy', 'enemy-' + enemy.id);
+                    }
+                    else {
+                        elemCell.classList.add('enemy');
+                    }
                 }
                 if (cellObj.inside.includes('stairsDown')) {
                     elemCell.classList.add('goal');
@@ -633,15 +657,30 @@ const goldTypes = [
         setTimeout(() => grid.classList.remove('slow-pan'), 2500);
     }
     function loadGameFromStorage() {
+        // Reset all game variables to their default state before loading
+        currentLevel = 0;
+        levelStore = [];
+        enemies = [];
+        enemyCounter = 0;
+        goldPieces = [];
+        goldCounter = 0;
+        collectedGold = [];
+        player = undefined;
+        viewingGoal = false;
+        options = { centerMode: false };
+        sessionStats = {
+            turnsTotal: 0,
+            turnsLevel: 0,
+            retries: 0,
+            zoomLevel: isMobileScreen() ? 3 : 4,
+            dead: false,
+            playing: true,
+            mode: 'procedural',
+            goldTotal: 0,
+            goldLevel: 0
+        };
         openGameDB()
             .then((db) => {
-            levelStore = [];
-            enemies = [];
-            goldPieces = [];
-            collectedGold = [];
-            enemyCounter = 0;
-            goldCounter = 0;
-            player = undefined;
             const tx = db.transaction(STORE_NAME, 'readonly');
             const store = tx.objectStore(STORE_NAME);
             const request = store.get(SAVE_COOKIE_NAME);
@@ -984,9 +1023,9 @@ const goldTypes = [
                     showMessageBox('Game saved!', [{ text: 'Confirm', action: backToTitleScreen }], 'inline');
                 }
             },
-            { text: 'Confirm', action: () => backToTitleScreen() },
+            { text: 'Exit to Title Screen', action: () => backToTitleScreen() },
             { text: 'Cancel', action: () => { } }
-        ], 'inline');
+        ], 'vertical');
         const handleBackBtnPress = (e) => {
             if (handleKeyboardConfirm(e)) {
                 backToTitleScreenMessageBox();
@@ -1263,7 +1302,28 @@ const goldTypes = [
         goToNewLevel(0);
     };
     const backToTitleScreen = () => {
-        sessionStats.playing = false;
+        // Reset all game variables to their default state when returning to title
+        currentLevel = 0;
+        levelStore = [];
+        enemies = [];
+        enemyCounter = 0;
+        goldPieces = [];
+        goldCounter = 0;
+        collectedGold = [];
+        player = undefined;
+        viewingGoal = false;
+        options = { centerMode: false };
+        sessionStats = {
+            turnsTotal: 0,
+            turnsLevel: 0,
+            retries: 0,
+            zoomLevel: isMobileScreen() ? 3 : 4,
+            dead: false,
+            playing: false,
+            mode: 'procedural',
+            goldTotal: 0,
+            goldLevel: 0
+        };
         eraseScreen();
         setTimeout(drawTitleScreen, 50);
     };
