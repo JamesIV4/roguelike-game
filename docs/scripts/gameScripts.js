@@ -1,4 +1,4 @@
-// Generated: Friday, July 25, 2025 at 04:11:38 PM EDT
+// Generated: Friday, July 25, 2025 at 04:51:20 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -475,18 +475,172 @@ const goldTypes = [
             console.error('IndexedDB error:', e);
         });
     }
+    function drawScreenFromStore() {
+        var _a, _b;
+        eraseScreen();
+        const background = document.querySelector('#display-wrapper'), grid = document.createElement('div'), messageWindow = document.createElement('div'), uiElem = document.createElement('div'), zoomButtons = document.createElement('div'), zoomUp = document.createElement('div'), zoomDown = document.createElement('div'), showGoalBtn = document.createElement('div'), switchCameraBtn = document.createElement('div'), backButton = document.createElement('div');
+        grid.id = 'game-grid';
+        uiElem.id = 'ui-display';
+        messageWindow.id = 'message';
+        const levelIndicator = document.createElement('div');
+        levelIndicator.id = 'level-indicator';
+        levelIndicator.textContent = `Level ${currentLevel + 1}`;
+        const goldCounterElement = document.createElement('div');
+        goldCounterElement.id = 'gold-counter';
+        goldCounterElement.textContent = `Gold: ${sessionStats.goldTotal}`;
+        backButton.id = 'back-button';
+        backButton.setAttribute('tabindex', '0');
+        backButton.setAttribute('title', 'Return to Title Screen');
+        zoomButtons.id = 'zoom-container';
+        zoomUp.id = 'zoom-up';
+        zoomUp.textContent = '+';
+        zoomUp.setAttribute('tabindex', '0');
+        zoomDown.id = 'zoom-down';
+        zoomDown.textContent = '-';
+        zoomDown.setAttribute('tabindex', '0');
+        showGoalBtn.id = 'show-goal';
+        showGoalBtn.setAttribute('tabindex', '0');
+        switchCameraBtn.id = 'switch-camera';
+        switchCameraBtn.setAttribute('tabindex', '0');
+        // Recreate grid from levelStore
+        const levelData = levelStore[currentLevel];
+        for (let rowIndex = 0; rowIndex < levelData.length; rowIndex++) {
+            const elemRow = document.createElement('div');
+            elemRow.classList.add('row');
+            grid.appendChild(elemRow);
+            for (let cellIndex = 0; cellIndex < levelData[rowIndex].length; cellIndex++) {
+                const cellObj = levelData[rowIndex][cellIndex];
+                const elemCell = document.createElement('div');
+                elemCell.classList.add('cell');
+                elemCell.id = rowIndex + '-' + cellIndex;
+                elemRow.appendChild(elemCell);
+                cellObj.elem = elemCell;
+                if (cellObj.type === 'empty') {
+                    elemCell.classList.add('empty');
+                }
+                else if (cellObj.type === 'wall') {
+                    elemCell.classList.add('wall');
+                }
+                else if (cellObj.type === 'floor') {
+                    elemCell.classList.add('floor');
+                }
+                if (cellObj.inside.includes('player')) {
+                    elemCell.classList.add('player');
+                    if (player)
+                        player.elem = elemCell;
+                }
+                if (cellObj.inside.includes('enemy')) {
+                    const enemy = (_a = enemies[currentLevel]) === null || _a === void 0 ? void 0 : _a.find((e) => e.pos[0] === rowIndex && e.pos[1] === cellIndex);
+                    if (enemy)
+                        enemy.elem = elemCell;
+                    elemCell.classList.add('enemy');
+                }
+                if (cellObj.inside.includes('stairsDown')) {
+                    elemCell.classList.add('goal');
+                }
+                if (cellObj.inside.includes('gold')) {
+                    const gold = (_b = goldPieces[currentLevel]) === null || _b === void 0 ? void 0 : _b.find((g) => g.pos[0] === rowIndex && g.pos[1] === cellIndex);
+                    if (gold)
+                        elemCell.classList.add('gold', 'gold-' + gold.id, gold.type);
+                }
+            }
+        }
+        background === null || background === void 0 ? void 0 : background.appendChild(uiElem);
+        uiElem.appendChild(levelIndicator);
+        uiElem.appendChild(goldCounterElement);
+        uiElem.appendChild(backButton);
+        uiElem.appendChild(zoomButtons);
+        uiElem.appendChild(messageWindow);
+        zoomButtons.appendChild(switchCameraBtn);
+        zoomButtons.appendChild(showGoalBtn);
+        zoomButtons.appendChild(zoomUp);
+        zoomButtons.appendChild(zoomDown);
+        background === null || background === void 0 ? void 0 : background.appendChild(grid);
+        renderPlayer(player.pos);
+        renderGoldPieces();
+        renderEnemies();
+        drawDecorations();
+        centerPlayerInScreen();
+        setTimeout(() => {
+            grid.classList.add('show');
+        }, 300);
+        // Re-attach event listeners (copied from drawScreen)
+        const backToTitleScreenMessageBox = () => showMessageBox('Abandon the current game and return to the Title Screen?', [
+            {
+                text: 'Save Game',
+                action: () => {
+                    saveGameToStorage();
+                    showMessageBox('Game saved!', [{ text: 'Confirm', action: backToTitleScreen }], 'inline');
+                }
+            },
+            { text: 'Confirm', action: () => backToTitleScreen() },
+            { text: 'Cancel', action: () => { } }
+        ], 'inline');
+        const handleBackBtnPress = (e) => {
+            if (handleKeyboardConfirm(e)) {
+                backToTitleScreenMessageBox();
+            }
+        };
+        document.addEventListener('keydown', (e) => {
+            var _a;
+            if (sessionStats.dead || !sessionStats.playing || ((_a = document.getElementById('message')) === null || _a === void 0 ? void 0 : _a.classList.contains('show')))
+                return;
+            if (e.key === 'Escape') {
+                backToTitleScreenMessageBox();
+            }
+        });
+        backButton.addEventListener('click', () => handleBackBtnPress());
+        backButton.addEventListener('keydown', (e) => handleBackBtnPress(e));
+        const handleSwitchCameraBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
+                toggleCenterMode();
+            }
+        };
+        switchCameraBtn.addEventListener('click', () => handleSwitchCameraBtn());
+        switchCameraBtn.addEventListener('keydown', (e) => handleSwitchCameraBtn(e));
+        const handleShowGoalBtn = (e) => {
+            if (handleKeyboardConfirm(e)) {
+                showGoal();
+            }
+        };
+        showGoalBtn.addEventListener('click', () => handleShowGoalBtn());
+        showGoalBtn.addEventListener('keydown', (e) => handleShowGoalBtn(e));
+        const changeZoom = (type, e) => {
+            if (type === 'up' || (type === 'down' && sessionStats.zoomLevel > 1)) {
+                if (handleKeyboardConfirm(e)) {
+                    grid.classList.add('instant-camera');
+                    type === 'up' ? sessionStats.zoomLevel++ : sessionStats.zoomLevel--;
+                    zoomLevelStyle.innerHTML = `#display-wrapper #game-grid .row .cell {height: ${sessionStats.zoomLevel * 8}px !important; width: ${sessionStats.zoomLevel * 8}px !important;}`;
+                    renderPlayer(player.pos);
+                    renderEnemies();
+                    renderGoldPieces();
+                    viewingGoal ? centerOnGoal() : centerPlayerInScreen();
+                    setTimeout(() => grid.classList.remove('instant-camera'), 20);
+                }
+            }
+        };
+        zoomUp.addEventListener('click', () => changeZoom('up'));
+        zoomUp.addEventListener('keydown', (e) => changeZoom('up', e));
+        zoomDown.addEventListener('click', () => changeZoom('down'));
+        zoomDown.addEventListener('keydown', (e) => changeZoom('down', e));
+        grid.classList.add('instant-camera');
+        showGoal();
+        setTimeout(() => {
+            grid.classList.remove('instant-camera');
+            grid.classList.add('slow-pan');
+            centerPlayerInScreen();
+        }, 20);
+        setTimeout(() => grid.classList.remove('slow-pan'), 2500);
+    }
     function loadGameFromStorage() {
         openGameDB()
             .then((db) => {
-            // --- FULL RESET OF GAME STATE BEFORE RESTORING ---
-            // Remove all previous game state to prevent phantom entities
             levelStore = [];
             enemies = [];
             goldPieces = [];
             collectedGold = [];
             enemyCounter = 0;
             goldCounter = 0;
-            // Remove player instance
             player = undefined;
             const tx = db.transaction(STORE_NAME, 'readonly');
             const store = tx.objectStore(STORE_NAME);
@@ -497,10 +651,8 @@ const goldTypes = [
                     db.close();
                     return false;
                 }
-                // Decode base64 and parse JSON
                 const json = decodeURIComponent(escape(atob(base64)));
                 const gameState = JSON.parse(json);
-                // Restore all game state
                 sessionStats = gameState.sessionStats;
                 player = gameState.player ? Object.assign(new Player(null, gameState.player.id, gameState.player.pos, gameState.player.type, gameState.player.health), gameState.player) : undefined;
                 currentLevel = gameState.currentLevel;
@@ -508,18 +660,7 @@ const goldTypes = [
                 levelStore = gameState.levelStore;
                 goldPieces = gameState.goldPieces;
                 enemies = gameState.enemies;
-                // Restore player element if possible
-                if (player && player.pos && Array.isArray(player.pos) && player.pos.length === 2 && levelStore[currentLevel]) {
-                    const [r, c] = player.pos;
-                    const cell = levelStore[currentLevel][r][c];
-                    cell.type = 'floor';
-                    cell.inside.push('player');
-                    cell.elem.classList.add('floor', 'player');
-                    player.elem = cell.elem;
-                }
-                // Render gold and enemies after restoring them
-                renderGoldPieces();
-                renderEnemies();
+                drawScreenFromStore();
                 db.close();
             };
             request.onerror = () => {
@@ -1527,8 +1668,6 @@ const goldTypes = [
         }, { passive: true, once: false });
     });
     const SAVE_COOKIE_NAME = 'roguelike_save';
-    // (Removed duplicate saveGameToStorage)
-    // (Removed duplicate loadGameFromStorage)
     drawTitleScreen();
     initAudioSystem();
 })();
