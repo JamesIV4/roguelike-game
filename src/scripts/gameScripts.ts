@@ -233,7 +233,7 @@ const goldTypes: GoldType[] = [
     zoomLevel: isMobileScreen() ? 3 : 4,
     dead: false,
     playing: true,
-    mode: 'normal',
+    mode: 'procedural',
     goldTotal: 0,
     goldLevel: 0
   };
@@ -471,49 +471,34 @@ const goldTypes: GoldType[] = [
   }
 
   function saveGameToStorage() {
-    const stats = Object.values(sessionStats).join(',');
-    const playerData = player ? [player.pos[0], player.pos[1], player.health].join(',') : '';
-    const level = currentLevel;
-    const goldData = collectedGold.map((g) => `${g.value}:${g.type}`).join('|');
-    const mode = sessionStats.mode;
-    let levelString = '';
-    if (levelStore[currentLevel]) {
-      levelString = levelStore[currentLevel]
-        .map((row: any[], rowIdx: number) =>
-          row
-            .map((cell: any, colIdx: number) => {
-              if (cell.type === 'wall') return '#';
-              if (cell.type === 'empty') return '.';
-              // Goal cell: must encode as 'C' if it contains stairsDown
-              if (cell.type === 'floor' && cell.inside.includes('stairsDown')) return 'C';
-              // Player cell: encode as '@' if it contains player
-              if (cell.type === 'floor' && cell.inside.includes('player')) return '@';
-              // Enemy cell: encode as 'F' if it contains enemy (for procedural levels)
-              if (cell.type === 'floor' && cell.inside.includes('enemy')) return 'F';
-              // Gold cell: encode as goldType id if it contains gold
-              if (cell.type === 'floor' && cell.inside.includes('gold')) {
-                // Find gold type for this cell
-                const goldObj = goldPieces[currentLevel]?.find((g: any) => g.pos[0] === rowIdx && g.pos[1] === colIdx);
-                return goldObj ? goldObj.type : '';
-              }
-              // Otherwise, plain floor
-              return '';
-            })
-            .join(',')
-        )
-        .join('\n');
-    }
-    const goldPiecesData = goldPieces[currentLevel]?.map((g: any) => [g.pos[0], g.pos[1], g.type, g.value].join(':')).join('|') || '';
-    const enemiesData = enemies[currentLevel]?.map((e: any) => [e.pos[0], e.pos[1], e.type, e.health].join(':')).join('|') || '';
-    const csv = [stats, playerData, level, mode, goldData, levelString.replace(/\n/g, '<NL>'), goldPiecesData, enemiesData].join(';');
+    // Collect all relevant game state into a single object
+    const gameState = {
+      sessionStats,
+      player: player
+        ? {
+            pos: player.pos,
+            health: player.health,
+            id: player.id,
+            type: player.type
+          }
+        : null,
+      currentLevel,
+      collectedGold,
+      levelStore,
+      goldPieces,
+      enemies
+    };
+    // Convert to JSON and then base64 encode
+    const json = JSON.stringify(gameState);
+    const base64 = btoa(unescape(encodeURIComponent(json)));
 
     openGameDB()
       .then((db) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-        store.put(csv, SAVE_COOKIE_NAME);
+        store.put(base64, SAVE_COOKIE_NAME);
         tx.oncomplete = () => {
-          console.log('Game saved to IndexedDB.');
+          console.log('Game saved to IndexedDB (base64).');
           db.close();
         };
         tx.onerror = () => {
@@ -544,73 +529,26 @@ const goldTypes: GoldType[] = [
         const store = tx.objectStore(STORE_NAME);
         const request = store.get(SAVE_COOKIE_NAME);
         request.onsuccess = () => {
-          const csv = request.result;
-          if (!csv) {
+          const base64 = request.result;
+          if (!base64) {
             db.close();
             return false;
           }
-          const [stats, playerData, level, mode, goldData, levelString, goldPiecesData, enemiesData] = csv.split(';');
-          const statsArr = stats.split(',');
-          currentLevel = +level;
-          [
-            sessionStats.turnsTotal,
-            sessionStats.turnsLevel,
-            sessionStats.retries,
-            sessionStats.zoomLevel,
-            sessionStats.dead,
-            sessionStats.playing,
-            sessionStats.mode,
-            sessionStats.goldTotal,
-            sessionStats.goldLevel
-          ] = [+statsArr[0], +statsArr[1], +statsArr[2], +statsArr[3], statsArr[4] === 'true', statsArr[5] === 'true', statsArr[6], +statsArr[7], +statsArr[8]];
-          sessionStats.mode = mode as 'normal' | 'procedural';
-          if (playerData) {
-            const [row, col, health] = playerData.split(',').map(Number);
-            // Create new player instance
-            player = new Player(null as any, 1, [row, col], 'player', health);
-          }
-          collectedGold = goldData
-            ? goldData.split('|').map((g: any) => {
-                const [value, type] = g.split(':');
-                return { value: +value, type };
-              })
-            : [];
-          if (levelString) {
-            const decodedLevelString = levelString.replace(/<NL>/g, '\n');
-            // Ensure arrays are initialized for all levels up to currentLevel
-            for (let i = 0; i <= currentLevel; i++) {
-              levelStore[i] = [];
-              enemies[i] = [];
-              goldPieces[i] = [];
-            }
-            drawScreen(decodedLevelString);
-          }
-          if (goldPiecesData && goldPieces[currentLevel]) {
-            goldPieces[currentLevel] = goldPiecesData.split('|').map((g: any, idx: number) => {
-              const [row, col, type, value] = g.split(':');
-              const r = Number(row),
-                c = Number(col);
-              const cell = levelStore[currentLevel][r][c];
-              cell.type = 'floor';
-              cell.inside.push('gold');
-              cell.elem.classList.add('floor', 'gold', `gold-${idx + 1}`, type);
-              return new Gold(cell.elem, idx + 1, [r, c], type, Number(value));
-            });
-          }
-          if (enemiesData && enemies[currentLevel]) {
-            enemies[currentLevel] = enemiesData.split('|').map((e: any, idx: number) => {
-              const [row, col, type, health] = e.split(':');
-              const r = Number(row),
-                c = Number(col);
-              const cell = levelStore[currentLevel][r][c];
-              cell.type = 'floor';
-              cell.inside.push('enemy');
-              cell.elem.classList.add('floor', 'enemy', `enemy-${idx + 1}`);
-              return new Enemy(cell.elem, idx + 1, [r, c], type, Number(health));
-            });
-          }
-          // Restore player
-          if (player && player.pos && Array.isArray(player.pos) && player.pos.length === 2) {
+          // Decode base64 and parse JSON
+          const json = decodeURIComponent(escape(atob(base64)));
+          const gameState = JSON.parse(json);
+
+          // Restore all game state
+          sessionStats = gameState.sessionStats;
+          player = gameState.player ? Object.assign(new Player(null as any, gameState.player.id, gameState.player.pos, gameState.player.type, gameState.player.health), gameState.player) : undefined;
+          currentLevel = gameState.currentLevel;
+          collectedGold = gameState.collectedGold;
+          levelStore = gameState.levelStore;
+          goldPieces = gameState.goldPieces;
+          enemies = gameState.enemies;
+
+          // Restore player element if possible
+          if (player && player.pos && Array.isArray(player.pos) && player.pos.length === 2 && levelStore[currentLevel]) {
             const [r, c] = player.pos;
             const cell = levelStore[currentLevel][r][c];
             cell.type = 'floor';
@@ -669,45 +607,89 @@ const goldTypes: GoldType[] = [
       titleHeader = document.createElement('h1'),
       messageWindow = document.createElement('div'),
       buttonContainer = document.createElement('div'),
-      btnStartNormal = document.createElement('div'),
-      btnStartProcedural = document.createElement('div'),
+      btnStartGame = document.createElement('div'),
       btnLoadGame = document.createElement('div'),
-      btnHighScores = document.createElement('div');
+      btnHighScores = document.createElement('div'),
+      btnOptions = document.createElement('div');
 
     uiElem.id = 'ui-display';
     titleContainer.classList.add('titlescreen-container');
     titleHeader.classList.add('title-header');
     messageWindow.id = 'message';
     buttonContainer.classList.add('button-container');
-    btnStartNormal.classList.add('btn');
-    btnStartProcedural.classList.add('btn');
+    btnStartGame.classList.add('btn');
     btnLoadGame.classList.add('btn');
     btnHighScores.classList.add('btn');
+    btnOptions.classList.add('btn');
 
-    btnStartNormal.setAttribute('tabindex', '0');
-    btnStartProcedural.setAttribute('tabindex', '0');
+    btnStartGame.setAttribute('tabindex', '0');
     btnLoadGame.setAttribute('tabindex', '0');
     btnHighScores.setAttribute('tabindex', '0');
+    btnOptions.setAttribute('tabindex', '0');
 
     background?.classList.add('titlescreen');
 
     titleHeader.textContent = 'Fire Gauntlet';
-    btnStartNormal.textContent = 'Start Normal Game';
-    btnStartProcedural.textContent = 'Start Procedural Game';
+    btnStartGame.textContent = 'Start Game';
     btnLoadGame.textContent = 'Load Game';
     btnHighScores.textContent = 'High Scores';
+    btnOptions.textContent = 'Options';
 
     background?.appendChild(uiElem);
     titleContainer.appendChild(titleHeader);
     titleContainer.appendChild(buttonContainer);
-    buttonContainer.appendChild(btnStartNormal);
-    buttonContainer.appendChild(btnStartProcedural);
+    buttonContainer.appendChild(btnStartGame);
     buttonContainer.appendChild(btnLoadGame);
     buttonContainer.appendChild(btnHighScores);
+    buttonContainer.appendChild(btnOptions);
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    const buttons = [btnStartNormal, btnStartProcedural, btnLoadGame, btnHighScores];
+    const buttons = [btnStartGame, btnLoadGame, btnHighScores, btnOptions];
+    // Options button logic
+    const handleOptions = (e?: KeyboardEvent | MouseEvent) => {
+      if (!e || e.type === 'click' || handleKeyboardConfirm(e as KeyboardEvent)) {
+        showMessageBox(
+          '<h2>Options</h2><p>Clear all saved game and high score data?</p>',
+          [
+            {
+              text: sessionStats.mode === 'normal' ? 'Legacy Game Mode: On' : 'Legacy Game Mode: Off',
+              action: () => {
+                sessionStats.mode = sessionStats.mode === 'normal' ? 'procedural' : 'normal';
+                // Reopen the options box to update the button text
+                handleOptions();
+              }
+            },
+            {
+              text: 'Clear Data',
+              action: () => {
+                // Clear IndexedDB game and high score data
+                openGameDB().then((db) => {
+                  // Clear game saves
+                  if (db.objectStoreNames.contains(STORE_NAME)) {
+                    const tx1 = db.transaction(STORE_NAME, 'readwrite');
+                    const store1 = tx1.objectStore(STORE_NAME);
+                    store1.clear();
+                  }
+                  // Clear high scores
+                  if (db.objectStoreNames.contains(HIGH_SCORES_STORE_NAME)) {
+                    const tx2 = db.transaction(HIGH_SCORES_STORE_NAME, 'readwrite');
+                    const store2 = tx2.objectStore(HIGH_SCORES_STORE_NAME);
+                    store2.clear();
+                  }
+                  db.close();
+                });
+                showMessageBox('<p>All saved data has been cleared.</p>', [{ text: 'Back', action: () => {} }]);
+              }
+            },
+            { text: 'Cancel', action: () => {} }
+          ],
+          'vertical'
+        );
+      }
+    };
+    btnOptions.addEventListener('click', (e) => handleOptions(e));
+    btnOptions.addEventListener('keydown', (e) => handleOptions(e));
     let currentFocusIndex = 0;
 
     const handleKeyNavigation = (e: KeyboardEvent) => {
@@ -733,7 +715,7 @@ const goldTypes: GoldType[] = [
     setTimeout(() => {
       titleContainer.classList.add('show');
       if (!isMobileScreen()) {
-        btnStartNormal.focus();
+        btnStartGame.focus();
       }
     }, 150);
 
@@ -750,19 +732,14 @@ const goldTypes: GoldType[] = [
       }, 1000);
     };
 
-    const handleStartButton = async (gameMode: 'normal' | 'procedural', e?: KeyboardEvent | MouseEvent) => {
-      // Allow both mouse clicks and keyboard (Enter/Space) to trigger
+    const handleStartGame = (e?: KeyboardEvent | MouseEvent) => {
       if (!e || e.type === 'click' || handleKeyboardConfirm(e as KeyboardEvent)) {
         closeTitlescreen();
-        sessionStats.mode = gameMode;
         beginGame();
       }
     };
-
-    btnStartNormal.addEventListener('click', (e) => handleStartButton('normal', e), { once: true });
-    btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e), { once: true });
-    btnStartProcedural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
-    btnStartProcedural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
+    btnStartGame.addEventListener('click', (e) => handleStartGame(e), { once: true });
+    btnStartGame.addEventListener('keydown', (e) => handleStartGame(e), { once: true });
 
     // Show high scores when clicking or pressing Enter/Space on the button
     const handleHighScores = (e?: KeyboardEvent | MouseEvent) => {
