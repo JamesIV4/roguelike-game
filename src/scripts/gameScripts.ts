@@ -307,6 +307,11 @@ const goldTypes: GoldType[] = [
   const DB_VERSION = 1;
   const STORE_NAME = 'game_saves';
 
+  // High score constants
+  // Additional object store to persist top scores
+  const HIGH_SCORES_STORE_NAME = 'high_scores';
+  const MAX_HIGH_SCORES = 25;
+
   function openGameDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -315,9 +320,153 @@ const goldTypes: GoldType[] = [
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME);
         }
+        // Ensure a dedicated object store exists for high score entries.
+        if (!db.objectStoreNames.contains(HIGH_SCORES_STORE_NAME)) {
+          db.createObjectStore(HIGH_SCORES_STORE_NAME);
+        }
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Retrieve the current list of high scores from IndexedDB.
+   * High scores are stored under a single key ('scores') in the HIGH_SCORES_STORE_NAME
+   * object store. The data is serialized as JSON to avoid issues with the
+   * structured clone algorithm on older browsers.
+   */
+  function getHighScores(): Promise<Array<{ date: string; gold: number; turns: number; level: number }>> {
+    return openGameDB().then((db) => {
+      return new Promise((resolve) => {
+        const tx = db.transaction(HIGH_SCORES_STORE_NAME, 'readonly');
+        const store = tx.objectStore(HIGH_SCORES_STORE_NAME);
+        const request = store.get('scores');
+        request.onsuccess = () => {
+          const result = request.result;
+          if (!result) {
+            resolve([]);
+          } else {
+            try {
+              resolve(JSON.parse(result));
+            } catch {
+              resolve([]);
+            }
+          }
+        };
+        request.onerror = () => {
+          resolve([]);
+        };
+      });
+    });
+  }
+
+  /**
+   * Persist a new high score entry. This function reads the existing score
+   * list, appends the new entry, sorts it according to our ranking rules,
+   * trims it to the maximum allowed number of entries and writes it back.
+   *
+   * Scores are ranked primarily by gold (descending), then by level reached
+   * (descending) and finally by turns taken (ascending) to break ties.
+   */
+  function saveHighScoreEntry(entry: { date: string; gold: number; turns: number; level: number }): void {
+    openGameDB()
+      .then((db) => {
+        const tx = db.transaction(HIGH_SCORES_STORE_NAME, 'readwrite');
+        const store = tx.objectStore(HIGH_SCORES_STORE_NAME);
+        const getReq = store.get('scores');
+        getReq.onsuccess = () => {
+          let scores: Array<{ date: string; gold: number; turns: number; level: number }> = [];
+          if (getReq.result) {
+            try {
+              scores = JSON.parse(getReq.result);
+            } catch {
+              scores = [];
+            }
+          }
+          scores.push(entry);
+          // Sort according to ranking: more gold, farther level, fewer turns.
+          scores.sort((a, b) => {
+            if (b.gold !== a.gold) return b.gold - a.gold;
+            if (b.level !== a.level) return b.level - a.level;
+            return a.turns - b.turns;
+          });
+          if (scores.length > MAX_HIGH_SCORES) {
+            scores = scores.slice(0, MAX_HIGH_SCORES);
+          }
+          try {
+            store.put(JSON.stringify(scores), 'scores');
+          } catch (err) {
+            // In case of quota errors etc. we silently ignore
+            console.error('Failed to write high scores:', err);
+          }
+        };
+        getReq.onerror = () => {
+          // If reading existing scores fails, attempt to write a single-entry list.
+          try {
+            store.put(JSON.stringify([entry]), 'scores');
+          } catch (err) {
+            console.error('Failed to write high scores:', err);
+          }
+        };
+        // Clean up
+        tx.oncomplete = () => db.close();
+        tx.onerror = () => {
+          console.error('Failed to update high scores:', tx.error);
+          db.close();
+        };
+      })
+      .catch((e) => {
+        console.error('IndexedDB error when saving high score:', e);
+      });
+  }
+
+  /**
+   * Create a high score entry based on the current session statistics and
+   * persist it. Should be called when the game session ends (either by
+   * player death or by completing the last level).
+   */
+  function recordHighScore(): void {
+    // Do not record a score if the game has not properly started yet.
+    if (!sessionStats.playing && sessionStats.turnsTotal === 0) {
+      return;
+    }
+    const entry = {
+      date: new Date().toISOString(),
+      gold: sessionStats.goldTotal,
+      turns: sessionStats.turnsTotal,
+      level: currentLevel + 1
+    };
+    saveHighScoreEntry(entry);
+  }
+
+  /**
+   * Display the list of high scores to the user on the title screen. It
+   * retrieves the scores asynchronously and constructs an HTML list which
+   * is passed to the generic showMessageBox helper. A "Back" button is
+   * provided to close the message box. The title screen remains visible
+   * behind the overlay.
+   */
+  function showHighScores(): void {
+    getHighScores().then((scores) => {
+      let html = '<h2>High Scores</h2>';
+      if (!scores || scores.length === 0) {
+        html += '<p>No high scores recorded yet.</p>';
+      } else {
+        html += '<ol class="high-scores-list">';
+        scores.forEach((s) => {
+          html += `<li>Gold: ${s.gold} -- Turns: ${s.turns} -- Level: ${s.level}</li>`;
+        });
+        html += '</ol>';
+      }
+      showMessageBox(html, [
+        {
+          text: 'Back',
+          action: () => {
+            // No-op; the closeMessageWindow within showMessageBox will hide the overlay
+          }
+        }
+      ]);
     });
   }
 
@@ -522,7 +671,8 @@ const goldTypes: GoldType[] = [
       buttonContainer = document.createElement('div'),
       btnStartNormal = document.createElement('div'),
       btnStartProcedural = document.createElement('div'),
-      btnLoadGame = document.createElement('div');
+      btnLoadGame = document.createElement('div'),
+      btnHighScores = document.createElement('div');
 
     uiElem.id = 'ui-display';
     titleContainer.classList.add('titlescreen-container');
@@ -532,10 +682,12 @@ const goldTypes: GoldType[] = [
     btnStartNormal.classList.add('btn');
     btnStartProcedural.classList.add('btn');
     btnLoadGame.classList.add('btn');
+    btnHighScores.classList.add('btn');
 
     btnStartNormal.setAttribute('tabindex', '0');
     btnStartProcedural.setAttribute('tabindex', '0');
     btnLoadGame.setAttribute('tabindex', '0');
+    btnHighScores.setAttribute('tabindex', '0');
 
     background?.classList.add('titlescreen');
 
@@ -543,6 +695,7 @@ const goldTypes: GoldType[] = [
     btnStartNormal.textContent = 'Start Normal Game';
     btnStartProcedural.textContent = 'Start Procedural Game';
     btnLoadGame.textContent = 'Load Game';
+    btnHighScores.textContent = 'High Scores';
 
     background?.appendChild(uiElem);
     titleContainer.appendChild(titleHeader);
@@ -550,10 +703,11 @@ const goldTypes: GoldType[] = [
     buttonContainer.appendChild(btnStartNormal);
     buttonContainer.appendChild(btnStartProcedural);
     buttonContainer.appendChild(btnLoadGame);
+    buttonContainer.appendChild(btnHighScores);
     uiElem.appendChild(messageWindow);
     uiElem.appendChild(titleContainer);
 
-    const buttons = [btnStartNormal, btnStartProcedural, btnLoadGame];
+    const buttons = [btnStartNormal, btnStartProcedural, btnLoadGame, btnHighScores];
     let currentFocusIndex = 0;
 
     const handleKeyNavigation = (e: KeyboardEvent) => {
@@ -609,6 +763,18 @@ const goldTypes: GoldType[] = [
     btnStartNormal.addEventListener('keydown', (e) => handleStartButton('normal', e), { once: true });
     btnStartProcedural.addEventListener('click', (e) => handleStartButton('procedural', e), { once: true });
     btnStartProcedural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
+
+    // Show high scores when clicking or pressing Enter/Space on the button
+    const handleHighScores = (e?: KeyboardEvent | MouseEvent) => {
+      // Allow both mouse clicks and keyboard confirmation to trigger
+      if (!e || e.type === 'click' || handleKeyboardConfirm(e as KeyboardEvent)) {
+        // Prevent losing focus on button when clicking
+        e?.preventDefault?.();
+        showHighScores();
+      }
+    };
+    btnHighScores.addEventListener('click', (e) => handleHighScores(e));
+    btnHighScores.addEventListener('keydown', (e) => handleHighScores(e));
 
     // Check IndexedDB for saved game and enable/disable Load Game button accordingly
     openGameDB().then((db) => {
@@ -1198,6 +1364,14 @@ const goldTypes: GoldType[] = [
 
   const displayVictoryMessage = () => {
     playSuccessSound();
+
+    // If the player has completed the final level in normal mode, capture
+    // their run as a high score. For procedural mode or intermediate
+    // levels the score will be recorded upon death or when returning to
+    // the title screen.
+    if (sessionStats.mode === 'normal' && levelData.length === currentLevel + 1) {
+      recordHighScore();
+    }
     const messageBox = document.querySelector('#message');
     if (!messageBox) return;
 
@@ -1379,6 +1553,12 @@ const goldTypes: GoldType[] = [
     playerGraphic?.classList.add('ashes');
     sessionStats.dead = true;
     sessionStats.playing = false;
+
+    // Record the player's score when they die. This captures the current
+    // session statistics (gold collected, turns taken and level reached) and
+    // appends them to the high score list. The high score list is trimmed
+    // internally so only the top entries are retained.
+    recordHighScore();
 
     const message = 'You died.<br /><br />The fire vortex consumed you in an instant, leaving only a pile of ash where you once stood.<br /><br />You lasted ' + sessionStats.turnsLevel + ' turns.';
     showMessageBox(message, [
