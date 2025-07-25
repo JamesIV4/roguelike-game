@@ -1,4 +1,4 @@
-// Generated: Friday, July 25, 2025 at 07:40:13 AM EDT
+// Generated: Friday, July 25, 2025 at 08:59:14 AM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -707,11 +707,9 @@ const goldTypes = [
         btnStartProcedural.addEventListener('keydown', (e) => handleStartButton('procedural', e), { once: true });
         // Show high scores when clicking or pressing Enter/Space on the button
         const handleHighScores = (e) => {
-            var _a;
             // Allow both mouse clicks and keyboard confirmation to trigger
             if (!e || e.type === 'click' || handleKeyboardConfirm(e)) {
                 // Prevent losing focus on button when clicking
-                (_a = e === null || e === void 0 ? void 0 : e.preventDefault) === null || _a === void 0 ? void 0 : _a.call(e);
                 showHighScores();
             }
         };

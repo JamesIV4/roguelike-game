@@ -769,7 +769,6 @@ const goldTypes: GoldType[] = [
       // Allow both mouse clicks and keyboard confirmation to trigger
       if (!e || e.type === 'click' || handleKeyboardConfirm(e as KeyboardEvent)) {
         // Prevent losing focus on button when clicking
-        e?.preventDefault?.();
         showHighScores();
       }
     };
