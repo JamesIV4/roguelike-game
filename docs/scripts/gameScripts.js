@@ -1,4 +1,4 @@
-// Generated: Friday, July 25, 2025 at 05:20:02 PM EDT
+// Generated: Friday, July 25, 2025 at 05:26:51 PM EDT
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -597,9 +597,9 @@ const goldTypes = [
                     showMessageBox('Game saved!', [{ text: 'Confirm', action: backToTitleScreen }], 'inline');
                 }
             },
-            { text: 'Confirm', action: () => backToTitleScreen() },
+            { text: 'Exit to Title Screen', action: () => backToTitleScreen() },
             { text: 'Cancel', action: () => { } }
-        ], 'inline');
+        ], 'vertical');
         const handleBackBtnPress = (e) => {
             if (handleKeyboardConfirm(e)) {
                 backToTitleScreenMessageBox();

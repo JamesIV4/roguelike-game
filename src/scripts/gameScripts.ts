@@ -651,10 +651,10 @@ const goldTypes: GoldType[] = [
               showMessageBox('Game saved!', [{ text: 'Confirm', action: backToTitleScreen }], 'inline');
             }
           },
-          { text: 'Confirm', action: () => backToTitleScreen() },
+          { text: 'Exit to Title Screen', action: () => backToTitleScreen() },
           { text: 'Cancel', action: () => {} }
         ],
-        'inline'
+        'vertical'
       );
 
     const handleBackBtnPress = (e?: KeyboardEvent) => {
