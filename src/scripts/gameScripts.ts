@@ -40,6 +40,34 @@ const goldTypes: GoldType[] = [
   };
   const handleKeyboardConfirm = (e?: KeyboardEvent) => (e && (e.key === 'Enter' || e.key === ' ')) || !e;
 
+  // Helper functions to safely convert between UTF‑8 strings and Base64.
+  // These avoid deprecated escape()/unescape() and work across browsers.
+  const stringToBase64 = (str: string): string => {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach((b) => (binary += String.fromCharCode(b)));
+    return btoa(binary);
+  };
+
+  const base64ToString = (base64: string): string => {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+  };
+
+  // Prime IndexedDB on page load to work around Safari's first‑access bug.
+  try {
+    const primingReq = indexedDB.open('probe');
+    primingReq.onupgradeneeded = primingReq.onsuccess = () => {
+      primingReq.result.close();
+    };
+  } catch (err) {
+    console.warn('IndexedDB priming failed:', err);
+  }
+
   // --- Web Audio API Setup for High-Performance Sound ---
   // This new system replaces the old HTML5 Audio pools. It offers low-latency playback
   // crucial for responsive game audio on all devices, especially mobile.
@@ -348,12 +376,6 @@ const goldTypes: GoldType[] = [
     });
   }
 
-  /**
-   * Retrieve the current list of high scores from IndexedDB.
-   * High scores are stored under a single key ('scores') in the HIGH_SCORES_STORE_NAME
-   * object store. The data is serialized as JSON to avoid issues with the
-   * structured clone algorithm on older browsers.
-   */
   function getHighScores(): Promise<Array<{ date: string; gold: number; turns: number; level: number }>> {
     return openGameDB().then((db) => {
       return new Promise((resolve) => {
@@ -366,15 +388,15 @@ const goldTypes: GoldType[] = [
             resolve([]);
           } else {
             try {
-              resolve(JSON.parse(result));
+              // decode using the safe helper
+              const json = base64ToString(result);
+              resolve(JSON.parse(json));
             } catch {
               resolve([]);
             }
           }
         };
-        request.onerror = () => {
-          resolve([]);
-        };
+        request.onerror = () => resolve([]);
       });
     });
   }
@@ -397,13 +419,13 @@ const goldTypes: GoldType[] = [
           let scores: Array<{ date: string; gold: number; turns: number; level: number }> = [];
           if (getReq.result) {
             try {
-              scores = JSON.parse(getReq.result);
+              const json = base64ToString(getReq.result);
+              scores = JSON.parse(json);
             } catch {
               scores = [];
             }
           }
           scores.push(entry);
-          // Sort according to ranking: more gold, farther level, fewer turns.
           scores.sort((a, b) => {
             if (b.gold !== a.gold) return b.gold - a.gold;
             if (b.level !== a.level) return b.level - a.level;
@@ -413,21 +435,23 @@ const goldTypes: GoldType[] = [
             scores = scores.slice(0, MAX_HIGH_SCORES);
           }
           try {
-            store.put(JSON.stringify(scores), 'scores');
+            const jsonString = JSON.stringify(scores);
+            // encode using the safe helper
+            const base64String = stringToBase64(jsonString);
+            store.put(base64String, 'scores');
           } catch (err) {
-            // In case of quota errors etc. we silently ignore
             console.error('Failed to write high scores:', err);
           }
         };
         getReq.onerror = () => {
-          // If reading existing scores fails, attempt to write a single-entry list.
           try {
-            store.put(JSON.stringify([entry]), 'scores');
+            const jsonString = JSON.stringify([entry]);
+            const base64String = stringToBase64(jsonString);
+            store.put(base64String, 'scores');
           } catch (err) {
             console.error('Failed to write high scores:', err);
           }
         };
-        // Clean up
         tx.oncomplete = () => db.close();
         tx.onerror = () => {
           console.error('Failed to update high scores:', tx.error);
@@ -506,9 +530,9 @@ const goldTypes: GoldType[] = [
       goldPieces,
       enemies
     };
-    // Convert to JSON and then base64 encode
+    // Convert to JSON and then Base64 encode
     const json = JSON.stringify(gameState);
-    const base64 = btoa(unescape(encodeURIComponent(json)));
+    const base64 = stringToBase64(json);
 
     openGameDB()
       .then((db) => {
@@ -516,7 +540,7 @@ const goldTypes: GoldType[] = [
         const store = tx.objectStore(STORE_NAME);
         store.put(base64, SAVE_COOKIE_NAME);
         tx.oncomplete = () => {
-          console.log('Game saved to IndexedDB (base64).');
+          console.log('Game saved to IndexedDB (Base64).');
           db.close();
         };
         tx.onerror = () => {
@@ -737,10 +761,10 @@ const goldTypes: GoldType[] = [
       turnsTotal: 0,
       turnsLevel: 0,
       retries: 0,
-      zoomLevel: isMobileScreen() ? 3 : 4,
+      zoomLevel: sessionStats.zoomLevel,
       dead: false,
       playing: true,
-      mode: 'procedural',
+      mode: sessionStats.mode,
       goldTotal: 0,
       goldLevel: 0
     };
@@ -756,7 +780,8 @@ const goldTypes: GoldType[] = [
             db.close();
             return false;
           }
-          const json = decodeURIComponent(escape(atob(base64)));
+          // decode using the helper
+          const json = base64ToString(base64);
           const gameState = JSON.parse(json);
 
           sessionStats = gameState.sessionStats;
@@ -1438,15 +1463,15 @@ const goldTypes: GoldType[] = [
     refreshScreen();
   };
 
-  const newGame = () => {
-    levelStore.length = 0;
-    enemies.length = 0;
-    goldPieces.length = 0;
-    sessionStats.turnsTotal = 0;
-    sessionStats.goldTotal = 0;
-    sessionStats.playing = true;
-    goToNewLevel(0);
-  };
+  // const newGame = () => {
+  //   levelStore.length = 0;
+  //   enemies.length = 0;
+  //   goldPieces.length = 0;
+  //   sessionStats.turnsTotal = 0;
+  //   sessionStats.goldTotal = 0;
+  //   sessionStats.playing = true;
+  //   goToNewLevel(0);
+  // };
 
   const backToTitleScreen = () => {
     // Reset all game variables to their default state when returning to title
@@ -1464,10 +1489,10 @@ const goldTypes: GoldType[] = [
       turnsTotal: 0,
       turnsLevel: 0,
       retries: 0,
-      zoomLevel: isMobileScreen() ? 3 : 4,
+      zoomLevel: sessionStats.zoomLevel,
       dead: false,
       playing: false,
-      mode: 'procedural',
+      mode: sessionStats.mode,
       goldTotal: 0,
       goldLevel: 0
     };
